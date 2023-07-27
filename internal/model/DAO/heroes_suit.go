@@ -10,8 +10,8 @@ type HeroesSuitDAO struct {
 	db *gorm.DB
 }
 
-func (dao *HeroesSuitDAO) Add(equips []*model.HeroesSuit) (int64, error) {
-	result := mysql.DB.Create(equips)
+func (dao *HeroesSuitDAO) Add(hs []*model.HeroesSuit) (int64, error) {
+	result := mysql.DB.Create(hs)
 	return result.RowsAffected, result.Error
 }
 
@@ -22,5 +22,5 @@ func NewHeroesSuitDAO() *HeroesSuitDAO {
 }
 
 type HeroesSuit interface {
-	Add(equips []*model.HeroesSuit) (int64, error)
+	Add([]*model.HeroesSuit) (int64, error)
 }

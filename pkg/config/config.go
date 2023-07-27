@@ -49,6 +49,7 @@ type LogCfg struct {
 
 type LolCfg struct {
 	Equipment string `yaml:"equipment"`
+	Heroes    string `yaml:"heroes"`
 }
 
 func Init() {

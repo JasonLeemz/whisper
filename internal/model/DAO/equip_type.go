@@ -10,8 +10,8 @@ type EquipTypeDAO struct {
 	db *gorm.DB
 }
 
-func (dao *EquipTypeDAO) Add(equips []*model.EquipType) (int64, error) {
-	result := mysql.DB.Create(equips)
+func (dao *EquipTypeDAO) Add(et []*model.EquipType) (int64, error) {
+	result := mysql.DB.Create(et)
 	return result.RowsAffected, result.Error
 }
 
@@ -22,5 +22,5 @@ func NewEquipTypeDAO() *EquipTypeDAO {
 }
 
 type EquipType interface {
-	Add(equips []*model.EquipType) (int64, error)
+	Add([]*model.EquipType) (int64, error)
 }

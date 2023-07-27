@@ -17,6 +17,7 @@ func main() {
 	lol := router.Group("/lol")
 	{
 		lol.POST("/equipment", context.Handle(controller.Equipment))
+		lol.POST("/heroes", context.Handle(controller.Heroes))
 	}
 
 	run.Init()

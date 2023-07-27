@@ -20,8 +20,8 @@ func QueryEquipments(ctx *context.Context, platform int) (any, *errors.Error) {
 
 	// 入库更新
 	equips := make([]*model.Equipment, 0, len(equip.Items)+int(math.Floor(float64(len(equip.Items)/3))))
-	hsDao := dao.NewHeroesSuitDAO()
-	etDao := dao.NewEquipTypeDAO()
+	heroesSuit := make([]*model.HeroesSuit, 0)
+	equipType := make([]*model.EquipType, 0)
 
 	for _, item := range equip.Items {
 		tmp := model.Equipment{
@@ -53,7 +53,6 @@ func QueryEquipments(ctx *context.Context, platform int) (any, *errors.Error) {
 		// 记录英雄适配装备表
 		switch item.SuitHeroId.(type) {
 		case []interface{}:
-			heroesSuit := make([]*model.HeroesSuit, 0, len(item.SuitHeroId.([]interface{})))
 			for _, heroID := range item.SuitHeroId.([]interface{}) {
 				id := cast.ToString(heroID)
 				hsTmp := &model.HeroesSuit{
@@ -62,14 +61,9 @@ func QueryEquipments(ctx *context.Context, platform int) (any, *errors.Error) {
 				}
 				heroesSuit = append(heroesSuit, hsTmp)
 			}
-			_, err = hsDao.Add(heroesSuit)
-			if err != nil {
-				log.Logger.Error(ctx, errors.New(err))
-			}
 		}
 
 		// 记录装备所属类型表
-		equipType := make([]*model.EquipType, 0, len(item.Types))
 		for _, t := range item.Types {
 			etTmp := model.EquipType{
 				Types:  t,
@@ -77,10 +71,21 @@ func QueryEquipments(ctx *context.Context, platform int) (any, *errors.Error) {
 			}
 			equipType = append(equipType, &etTmp)
 		}
-		_, err = etDao.Add(equipType)
-		if err != nil {
-			log.Logger.Error(ctx, errors.New(err))
-		}
+
+	}
+
+	// 记录英雄适配装备表
+	hsDao := dao.NewHeroesSuitDAO()
+	_, err = hsDao.Add(heroesSuit)
+	if err != nil {
+		log.Logger.Error(ctx, errors.New(err))
+	}
+
+	// 记录装备所属类型表
+	etDao := dao.NewEquipTypeDAO()
+	_, err = etDao.Add(equipType)
+	if err != nil {
+		log.Logger.Error(ctx, errors.New(err))
 	}
 
 	// 记录装备信息

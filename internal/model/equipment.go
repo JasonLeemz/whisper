@@ -4,9 +4,6 @@ import (
 	"time"
 )
 
-type EquipmentDao interface {
-	Add(equips []*Equipment) (int64, error)
-}
 type Equipment struct {
 	Id          int64     `gorm:"column:id;primary_key;AUTO_INCREMENT;NOT NULL"`
 	Platform    int       `gorm:"column:platform;default:0;NOT NULL"`

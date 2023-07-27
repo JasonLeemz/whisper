@@ -22,5 +22,5 @@ func NewEquipmentDAO() *EquipmentDAO {
 }
 
 type Equipment interface {
-	Add(equips []*model.Equipment) (int64, error)
+	Add([]*model.Equipment) (int64, error)
 }
