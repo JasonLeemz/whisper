@@ -11,7 +11,7 @@ type EquipTypeDAO struct {
 }
 
 func (dao *EquipTypeDAO) Add(et []*model.EquipType) (int64, error) {
-	result := mysql.DB.Create(et)
+	result := dao.db.Create(et)
 	return result.RowsAffected, result.Error
 }
 

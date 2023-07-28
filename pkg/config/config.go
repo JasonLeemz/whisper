@@ -14,6 +14,7 @@ type Config struct {
 	MQ       MQCfg       `yaml:"mq"`
 	Log      LogCfg      `yaml:"log"`
 	Lol      LolCfg      `yaml:"lol"`
+	LolM     LolmCfg     `yaml:"lolm"`
 }
 
 type AppCfg struct {
@@ -50,6 +51,19 @@ type LogCfg struct {
 type LolCfg struct {
 	Equipment string `yaml:"equipment"`
 	Heroes    string `yaml:"heroes"`
+	Hero      string `yaml:"hero"`
+	Rune      string `yaml:"rune"`
+	Skill     string `yaml:"skill"`
+}
+
+type LolmCfg struct {
+	Equipment       string `yaml:"equipment"`
+	Heroes          string `yaml:"heroes"`
+	Hero            string `yaml:"hero"`
+	Rune            string `yaml:"rune"`
+	RuneType        string `yaml:"runeType"`
+	Skill           string `yaml:"skill"`
+	RecommendHeroes string `yaml:"recommendHeroes"`
 }
 
 func Init() {

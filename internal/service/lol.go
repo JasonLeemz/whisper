@@ -16,7 +16,7 @@ func QueryEquipmentsForLOL(ctx *context.Context) (*dto.LOLEquipment, error) {
 	url := fmt.Sprintf("%s?ts=%d", config.GlobalConfig.Lol.Equipment, time.Now().Unix())
 	log.Logger.Info(ctx, "url="+url)
 
-	// 发送 PostJson 请求
+	// 发送 GetForm 请求
 	equip := dto.LOLEquipment{}
 
 	body, err := http.GetForm(ctx, url)
@@ -33,7 +33,7 @@ func QueryHeroesForLOL(ctx *context.Context) (*dto.LOLHeroes, error) {
 	url := fmt.Sprintf("%s?ts=%d", config.GlobalConfig.Lol.Heroes, time.Now().Unix())
 	log.Logger.Info(ctx, "url="+url)
 
-	// 发送 PostJson 请求
+	// 发送 GetForm 请求
 	heroes := dto.LOLHeroes{}
 
 	body, err := http.GetForm(ctx, url)
@@ -43,4 +43,38 @@ func QueryHeroesForLOL(ctx *context.Context) (*dto.LOLHeroes, error) {
 
 	err = json.Unmarshal(body, &heroes)
 	return &heroes, err
+}
+
+// QueryHeroesForLOLM 通过 https://game.gtimg.cn/images/lgamem/act/lrlib/js/heroList/hero_list.js 查询端游的所有英雄
+func QueryHeroesForLOLM(ctx *context.Context) (*dto.LOLMHeroes, error) {
+	url := fmt.Sprintf("%s?ts=%d", config.GlobalConfig.LolM.Heroes, time.Now().Unix())
+	log.Logger.Info(ctx, "url="+url)
+
+	// 发送 GetForm 请求
+	heroes := dto.LOLMHeroes{}
+
+	body, err := http.GetForm(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &heroes)
+	return &heroes, err
+}
+
+// QueryEquipmentsForLOLM 通过 https://game.gtimg.cn/images/lgamem/act/lrlib/js/equip/equip.js 查询手游的所有装备列表
+func QueryEquipmentsForLOLM(ctx *context.Context) (*dto.LOLMEquipment, error) {
+	url := fmt.Sprintf("%s?ts=%d", config.GlobalConfig.LolM.Equipment, time.Now().Unix())
+	log.Logger.Info(ctx, "url="+url)
+
+	// 发送 GetForm 请求
+	equip := dto.LOLMEquipment{}
+
+	body, err := http.GetForm(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &equip)
+	return &equip, err
 }

@@ -6,21 +6,44 @@ import (
 	"whisper/pkg/mysql"
 )
 
-type EquipmentDAO struct {
+type LOLEquipment interface {
+	Add([]*model.LOLEquipment) (int64, error)
+}
+
+type LOLEquipmentDAO struct {
 	db *gorm.DB
 }
 
-func (dao *EquipmentDAO) Add(equips []*model.Equipment) (int64, error) {
-	result := mysql.DB.Create(equips)
+func (dao *LOLEquipmentDAO) Add(equips []*model.LOLEquipment) (int64, error) {
+	result := dao.db.Create(equips)
 	return result.RowsAffected, result.Error
 }
 
-func NewEquipmentDAO() *EquipmentDAO {
-	return &EquipmentDAO{
+func NewLOLEquipmentDAO() *LOLEquipmentDAO {
+	return &LOLEquipmentDAO{
 		db: mysql.DB,
 	}
 }
 
-type Equipment interface {
-	Add([]*model.Equipment) (int64, error)
+// --------------------------------------------------------
+
+type LOLMEquipment interface {
+	Add([]*model.LOLMEquipment) (int64, error)
+}
+
+type LOLMEquipmentDAO struct {
+	db *gorm.DB
+}
+
+func (dao *LOLMEquipmentDAO) Add(equips []*model.LOLMEquipment) (int64, error) {
+	result := dao.db.Create(equips)
+	return result.RowsAffected, result.Error
+}
+
+func NewLOLMEquipmentDAO() *LOLMEquipmentDAO {
+
+	d := &LOLMEquipmentDAO{
+		db: mysql.DB,
+	}
+	return d
 }

@@ -11,7 +11,7 @@ type HeroRoleDAO struct {
 }
 
 func (dao *HeroRoleDAO) Add(hr []*model.HeroRole) (int64, error) {
-	result := mysql.DB.Create(hr)
+	result := dao.db.Create(hr)
 	return result.RowsAffected, result.Error
 }
 
