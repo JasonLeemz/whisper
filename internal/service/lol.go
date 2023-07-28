@@ -78,3 +78,71 @@ func QueryEquipmentsForLOLM(ctx *context.Context) (*dto.LOLMEquipment, error) {
 	err = json.Unmarshal(body, &equip)
 	return &equip, err
 }
+
+// QueryRuneForLOL https://game.gtimg.cn/images/lol/act/img/js/runeList/rune_list.js
+func QueryRuneForLOL(ctx *context.Context) (*dto.LOLRune, error) {
+	url := fmt.Sprintf("%s?ts=%d", config.GlobalConfig.Lol.Rune, time.Now().Unix())
+	log.Logger.Info(ctx, "url="+url)
+
+	// 发送 GetForm 请求
+	r := dto.LOLRune{}
+
+	body, err := http.GetForm(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &r)
+	return &r, err
+}
+
+// QueryRuneForLOLM https://game.gtimg.cn/images/lgamem/act/lrlib/js/rune/rune.js
+func QueryRuneForLOLM(ctx *context.Context) (*dto.LOLMRune, error) {
+	url := fmt.Sprintf("%s?ts=%d", config.GlobalConfig.LolM.Rune, time.Now().Unix())
+	log.Logger.Info(ctx, "url="+url)
+
+	// 发送 GetForm 请求
+	r := dto.LOLMRune{}
+
+	body, err := http.GetForm(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &r)
+	return &r, err
+}
+
+// QuerySkillForLOL https://game.gtimg.cn/images/lol/act/img/js/summonerskillList/summonerskill_list.js
+func QuerySkillForLOL(ctx *context.Context) (*dto.LOLSkill, error) {
+	url := fmt.Sprintf("%s?ts=%d", config.GlobalConfig.Lol.Skill, time.Now().Unix())
+	log.Logger.Info(ctx, "url="+url)
+
+	// 发送 GetForm 请求
+	r := dto.LOLSkill{}
+
+	body, err := http.GetForm(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &r)
+	return &r, err
+}
+
+// QuerySkillForLOLM https://game.gtimg.cn/images/lgamem/act/lrlib/js/skill/skill.js
+func QuerySkillForLOLM(ctx *context.Context) (*dto.LOLMSkill, error) {
+	url := fmt.Sprintf("%s?ts=%d", config.GlobalConfig.LolM.Skill, time.Now().Unix())
+	log.Logger.Info(ctx, "url="+url)
+
+	// 发送 GetForm 请求
+	r := dto.LOLMSkill{}
+
+	body, err := http.GetForm(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &r)
+	return &r, err
+}

@@ -41,7 +41,6 @@ func reloadHeroesForLOL(ctx *context.Context, heroList *dto.LOLHeroes) {
 
 	for _, hero := range heroList.Hero {
 		tmp := model.LOLHeroes{
-			Platform:            platformForLOL,
 			HeroId:              hero.HeroId,
 			Name:                hero.Name,
 			Alias:               hero.Alias,
@@ -101,7 +100,6 @@ func reloadHeroesForLOLM(ctx *context.Context, heroList *dto.LOLMHeroes) {
 
 	for _, hero := range heroList.HeroList {
 		tmp := model.LOLMHeroes{
-			Platform:       platformForLOLM,
 			HeroId:         hero.HeroId,
 			Name:           hero.Name,
 			Title:          hero.Title,

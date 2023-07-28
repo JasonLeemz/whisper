@@ -6,7 +6,6 @@ import (
 
 type LOLEquipment struct {
 	Id          int64     `gorm:"column:id;primary_key;AUTO_INCREMENT;NOT NULL"`
-	Platform    int       `gorm:"column:platform;default:0;NOT NULL"`
 	ItemId      string    `gorm:"column:itemId;default:;NOT NULL"`
 	Name        string    `gorm:"column:name;default:;NOT NULL"`
 	IconPath    string    `gorm:"column:iconPath;default:;NOT NULL"`
@@ -36,7 +35,6 @@ func (e *LOLEquipment) TableName() string {
 
 type LOLMEquipment struct {
 	Id              uint64    `gorm:"column:id;primary_key;AUTO_INCREMENT;NOT NULL"`
-	Platform        int       `gorm:"column:platform;default:1;NOT NULL"`
 	EquipId         string    `gorm:"column:equipId;default:;NOT NULL"`
 	Name            string    `gorm:"column:name;default:;NOT NULL"`
 	IconPath        string    `gorm:"column:iconPath;default:;NOT NULL"`

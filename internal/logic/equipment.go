@@ -14,11 +14,6 @@ import (
 	"whisper/pkg/log"
 )
 
-const (
-	platformForLOL  = 0
-	platformForLOLM = 1
-)
-
 func QueryEquipments(ctx *context.Context, platform int) (any, *errors.Error) {
 
 	if platform == platformForLOL {
@@ -48,7 +43,6 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 
 	for _, item := range equip.Items {
 		tmp := model.LOLEquipment{
-			Platform:    platformForLOL,
 			ItemId:      item.ItemId,
 			Name:        item.Name,
 			IconPath:    item.IconPath,
@@ -127,7 +121,6 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 
 	for _, item := range equip.EquipList {
 		tmp := model.LOLMEquipment{
-			Platform: platformForLOLM,
 			EquipId:  item.EquipId,
 			Name:     item.Name,
 			IconPath: item.IconPath,

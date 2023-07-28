@@ -6,7 +6,6 @@ import (
 
 type LOLHeroes struct {
 	Id                  uint64    `gorm:"column:id;primary_key;AUTO_INCREMENT;NOT NULL"`
-	Platform            int       `gorm:"column:platform;default:0;NOT NULL"`
 	HeroId              string    `gorm:"column:heroId;default:;NOT NULL"`
 	Name                string    `gorm:"column:name;default:;NOT NULL"`
 	Alias               string    `gorm:"column:alias;default:;NOT NULL"`
@@ -42,7 +41,6 @@ func (h *LOLHeroes) TableName() string {
 
 type LOLMHeroes struct {
 	Id             uint64    `gorm:"column:id;primary_key;AUTO_INCREMENT;NOT NULL"`
-	Platform       int       `gorm:"column:platform;default:1;NOT NULL"`
 	HeroId         string    `gorm:"column:heroId;default:;NOT NULL"`
 	Name           string    `gorm:"column:name;default:;NOT NULL"`
 	Title          string    `gorm:"column:title;default:;NOT NULL"`
