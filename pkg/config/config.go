@@ -46,6 +46,7 @@ type MQCfg struct {
 type LogCfg struct {
 	LogLevel int    `yaml:"logLevel"`
 	Path     string `yaml:"path"`
+	SqlLog   string `yaml:"sqlLog"`
 }
 
 type LolCfg struct {

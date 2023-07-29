@@ -2,10 +2,12 @@ package logic
 
 import (
 	errors2 "errors"
+	"fmt"
 	"github.com/spf13/cast"
 	"math"
 	"strings"
 	"whisper/internal/dto"
+	"whisper/internal/logic/common"
 	"whisper/internal/model"
 	dao "whisper/internal/model/DAO"
 	"whisper/internal/service"
@@ -16,14 +18,14 @@ import (
 
 func QueryEquipments(ctx *context.Context, platform int) (any, *errors.Error) {
 
-	if platform == platformForLOL {
+	if platform == common.PlatformForLOL {
 		equip, err := service.QueryEquipmentsForLOL(ctx)
 		if err != nil {
 			log.Logger.Warn(ctx, err)
 		}
 		reloadEquipmentForLOL(ctx, equip)
 		return equip, nil
-	} else if platform == platformForLOLM {
+	} else if platform == common.PlatformForLOLM {
 		equip, err := service.QueryEquipmentsForLOLM(ctx)
 		if err != nil {
 			log.Logger.Warn(ctx, err)
@@ -36,6 +38,36 @@ func QueryEquipments(ctx *context.Context, platform int) (any, *errors.Error) {
 }
 
 func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
+
+	equipDao := dao.NewLOLEquipmentDAO()
+
+	// 判断库中是否存在最新版本，如果存在就不更新
+	result, err := equipDao.Find([]string{
+		"max(ctime) as ctime",
+		"fileTime",
+		"version",
+	}, nil)
+	if err != nil {
+		log.Logger.Error(ctx, errors.New(err))
+		return
+	}
+
+	if len(result) > 0 {
+		log.Logger.Info(ctx,
+			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result[0].Version, result[0].FileTime, equip.Version, equip.FileTime),
+		)
+		x, err := common.CompareTime(result[0].FileTime, equip.FileTime)
+		if err != nil {
+			log.Logger.Error(ctx, errors.New(err))
+			return
+		}
+		if x != "<" {
+			// 如果原始数据版本和当前获取数据的版本相等，就不更新数据库
+			log.Logger.Info(ctx, "原始数据版本和当前获取数据的版本相等,不更新")
+			return
+		}
+	}
+
 	// 入库更新
 	equips := make([]*model.LOLEquipment, 0, len(equip.Items)+int(math.Floor(float64(len(equip.Items)/3))))
 	heroesSuit := make([]*model.HeroesSuit, 0)
@@ -91,8 +123,6 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 
 	}
 
-	var err error
-
 	// 记录英雄适配装备表
 	hsDao := dao.NewHeroesSuitDAO()
 	_, err = hsDao.Add(heroesSuit)
@@ -108,7 +138,6 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 	}
 
 	// 记录装备信息
-	equipDao := dao.NewLOLEquipmentDAO()
 	_, err = equipDao.Add(equips)
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
@@ -116,6 +145,35 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 }
 
 func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
+	equipDao := dao.NewLOLMEquipmentDAO()
+
+	// 判断库中是否存在最新版本，如果存在就不更新
+	result, err := equipDao.Find([]string{
+		"max(ctime) as ctime",
+		"fileTime",
+		"version",
+	}, nil)
+	if err != nil {
+		log.Logger.Error(ctx, errors.New(err))
+		return
+	}
+
+	if len(result) > 0 {
+		log.Logger.Info(ctx,
+			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result[0].Version, result[0].FileTime, equip.Version, equip.FileTime),
+		)
+		x, err := common.CompareTime(result[0].FileTime, equip.FileTime)
+		if err != nil {
+			log.Logger.Error(ctx, errors.New(err))
+			return
+		}
+		if x != "<" {
+			// 如果原始数据版本和当前获取数据的版本相等，就不更新数据库
+			log.Logger.Info(ctx, "原始数据版本和当前获取数据的版本相等,不更新")
+			return
+		}
+	}
+
 	// 入库更新
 	equips := make([]*model.LOLMEquipment, 0, len(equip.EquipList))
 
@@ -164,8 +222,6 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 		equips = append(equips, &tmp)
 	}
 	// 记录装备信息
-	var err error
-	equipDao := dao.NewLOLMEquipmentDAO()
 	_, err = equipDao.Add(equips)
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))

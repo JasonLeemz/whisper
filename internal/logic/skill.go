@@ -3,6 +3,7 @@ package logic
 import (
 	errors2 "errors"
 	"whisper/internal/dto"
+	"whisper/internal/logic/common"
 	"whisper/internal/model"
 	dao "whisper/internal/model/DAO"
 	"whisper/pkg/log"
@@ -14,14 +15,14 @@ import (
 
 func QuerySkill(ctx *context.Context, platform int) (any, *errors.Error) {
 
-	if platform == platformForLOL {
+	if platform == common.PlatformForLOL {
 		skills, err := service.QuerySkillForLOL(ctx)
 		if err != nil {
 			log.Logger.Warn(ctx, err)
 		}
 		reloadSkillForLOL(ctx, skills)
 		return skills, nil
-	} else if platform == platformForLOLM {
+	} else if platform == common.PlatformForLOLM {
 		skills, err := service.QuerySkillForLOLM(ctx)
 		if err != nil {
 			log.Logger.Warn(ctx, err)

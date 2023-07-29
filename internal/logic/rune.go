@@ -3,6 +3,7 @@ package logic
 import (
 	errors2 "errors"
 	"whisper/internal/dto"
+	"whisper/internal/logic/common"
 	"whisper/internal/model"
 	dao "whisper/internal/model/DAO"
 	"whisper/pkg/log"
@@ -14,14 +15,14 @@ import (
 
 func QueryRune(ctx *context.Context, platform int) (any, *errors.Error) {
 
-	if platform == platformForLOL {
+	if platform == common.PlatformForLOL {
 		runes, err := service.QueryRuneForLOL(ctx)
 		if err != nil {
 			log.Logger.Warn(ctx, err)
 		}
 		reloadRuneForLOL(ctx, runes)
 		return runes, nil
-	} else if platform == platformForLOLM {
+	} else if platform == common.PlatformForLOLM {
 		runes, err := service.QueryRuneForLOLM(ctx)
 		if err != nil {
 			log.Logger.Warn(ctx, err)

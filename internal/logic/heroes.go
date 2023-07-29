@@ -3,6 +3,7 @@ package logic
 import (
 	errors2 "errors"
 	"whisper/internal/dto"
+	"whisper/internal/logic/common"
 	"whisper/internal/model"
 	dao "whisper/internal/model/DAO"
 	"whisper/internal/service"
@@ -13,14 +14,14 @@ import (
 
 func QueryHeroes(ctx *context.Context, platform int) (any, *errors.Error) {
 
-	if platform == platformForLOL {
+	if platform == common.PlatformForLOL {
 		heroList, err := service.QueryHeroesForLOL(ctx)
 		if err != nil {
 			log.Logger.Warn(ctx, err)
 		}
 		reloadHeroesForLOL(ctx, heroList)
 		return heroList, nil
-	} else if platform == platformForLOLM {
+	} else if platform == common.PlatformForLOLM {
 		heroList, err := service.QueryHeroesForLOLM(ctx)
 		if err != nil {
 			log.Logger.Warn(ctx, err)
@@ -69,7 +70,7 @@ func reloadHeroesForLOL(ctx *context.Context, heroList *dto.LOLHeroes) {
 		// 记录英雄角色表
 		for _, role := range hero.Roles {
 			hrTmp := &model.HeroRole{
-				Platform: platformForLOL,
+				Platform: common.PlatformForLOL,
 				HeroId:   hero.HeroId,
 				Role:     role,
 			}
@@ -126,7 +127,7 @@ func reloadHeroesForLOLM(ctx *context.Context, heroList *dto.LOLMHeroes) {
 		// 记录英雄角色表
 		for _, role := range hero.Roles {
 			hsTmp := &model.HeroRole{
-				Platform: platformForLOLM,
+				Platform: common.PlatformForLOLM,
 				HeroId:   hero.HeroId,
 				Role:     role,
 			}

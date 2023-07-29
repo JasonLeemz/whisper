@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	errors2 "whisper/pkg/errors"
 	"whisper/pkg/trace"
 
 	"github.com/natefinch/lumberjack"
@@ -48,9 +49,23 @@ var Glogger *GormLogger
 
 // newGormLogger GormLogger 初始化
 func newGormLogger() {
+	// 希望sql的log单独打印日志，这里不复用Logger.SugaredLogger
+	writeSyncer := getLogWriter(config.GlobalConfig.Log.SqlLog)
+	encoder := getEncoder()
+	core := zapcore.NewCore(encoder, writeSyncer, zapcore.Level(config.GlobalConfig.Log.LogLevel))
+	zapLogger := zap.New(core, zap.AddCaller())
+	gormLogger := &WhisperLogger{
+		zapLogger.Sugar(),
+	}
+
 	Glogger = &GormLogger{
-		logger:   Logger.SugaredLogger,
+		logger:   gormLogger.SugaredLogger,
 		LogLevel: logger.Info,
+
+		SlowThreshold:             0,
+		Colorful:                  false,
+		IgnoreRecordNotFoundError: false,
+		ParameterizedQueries:      false,
 	}
 
 }
@@ -111,13 +126,6 @@ func (glog *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (s
 	}
 }
 
-//	func genLogTpl(traceID string, paramsNum int) string {
-//		tpl := whisperTplStr + "|trace_id=" + traceID
-//		for i := 0; i < paramsNum; i++ {
-//			tpl += "|%#v"
-//		}
-//		return tpl
-//	}
 func genLogTpl(traceID string, data []interface{}) string {
 	tpl := whisperTplStr + "|trace_id=" + traceID
 
@@ -125,6 +133,10 @@ func genLogTpl(traceID string, data []interface{}) string {
 		switch v.(type) {
 		case string:
 			tpl += "|%s"
+		case error:
+			tpl += "|%+v"
+		case errors2.Error:
+			tpl += "|%+v"
 		default:
 			tpl += "|%#v"
 		}
@@ -166,10 +178,10 @@ func Init() {
 }
 
 // 日志记录地址
-func getLogWriter() zapcore.WriteSyncer {
+func getLogWriter(logPath string) zapcore.WriteSyncer {
 	//定义日志文件名，设置权限，当日志文件不存在时创建文件
 	lumberJackLogger := &lumberjack.Logger{
-		Filename:   config.GlobalConfig.Log.Path,
+		Filename:   logPath,
 		MaxSize:    10, // 切割大小M
 		MaxBackups: 3,  // 保留最大数量
 		MaxAge:     1,
@@ -191,7 +203,7 @@ func getEncoder() zapcore.Encoder {
 }
 
 func newZapLogger() {
-	writeSyncer := getLogWriter()
+	writeSyncer := getLogWriter(config.GlobalConfig.Log.Path)
 	encoder := getEncoder()
 	core := zapcore.NewCore(encoder, writeSyncer, zapcore.Level(config.GlobalConfig.Log.LogLevel))
 	zapLogger := zap.New(core, zap.AddCaller())
