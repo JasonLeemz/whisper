@@ -26,5 +26,5 @@ func CompareTime(t1, t2 string) (string, error) {
 		return ">", nil
 	}
 
-	return "", nil
+	return "?", nil
 }

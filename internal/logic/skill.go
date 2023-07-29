@@ -2,6 +2,7 @@ package logic
 
 import (
 	errors2 "errors"
+	"fmt"
 	"whisper/internal/dto"
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
@@ -35,9 +36,37 @@ func QuerySkill(ctx *context.Context, platform int) (any, *errors.Error) {
 }
 
 func reloadSkillForLOL(ctx *context.Context, s *dto.LOLSkill) {
+
+	// 判断库中是否存在最新版本，如果存在就不更新
+	skillDAO := dao.NewLOLSkillDAO()
+	result, err := skillDAO.Find([]string{
+		"max(ctime) as ctime",
+		"fileTime",
+		"version",
+	}, nil)
+	if err != nil {
+		log.Logger.Error(ctx, errors.New(err))
+		return
+	}
+
+	if len(result) > 0 {
+		log.Logger.Info(ctx,
+			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result[0].Version, result[0].FileTime, s.Version, s.FileTime),
+		)
+		x, err := common.CompareTime(result[0].FileTime, s.FileTime)
+		if err != nil {
+			log.Logger.Error(ctx, errors.New(err))
+			return
+		}
+		if x != "<" {
+			// 如果原始数据版本和当前获取数据的版本相等，就不更新数据库
+			log.Logger.Info(ctx, "原始数据版本和当前获取数据的版本相等,不更新")
+			return
+		}
+	}
+
 	// 入库更新
 	sss := make([]*model.LOLSkill, 0, len(s.SummonerSkill))
-	var err error
 
 	for _, ss := range s.SummonerSkill {
 		tmp := model.LOLSkill{
@@ -54,16 +83,42 @@ func reloadSkillForLOL(ctx *context.Context, s *dto.LOLSkill) {
 	}
 
 	// 记录英雄列表信息
-	sd := dao.NewLOLSkillDAO()
-	_, err = sd.Add(sss)
+	_, err = skillDAO.Add(sss)
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 	}
 }
 func reloadSkillForLOLM(ctx *context.Context, s *dto.LOLMSkill) {
+	// 判断库中是否存在最新版本，如果存在就不更新
+	skillDAO := dao.NewLOLMSkillDAO()
+	result, err := skillDAO.Find([]string{
+		"max(ctime) as ctime",
+		"fileTime",
+		"version",
+	}, nil)
+	if err != nil {
+		log.Logger.Error(ctx, errors.New(err))
+		return
+	}
+
+	if len(result) > 0 {
+		log.Logger.Info(ctx,
+			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result[0].Version, result[0].FileTime, s.Version, s.FileTime),
+		)
+		x, err := common.CompareTime(result[0].FileTime, s.FileTime)
+		if err != nil {
+			log.Logger.Error(ctx, errors.New(err))
+			return
+		}
+		if x != "<" {
+			// 如果原始数据版本和当前获取数据的版本相等，就不更新数据库
+			log.Logger.Info(ctx, "原始数据版本和当前获取数据的版本相等,不更新")
+			return
+		}
+	}
+
 	// 入库更新
 	ssl := make([]*model.LOLMSkill, 0, len(s.SkillList))
-	var err error
 
 	for _, ss := range s.SkillList {
 		tmp := model.LOLMSkill{
@@ -83,8 +138,7 @@ func reloadSkillForLOLM(ctx *context.Context, s *dto.LOLMSkill) {
 	}
 
 	// 记录英雄列表信息
-	sd := dao.NewLOLMSkillDAO()
-	_, err = sd.Add(ssl)
+	_, err = skillDAO.Add(ssl)
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 	}

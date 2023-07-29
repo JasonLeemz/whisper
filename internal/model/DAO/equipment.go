@@ -16,9 +16,13 @@ type LOLEquipmentDAO struct {
 }
 
 func (dao *LOLEquipmentDAO) Find(query []string, cond map[string]interface{}) ([]*model.LOLEquipment, error) {
+	query = append(query, "id")
 	result := make([]*model.LOLEquipment, 0)
 	tx := dao.db.Model(&model.LOLEquipment{}).Select(query).Where(cond).Find(&result)
 
+	if result != nil && result[0].Id == 0 {
+		result = nil
+	}
 	return result, tx.Error
 }
 
@@ -45,9 +49,13 @@ type LOLMEquipmentDAO struct {
 }
 
 func (dao *LOLMEquipmentDAO) Find(query []string, cond map[string]interface{}) ([]*model.LOLMEquipment, error) {
+	query = append(query, "id")
 	result := make([]*model.LOLMEquipment, 0)
 	tx := dao.db.Model(&model.LOLMEquipment{}).Select(query).Where(cond).Find(&result)
 
+	if result != nil && result[0].Id == 0 {
+		result = nil
+	}
 	return result, tx.Error
 }
 func (dao *LOLMEquipmentDAO) Add(equips []*model.LOLMEquipment) (int64, error) {

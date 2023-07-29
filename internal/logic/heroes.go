@@ -2,6 +2,7 @@ package logic
 
 import (
 	errors2 "errors"
+	"fmt"
 	"whisper/internal/dto"
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
@@ -35,10 +36,38 @@ func QueryHeroes(ctx *context.Context, platform int) (any, *errors.Error) {
 }
 
 func reloadHeroesForLOL(ctx *context.Context, heroList *dto.LOLHeroes) {
+
+	// 判断库中是否存在最新版本，如果存在就不更新
+	heroesDao := dao.NewLOLHeroesDAO()
+	result, err := heroesDao.Find([]string{
+		"max(ctime) as ctime",
+		"fileTime",
+		"version",
+	}, nil)
+	if err != nil {
+		log.Logger.Error(ctx, errors.New(err))
+		return
+	}
+
+	if len(result) > 0 {
+		log.Logger.Info(ctx,
+			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result[0].Version, result[0].FileTime, heroList.Version, heroList.FileTime),
+		)
+		x, err := common.CompareTime(result[0].FileTime, heroList.FileTime)
+		if err != nil {
+			log.Logger.Error(ctx, errors.New(err))
+			return
+		}
+		if x != "<" {
+			// 如果原始数据版本和当前获取数据的版本相等，就不更新数据库
+			log.Logger.Info(ctx, "原始数据版本和当前获取数据的版本相等,不更新")
+			return
+		}
+	}
+
 	// 入库更新
 	heroes := make([]*model.LOLHeroes, 0, len(heroList.Hero))
 	heroRole := make([]*model.HeroRole, 0, len(heroList.Hero))
-	var err error
 
 	for _, hero := range heroList.Hero {
 		tmp := model.LOLHeroes{
@@ -79,7 +108,6 @@ func reloadHeroesForLOL(ctx *context.Context, heroList *dto.LOLHeroes) {
 	}
 
 	// 记录英雄列表信息
-	heroesDao := dao.NewLOLHeroesDAO()
 	_, err = heroesDao.Add(heroes)
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
@@ -93,11 +121,37 @@ func reloadHeroesForLOL(ctx *context.Context, heroList *dto.LOLHeroes) {
 	}
 }
 func reloadHeroesForLOLM(ctx *context.Context, heroList *dto.LOLMHeroes) {
+	// 判断库中是否存在最新版本，如果存在就不更新
+	heroesDao := dao.NewLOLMHeroesDAO()
+	result, err := heroesDao.Find([]string{
+		"max(ctime) as ctime",
+		"fileTime",
+		"version",
+	}, nil)
+	if err != nil {
+		log.Logger.Error(ctx, errors.New(err))
+		return
+	}
+
+	if len(result) > 0 {
+		log.Logger.Info(ctx,
+			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result[0].Version, result[0].FileTime, heroList.Version, heroList.FileTime),
+		)
+		x, err := common.CompareTime(result[0].FileTime, heroList.FileTime)
+		if err != nil {
+			log.Logger.Error(ctx, errors.New(err))
+			return
+		}
+		if x != "<" {
+			// 如果原始数据版本和当前获取数据的版本相等，就不更新数据库
+			log.Logger.Info(ctx, "原始数据版本和当前获取数据的版本相等,不更新")
+			return
+		}
+	}
 
 	// 入库更新
 	heroes := make([]*model.LOLMHeroes, 0, len(heroList.HeroList))
 	heroRole := make([]*model.HeroRole, 0, len(heroList.HeroList))
-	var err error
 
 	for _, hero := range heroList.HeroList {
 		tmp := model.LOLMHeroes{
@@ -136,7 +190,6 @@ func reloadHeroesForLOLM(ctx *context.Context, heroList *dto.LOLMHeroes) {
 	}
 
 	// 记录英雄列表信息
-	heroesDao := dao.NewLOLMHeroesDAO()
 	_, err = heroesDao.Add(heroes)
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
