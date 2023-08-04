@@ -52,7 +52,7 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 		return
 	}
 
-	if len(result) > 0 {
+	if result != nil {
 		log.Logger.Info(ctx,
 			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result[0].Version, result[0].FileTime, equip.Version, equip.FileTime),
 		)
@@ -158,7 +158,7 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 		return
 	}
 
-	if len(result) > 0 {
+	if result != nil {
 		log.Logger.Info(ctx,
 			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result[0].Version, result[0].FileTime, equip.Version, equip.FileTime),
 		)

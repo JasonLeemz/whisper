@@ -12,12 +12,15 @@ type Config struct {
 	Database DatabaseCfg `yaml:"database"`
 	Redis    RedisCfg    `yaml:"redis"`
 	MQ       MQCfg       `yaml:"mq"`
+	ES       ESCfg       `yaml:"es"`
 	Log      LogCfg      `yaml:"log"`
 	Lol      LolCfg      `yaml:"lol"`
 	LolM     LolmCfg     `yaml:"lolm"`
+	Search   SearchCfg   `yaml:"search"`
 }
 
 type AppCfg struct {
+	IP   string `yaml:"ip"`
 	Port string `yaml:"port"`
 }
 
@@ -43,10 +46,17 @@ type MQCfg struct {
 	Password string `yaml:"password"`
 }
 
+type ESCfg struct {
+	Host       string   `yaml:"host"`
+	Port       string   `yaml:"port"`
+	BuildIndex []string `yaml:"buildIndex"`
+}
+
 type LogCfg struct {
 	LogLevel int    `yaml:"logLevel"`
 	Path     string `yaml:"path"`
 	SqlLog   string `yaml:"sqlLog"`
+	EsLog    string `yaml:"esLog"`
 }
 
 type LolCfg struct {
@@ -66,9 +76,14 @@ type LolmCfg struct {
 	Skill           string `yaml:"skill"`
 	RecommendHeroes string `yaml:"recommendHeroes"`
 }
+type SearchCfg struct {
+	MapsLOL  []string `yaml:"mapsLOL"`
+	MapsLOLM []string `yaml:"mapsLOLM"`
+}
 
 func Init() {
-	path := "./configs/app.dev.yaml"
+	//path := "./configs/app.dev.yaml"
+	path := "/Users/limingze/GolandProjects/whisper/configs/app.dev.yaml"
 	viper.SetConfigFile(path) // 指定配置文件路径
 	//viper.SetConfigName("config")         // 配置文件名称(无扩展名)
 	//viper.SetConfigType("yaml")           // 如果配置文件的名称中没有扩展名，则需要配置此项

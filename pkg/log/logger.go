@@ -18,6 +18,8 @@ import (
 
 // Logger 声明日志类全局变量
 var Logger *WhisperLogger
+var GLogger *GormLogger
+var ELogger *ESLogger
 
 type WhisperLogger struct {
 	*zap.SugaredLogger
@@ -33,6 +35,14 @@ type GormLogger struct {
 	ParameterizedQueries      bool
 }
 
+type ESLogger struct {
+	logger *zap.SugaredLogger
+}
+
+func (log ESLogger) Printf(format string, v ...interface{}) {
+	log.logger.Info(fmt.Sprintf(format, v...))
+}
+
 var (
 	whisperTplStr = "%s\t "
 
@@ -45,8 +55,6 @@ var (
 	traceErrStr  = "%s %s\t[%.3fms] [rows:%v] %s"
 )
 
-var Glogger *GormLogger
-
 // newGormLogger GormLogger 初始化
 func newGormLogger() {
 	// 希望sql的log单独打印日志，这里不复用Logger.SugaredLogger
@@ -58,7 +66,7 @@ func newGormLogger() {
 		zapLogger.Sugar(),
 	}
 
-	Glogger = &GormLogger{
+	GLogger = &GormLogger{
 		logger:   gormLogger.SugaredLogger,
 		LogLevel: logger.Info,
 
@@ -66,6 +74,23 @@ func newGormLogger() {
 		Colorful:                  false,
 		IgnoreRecordNotFoundError: false,
 		ParameterizedQueries:      false,
+	}
+
+}
+
+// newESLogger ESLogger 初始化
+func newESLogger() {
+	// 希望es的log单独打印日志，这里不复用Logger.SugaredLogger
+	writeSyncer := getLogWriter(config.GlobalConfig.Log.EsLog)
+	encoder := getEncoder()
+	core := zapcore.NewCore(encoder, writeSyncer, zapcore.Level(config.GlobalConfig.Log.LogLevel))
+	zapLogger := zap.New(core, zap.AddCaller())
+	esLogger := &WhisperLogger{
+		zapLogger.Sugar(),
+	}
+
+	ELogger = &ESLogger{
+		logger: esLogger.SugaredLogger,
 	}
 
 }
@@ -151,11 +176,6 @@ func (log *WhisperLogger) Debug(ctx context.Context, data ...interface{}) {
 }
 
 func (log *WhisperLogger) Info(ctx context.Context, data ...interface{}) {
-	//column := make([]interface{}, 0, len(data)+2)
-	//column = append(column, "|trace_id="+ctx.Value(trace.TraceID).(string))
-	//column = append(column, "|file="+utils.FileWithLineNum()+"|")
-	//column = append(column, data...)
-
 	tpl := genLogTpl(ctx.Value(trace.TraceID).(string), data)
 	log.Infof(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
 }
@@ -175,6 +195,8 @@ func Init() {
 	newZapLogger()
 	// gorm logger
 	newGormLogger()
+	// es logger
+	newESLogger()
 }
 
 // 日志记录地址

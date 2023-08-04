@@ -20,7 +20,7 @@ func Init() {
 	)
 	var err error
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger: log.Glogger,
+		Logger: log.GLogger,
 	})
 	if err != nil {
 		panic(err)
