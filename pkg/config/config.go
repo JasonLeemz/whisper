@@ -82,8 +82,8 @@ type SearchCfg struct {
 }
 
 func Init() {
-	//path := "./configs/app.dev.yaml"
-	path := "/Users/limingze/GolandProjects/whisper/configs/app.dev.yaml"
+	path := "./configs/app.dev.yaml"
+	//path := "/Users/limingze/GolandProjects/whisper/configs/app.dev.yaml"
 	viper.SetConfigFile(path) // 指定配置文件路径
 	//viper.SetConfigName("config")         // 配置文件名称(无扩展名)
 	//viper.SetConfigType("yaml")           // 如果配置文件的名称中没有扩展名，则需要配置此项
