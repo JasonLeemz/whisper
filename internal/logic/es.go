@@ -29,15 +29,15 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsEquipHits, error
 		query = query.Must(elastic.NewMultiMatchQuery(p.KeyWords, "name", "keywords"))
 	} else if p.Category == 1 {
 		// 按功能介绍搜索
-		query = query.Must(elastic.NewMultiMatchQuery(p.KeyWords, "description", "plaintext"))
+		query = query.Filter(elastic.NewMultiMatchQuery(p.KeyWords, "description", "plaintext"))
 	} else {
 		// 未指定搜索范围，全字段搜索
-		query = query.Must(elastic.NewMultiMatchQuery(p.KeyWords, "name", "description", "plaintext", "keywords"))
+		query = query.Filter(elastic.NewMultiMatchQuery(p.KeyWords, "name", "description", "plaintext", "keywords"))
 
 	}
 
 	if p.Map != "" {
-		query = query.Filter(elastic.NewTermQuery(p.Map, "maps"))
+		query = query.Filter(elastic.NewTermQuery("maps", p.Map))
 	} else {
 		cond := make([]interface{}, 0)
 		for _, m := range config.GlobalConfig.Search.MapsLOL {
@@ -47,9 +47,9 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsEquipHits, error
 	}
 
 	if p.Platform == 1 {
-		query = query.Filter(elastic.NewTermQuery("1", "platform"))
+		query = query.Filter(elastic.NewTermQuery("platform", "1"))
 	} else {
-		query = query.Filter(elastic.NewTermQuery(strconv.Itoa(p.Platform), "platform"))
+		query = query.Filter(elastic.NewTermQuery("platform", strconv.Itoa(p.Platform)))
 	}
 
 	//query = query.Filter(elastic.NewTermQuery("version", "13.14")) // Filter 不会算分，Must会算分
