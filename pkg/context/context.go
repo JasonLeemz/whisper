@@ -37,6 +37,11 @@ func (c *Context) Reply(obj interface{}, err *errors.Error) {
 	c.PureJSON(http.StatusOK, r)
 }
 
+// Render ...
+func (c *Context) Render(tpl string, data map[string]any) {
+	c.HTML(http.StatusOK, tpl, data)
+}
+
 type HandlerFunc func(c *Context)
 
 func Handle(h HandlerFunc) gin.HandlerFunc {

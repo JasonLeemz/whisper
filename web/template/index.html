@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LOL-SearchBox</title>
+    <!-- 请勿在项目正式环境中引用该 layui.css 地址 -->
+    <link href="/css/layui.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="body-tips layui-bg-green layui-font-16">
+    Tips: 当前端游版本为 {{ .lol_version }}，手游版本为 {{ .lolm_version }}
+</div>
+
+<form action="###" id="search-box">
+    <div class="layui-fluid layui-form">
+        <div class="layui-input-wrap">
+            <input name="key_words" type="text" lay-affix="search" lay-filter="search" lay-options="{split: true}"
+                   placeholder="搜索…"
+                   class="layui-input">
+        </div>
+
+        <div class="blank"></div>
+
+        <div class="layui-form">
+            <input type="radio" id="platform-lol" lay-filter="platform" name="platform" value="0" title="英雄联盟端游"
+                   checked>
+            <input type="radio" id="platform-lolm" lay-filter="platform" name="platform" value="1" title="英雄联盟手游">
+        </div>
+
+        <div class="search-tools">
+            <div id="search-tools-switch" class="layui-inline layui-font-13">
+                搜索工具 <i class="layui-icon layui-icon-right layui-font-13"></i>
+            </div>
+
+            <div id="search-tools-cond">
+                <div class="layui-form">
+                    <input type="checkbox" name="category" value="name,keywords" title="按名字" checked>
+                    <input type="checkbox" name="category" value="description,plaintext" title="按介绍" checked>
+                </div>
+
+                <div class="layui-form search-map">
+                    <input type="checkbox" name="map" value="召唤师峡谷" title="召唤师峡谷" checked class="maps-cond"
+                           lay-filter="maps">
+                    <input type="checkbox" name="map" value="嚎哭深渊" title="嚎哭深渊" class="maps-cond-ext"
+                           lay-filter="maps">
+                    <input type="checkbox" name="map" value="斗魂竞技场" title="斗魂竞技场" class="maps-cond-ext"
+                           lay-filter="maps">
+                </div>
+            </div>
+        </div>
+
+        <div class="search-result-tips layui-border-box layui-font-13">为您找到相关结果约{{ .total_num }}个</div>
+        <div class="layui-timeline">
+            <div class="layui-timeline-item">
+                <i class="layui-icon layui-timeline-axis"> <i class="layui-icon layui-icon-face-smile"></i> </i>
+                <div class="layui-timeline-content layui-text">
+                    <h4 class="layui-timeline-title">
+                        <div class="layui-inline img-wrap">
+                            <img src="https://game.gtimg.cn/images/lol/act/img/item/223033.png" alt="">
+                        </div>
+                        凡性的提醒
+                    </h4>
+                    <div>
+                        <span class="layui-badge layui-bg-gray">price:3000</span>
+                        <span class="layui-badge layui-bg-gray">sell:2100</span>
+                        <span class="layui-badge layui-bg-gray">total:3000</span>
+                        <span class="layui-badge layui-bg-gray">maps:斗魂竞技场</span>
+                    </div>
+
+                    <div class="layui-font-13 mainText">
+                        <mainText>
+                            <stats>
+                                <buffedStat>45</buffedStat>
+                                攻击力<br>
+                                <buffedStat>35%</buffedStat>
+                                护甲穿透<br>
+                                <attention>20%</attention>
+                                暴击几率
+                            </stats>
+                            <br>
+
+                            <passive>脓毒：</passive>
+                            对敌方英雄造成物理伤害时会施加
+                            <status>40%重伤</status>
+                            效果，持续3秒。<br><br>
+                            <rules>
+                                <status>重伤</status>
+                                会降低治疗效果和生命回复的效能。
+                            </rules>
+                        </mainText>
+                        <br>
+                    </div>
+
+                </div>
+            </div>
+            <div class="layui-timeline-item">
+                <i class="layui-icon layui-timeline-axis"> <i class="layui-icon layui-icon-face-smile"></i> </i>
+                <div class="layui-timeline-content layui-text">
+                    <h4 class="layui-timeline-title">
+                        <div class="layui-inline img-wrap">
+                            <img src="https://game.gtimg.cn/images/lol/act/img/item/223033.png" alt="">
+                        </div>
+                        凡性的提醒
+                    </h4>
+                    <div>
+                        <span class="layui-badge layui-bg-gray">price:3000</span>
+                        <span class="layui-badge layui-bg-gray">sell:2100</span>
+                        <span class="layui-badge layui-bg-gray">total:3000</span>
+                        <span class="layui-badge layui-bg-gray">maps:斗魂竞技场</span>
+                    </div>
+
+                    <div class="layui-font-13 mainText">
+                        <mainText>
+                            <stats>
+                                <buffedStat>45</buffedStat>
+                                攻击力<br>
+                                <buffedStat>35%</buffedStat>
+                                护甲穿透<br>
+                                <attention>20%</attention>
+                                暴击几率
+                            </stats>
+                            <br>
+
+                            <passive>脓毒：</passive>
+                            对敌方英雄造成物理伤害时会施加
+                            <status>40%重伤</status>
+                            效果，持续3秒。<br><br>
+                            <rules>
+                                <status>重伤</status>
+                                会降低治疗效果和生命回复的效能。
+                            </rules>
+                        </mainText>
+                        <br>
+                    </div>
+
+                </div>
+            </div>
+            <div class="layui-timeline-item">
+                <i class="layui-icon layui-timeline-axis"> <i class="layui-icon layui-icon-face-smile"></i> </i>
+                <div class="layui-timeline-content layui-text">
+                    <h4 class="layui-timeline-title">
+                        <div class="layui-inline img-wrap">
+                            <img src="https://game.gtimg.cn/images/lol/act/img/item/223033.png" alt="">
+                        </div>
+                        凡性的提醒
+                    </h4>
+                    <div>
+                        <span class="layui-badge layui-bg-gray">price:3000</span>
+                        <span class="layui-badge layui-bg-gray">sell:2100</span>
+                        <span class="layui-badge layui-bg-gray">total:3000</span>
+                        <span class="layui-badge layui-bg-gray">maps:斗魂竞技场</span>
+                    </div>
+
+                    <div class="layui-font-13 mainText">
+                        <mainText>
+                            <stats>
+                                <buffedStat>45</buffedStat>
+                                攻击力<br>
+                                <buffedStat>35%</buffedStat>
+                                护甲穿透<br>
+                                <attention>20%</attention>
+                                暴击几率
+                            </stats>
+                            <br>
+
+                            <passive>脓毒：</passive>
+                            对敌方英雄造成物理伤害时会施加
+                            <status>40%重伤</status>
+                            效果，持续3秒。<br><br>
+                            <rules>
+                                <status>重伤</status>
+                                会降低治疗效果和生命回复的效能。
+                            </rules>
+                        </mainText>
+                        <br>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+<script src="/js/layui.js"></script>
+<script>
+    layui.use(function () {
+        var $ = layui.$;
+        var form = layui.form;
+        // 输入框点缀事件 - 搜索示例
+        form.on('input-affix(search)', function (data) {
+            var elem = data.elem; // 输入框
+            var kw = elem.value; // 输入框的值
+            if (!kw) {
+                layer.msg('请输入搜索内容');
+                return elem.focus()
+            }
+
+            // 请求数据
+            var category = [];
+            $('input[name="category"]:checked').each(function () {
+                category.push($(this).val().split(",")[0]);
+                category.push($(this).val().split(",")[1]);
+            });
+            var maps = [];
+            $('input[name="map"]:checked').each(function () {
+                if ($(this).prop("disabled") === true) {
+                    return
+                }
+                maps.push($(this).val());
+            });
+            var req = {
+                "key_words": kw,
+                "platform": $('input[name="platform"]:checked').val(),
+                "category": category,
+                "map": maps,
+            };
+            $.ajax({
+                url: "/query",
+                method: "POST",
+                data: JSON.stringify(req),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",//返回值类型
+                success: function (res) {
+                    if (res.err_no !== 0) {
+                        layer.msg(res.err_msg);
+                    } else {
+                        layer.msg(res.data.tips);
+                    }
+                },
+                error: function () {
+                    layer.msg("error");
+                }
+            })
+        });
+
+        form.on('radio(platform)', function (data) {
+            var elem = data.elem; // 输入框
+            var platform = elem.value; // 输入框的值
+            if (platform == 1) {
+                $(".maps-cond-ext").prop("disabled", true)//禁用
+                $(".maps-cond-ext").next(".layui-form-checkbox").addClass(".layui-checkbox-disbaled layui-disabled");
+            } else {
+                $(".maps-cond-ext").prop("disabled", false)
+                $(".maps-cond-ext").next(".layui-form-checkbox").removeClass("layui-checkbox-disbaled layui-disabled");
+            }
+            form.render();
+        });
+    });
+</script>
+</body>
+</html>

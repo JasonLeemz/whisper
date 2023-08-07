@@ -21,6 +21,16 @@ func main() {
 	router := gin.New()
 	router.Use(gin.Logger(), gin.Recovery())
 	router.Use(middleware.Trace())
+	router.LoadHTMLGlob("web/template/*")
+
+	page := router.Group("/")
+	{
+		page.Static("css", "web/static/css")
+		page.Static("js", "web/static/js")
+		page.Static("font", "web/static/font")
+		page.StaticFile("favicon.ico", "web/static/favicon.ico")
+		page.GET("/search_box", context.Handle(controller.SearchBox))
+	}
 
 	lol := router.Group("/lol")
 	{
@@ -30,7 +40,7 @@ func main() {
 		lol.POST("/skill", context.Handle(controller.Skill))
 	}
 
-	es := router.Group("/es")
+	es := router.Group("/")
 	{
 		es.POST("/query", context.Handle(controller.Query))
 		es.POST("/index/build", context.Handle(controller.Build))

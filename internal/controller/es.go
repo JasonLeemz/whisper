@@ -8,10 +8,10 @@ import (
 )
 
 type ReqQuery struct {
-	KeyWords string `json:"key_words"`
-	Platform int    `json:"platform,omitempty"`
-	Category int    `json:"category,omitempty"`
-	Map      string `json:"map,omitempty"`
+	KeyWords string   `json:"key_words" form:"key_words"`
+	Platform string   `json:"platform,omitempty" form:"platform,omitempty"`
+	Category []string `json:"category,omitempty" form:"category,omitempty"`
+	Map      []string `json:"map,omitempty" form:"map,omitempty"`
 }
 
 type RespQuery struct {
@@ -52,8 +52,9 @@ func Query(ctx *context.Context) {
 	resp := RespQuery{}
 	total := result.Total.Value
 	display := len(result.Hits)
+	resp.Tips = fmt.Sprintf("为您找到相关结果约%d个", total)
 	if total != display {
-		resp.Tips += fmt.Sprintf("查找到%d条记录，篇幅有限只展示%d条。请补充搜索条件以便于精确查找<br>", total, display)
+		resp.Tips += fmt.Sprintf(",篇幅有限只展示%d条", display)
 	}
 	for _, hit := range result.Hits {
 		t := list{

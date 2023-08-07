@@ -1,0 +1,81 @@
+body .body-tips {
+    padding: 3px 8px;
+    margin-bottom: 20px;
+}
+
+.blank {
+    height: 5px;
+}
+
+.blank-10 {
+    height: 10px;
+}
+
+.blank-15 {
+    height: 15px;
+}
+
+.blank-20 {
+    height: 20px;
+}
+
+.search-button {
+    cursor: pointer;
+}
+
+.search-tools {
+    height: auto;
+    padding: 10px 0;
+    margin-bottom: 15px;
+
+}
+
+.maps-cond-ext {
+    text-decoration: line-through;
+}
+
+.search-result-tips {
+    color: #7d7d7d;
+    margin-bottom: 8px;
+}
+
+#search-tools-switch {
+    margin-bottom: 5px;
+    color: #7d7d7d;
+    cursor: pointer;
+}
+
+/*.search-map div{*/
+/*    text-decoration: line-through !important;*/
+/*    !*text-decoration: underline !important;*!*/
+/*}*/
+/*#search-tools-switch .layui-icon-right:before{*/
+/*    transform: rotate(180deg) !important;*/
+/*}*/
+.layui-timeline-title img, .layui-timeline-title .img-wrap {
+    width: 35px;
+    height: 35px;
+}
+
+.layui-timeline-title img:hover {
+    position: absolute;
+    z-index: 999;
+    width: auto;
+    height: auto;
+}
+
+.layui-timeline-item .mainText buffedStat {
+    font-weight: bold;
+}
+
+.layui-timeline-item .mainText attention {
+    font-weight: bold;
+}
+
+.layui-timeline-item .mainText passive {
+    font-weight: bold;
+}
+
+.layui-timeline-item .mainText status {
+    font-weight: bold;
+}

@@ -15,60 +15,41 @@ import (
 )
 
 type SearchParams struct {
-	KeyWords string `json:"key_words"`
-	Platform int    `json:"platform,omitempty"`
-	Category int    `json:"category,omitempty"`
-	Map      string `json:"map,omitempty"`
+	KeyWords string   `json:"key_words"`
+	Platform string   `json:"platform,omitempty"`
+	Category []string `json:"category,omitempty"`
+	Map      []string `json:"map,omitempty"`
 }
 
 func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsEquipHits, error) {
 
 	query := elastic.NewBoolQuery()
-	if p.Category == 0 {
-		// 按名字搜索
-		query = query.Must(elastic.NewMultiMatchQuery(p.KeyWords, "name", "keywords"))
-	} else if p.Category == 1 {
-		// 按功能介绍搜索
-		query = query.Filter(elastic.NewMultiMatchQuery(p.KeyWords, "description", "plaintext"))
-	} else {
-		// 未指定搜索范围，全字段搜索
-		query = query.Filter(elastic.NewMultiMatchQuery(p.KeyWords, "name", "description", "plaintext", "keywords"))
 
+	// 按名字介绍
+	cate := make([]string, 0)
+	for _, m := range p.Category {
+		cate = append(cate, m)
 	}
+	query = query.Filter(elastic.NewMultiMatchQuery(p.KeyWords, cate...))
 
-	if p.Map != "" {
-		query = query.Filter(elastic.NewTermQuery("maps", p.Map))
-	} else {
-		cond := make([]interface{}, 0)
-		for _, m := range config.GlobalConfig.Search.MapsLOL {
-			cond = append(cond, m)
-		}
-		query = query.Filter(elastic.NewTermsQuery("maps", cond...))
+	// 按地图
+	maps := make([]interface{}, 0)
+	for _, m := range p.Map {
+		maps = append(maps, m)
 	}
+	query = query.Filter(elastic.NewTermsQuery("maps", maps...))
 
-	if p.Platform == 1 {
-		query = query.Filter(elastic.NewTermQuery("platform", "1"))
-	} else {
-		query = query.Filter(elastic.NewTermQuery("platform", strconv.Itoa(p.Platform)))
-	}
-
-	//query = query.Filter(elastic.NewTermQuery("version", "13.14")) // Filter 不会算分，Must会算分
-
-	//query = query.Filter(elastic.NewTermsQuery("name",[]string{
-	//	"xz","xie",
-	//}))
+	// 端游or手游
+	query = query.Filter(elastic.NewTermQuery("platform", p.Platform))
 
 	//query = query.Filter(elastic.NewRangeQuery("id").Gte(0))
 	//query = query.Filter(elastic.NewRangeQuery("id").Lte(9999999))
 
-	//es.ESClient.Search().Index("lol_equipment_13.14").Query(query).From(int(10)).Size(int(10)).Do(ctx)
-
 	var esEquip model.ESEquipment
-	res, err := es.ESClient.Search().Index(esEquip.GetIndexName()).Query(query).From(int(0)).Size(int(10)).Do(ctx)
+	res, err := es.ESClient.Search().Index(esEquip.GetIndexName()).Query(query).From(0).Size(10).Do(ctx)
 	if err != nil {
 		return nil, err
 	}
-	//res.Hits.TotalHits.Value
 	resp := common.EsEquipHits{}
 	data, _ := json.Marshal(res.Hits)
 	err = json.Unmarshal(data, &resp)
@@ -144,7 +125,7 @@ func mysql2es(ctx *context.Context, tblName string) error {
 					//SuitHeroName: tmp.SuitHeroId, // todo
 					//SuitHeroIcon: tmp.SuitHeroId, // todo
 					Keywords: tmp.SearchKey, // 数据为空
-					Maps:     "LOLM",
+					Maps:     "召唤师峡谷",
 					From:     tmp.From, // todo
 					Into:     tmp.Into, // todo
 					Types:    tmp.Type,

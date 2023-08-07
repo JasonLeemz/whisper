@@ -227,3 +227,37 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 		log.Logger.Error(ctx, errors.New(err))
 	}
 }
+
+func GetCurrentLOLVersion(ctx *context.Context) string {
+	equipDao := dao.NewLOLEquipmentDAO()
+	result, err := equipDao.Find([]string{
+		"max(ctime) as ctime",
+		"fileTime",
+		"version",
+	}, nil)
+	if err != nil {
+		log.Logger.Error(ctx, errors.New(err))
+		return ""
+	}
+	if result != nil {
+		return result[0].Version
+	}
+	return ""
+}
+
+func GetCurrentLOLMVersion(ctx *context.Context) string {
+	equipDao := dao.NewLOLMEquipmentDAO()
+	result, err := equipDao.Find([]string{
+		"max(ctime) as ctime",
+		"fileTime",
+		"version",
+	}, nil)
+	if err != nil {
+		log.Logger.Error(ctx, errors.New(err))
+		return ""
+	}
+	if result != nil {
+		return result[0].Version
+	}
+	return ""
+}
