@@ -2,7 +2,8 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     <title>LOL-SearchBox</title>
     <!-- 请勿在项目正式环境中引用该 layui.css 地址 -->
     <link href="/css/layui.css" rel="stylesheet">
@@ -14,7 +15,7 @@
     Tips: 当前端游版本为 {[{ .lol_version }]}，手游版本为 {[{ .lolm_version }]}
 </div>
 
-<form action="###" id="search-box">
+<form class="layui-form" id="search-box">
     <div class="layui-fluid layui-form">
         <div class="layui-input-wrap">
             <input name="key_words" type="text" lay-affix="search" lay-filter="search" lay-options="{split: true}"
@@ -55,14 +56,15 @@
         <div id="view"></div>
 
     </div>
-</form>
 
+    <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="demo-login">登录</button>
+</form>
 
 <script src="/js/layui.js"></script>
 <script id="TPL" type="text/html">
     <div class="search-result-tips layui-border-box layui-font-13">{{= d.tips }}</div>
     <div class="layui-timeline">
-        {{#  layui.each(d.lists, function(index, item){ }}
+        {{# layui.each(d.lists, function(index, item){ }}
         <div class="layui-timeline-item">
             <i class="layui-icon layui-timeline-axis"> <i class="layui-icon layui-icon-face-smile"></i> </i>
             <div class="layui-timeline-content layui-text">
@@ -83,15 +85,41 @@
                 </div>
             </div>
         </div>
-        {{#  }); }}
+        {{# }); }}
     </div>
 </script>
 <script>
     layui.use(function () {
         let $ = layui.$;
         let form = layui.form;
+
         // 输入框点缀事件 - 搜索示例
-        form.on('input-affix(search)', function (data) {
+        form.on('input-affix(search)', query);
+        form.on('radio(platform)', function (data) {
+            let elem = data.elem; // 输入框
+            let platform = elem.value; // 输入框的值
+            if (platform == 1) {
+                $(".maps-cond-ext").prop("disabled", true)//禁用
+                $(".maps-cond-ext").next(".layui-form-checkbox").addClass(".layui-checkbox-disbaled layui-disabled");
+            } else {
+                $(".maps-cond-ext").prop("disabled", false)
+                $(".maps-cond-ext").next(".layui-form-checkbox").removeClass("layui-checkbox-disbaled layui-disabled");
+            }
+            form.render();
+        });
+
+        // 提交事件
+        form.on('submit(demo-login)', function(data){
+            var field = data.field; // 获取表单字段值
+            // 显示填写结果，仅作演示用
+            layer.alert(JSON.stringify(field), {
+                title: '当前填写的字段值'
+            });
+            // 此处可执行 Ajax 等操作
+            // …
+            return false; // 阻止默认 form 跳转
+        });
+        function query(data) {
             let elem = data.elem; // 输入框
             let kw = elem.value; // 输入框的值
             if (!kw) {
@@ -133,7 +161,7 @@
                         let getTpl = document.getElementById('TPL').innerHTML; // 获取模板字符
                         let elemView = document.getElementById('view'); // 视图对象
                         // 渲染并输出结果
-                        laytpl(getTpl).render(res.data, function(str){
+                        laytpl(getTpl).render(res.data, function (str) {
                             elemView.innerHTML = str;
                         });
 
@@ -143,21 +171,9 @@
                     layer.msg("error");
                 }
             })
-        });
-
-        form.on('radio(platform)', function (data) {
-            let elem = data.elem; // 输入框
-            let platform = elem.value; // 输入框的值
-            if (platform == 1) {
-                $(".maps-cond-ext").prop("disabled", true)//禁用
-                $(".maps-cond-ext").next(".layui-form-checkbox").addClass(".layui-checkbox-disbaled layui-disabled");
-            } else {
-                $(".maps-cond-ext").prop("disabled", false)
-                $(".maps-cond-ext").next(".layui-form-checkbox").removeClass("layui-checkbox-disbaled layui-disabled");
-            }
-            form.render();
-        });
+        }
     });
+
 
 </script>
 </body>

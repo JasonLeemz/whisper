@@ -42,11 +42,7 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 	equipDao := dao.NewLOLEquipmentDAO()
 
 	// 判断库中是否存在最新版本，如果存在就不更新
-	result, err := equipDao.Find([]string{
-		"max(ctime) as ctime",
-		"fileTime",
-		"version",
-	}, nil)
+	result, err := equipDao.GetLOLEquipmentMaxVersion()
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 		return
@@ -54,9 +50,9 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 
 	if result != nil {
 		log.Logger.Info(ctx,
-			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result[0].Version, result[0].FileTime, equip.Version, equip.FileTime),
+			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result.Version, result.FileTime, equip.Version, equip.FileTime),
 		)
-		x, err := common.CompareTime(result[0].FileTime, equip.FileTime)
+		x, err := common.CompareTime(result.FileTime, equip.FileTime)
 		if err != nil {
 			log.Logger.Error(ctx, errors.New(err))
 			return
@@ -94,7 +90,8 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 
 		for _, m := range item.Maps {
 			eqModel := tmp
-			eqModel.Maps = m
+			mt := m
+			eqModel.Maps = mt
 
 			equips = append(equips, &eqModel)
 		}
@@ -123,19 +120,19 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 
 	}
 
-	// 记录英雄适配装备表
-	hsDao := dao.NewHeroesSuitDAO()
-	_, err = hsDao.Add(heroesSuit)
-	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
-	}
+	// TODO 记录英雄适配装备表
+	//hsDao := dao.NewHeroesSuitDAO()
+	//_, err = hsDao.Add(heroesSuit)
+	//if err != nil {
+	//	log.Logger.Error(ctx, errors.New(err))
+	//}
 
-	// 记录装备所属类型表
-	etDao := dao.NewEquipTypeDAO()
-	_, err = etDao.Add(equipType)
-	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
-	}
+	// TODO 记录装备所属类型表
+	//etDao := dao.NewEquipTypeDAO()
+	//_, err = etDao.Add(equipType)
+	//if err != nil {
+	//	log.Logger.Error(ctx, errors.New(err))
+	//}
 
 	// 记录装备信息
 	_, err = equipDao.Add(equips)
@@ -148,11 +145,7 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 	equipDao := dao.NewLOLMEquipmentDAO()
 
 	// 判断库中是否存在最新版本，如果存在就不更新
-	result, err := equipDao.Find([]string{
-		"max(ctime) as ctime",
-		"fileTime",
-		"version",
-	}, nil)
+	result, err := equipDao.GetLOLMEquipmentMaxVersion()
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 		return
@@ -160,9 +153,9 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 
 	if result != nil {
 		log.Logger.Info(ctx,
-			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result[0].Version, result[0].FileTime, equip.Version, equip.FileTime),
+			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result.Version, result.FileTime, equip.Version, equip.FileTime),
 		)
-		x, err := common.CompareTime(result[0].FileTime, equip.FileTime)
+		x, err := common.CompareTime(result.FileTime, equip.FileTime)
 		if err != nil {
 			log.Logger.Error(ctx, errors.New(err))
 			return
@@ -231,9 +224,7 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 func GetCurrentLOLVersion(ctx *context.Context) string {
 	equipDao := dao.NewLOLEquipmentDAO()
 	result, err := equipDao.Find([]string{
-		"max(ctime) as ctime",
-		"fileTime",
-		"version",
+		"max(version) as version",
 	}, nil)
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
@@ -248,9 +239,7 @@ func GetCurrentLOLVersion(ctx *context.Context) string {
 func GetCurrentLOLMVersion(ctx *context.Context) string {
 	equipDao := dao.NewLOLMEquipmentDAO()
 	result, err := equipDao.Find([]string{
-		"max(ctime) as ctime",
-		"fileTime",
-		"version",
+		"max(version) as version",
 	}, nil)
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))

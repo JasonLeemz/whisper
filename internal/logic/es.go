@@ -97,12 +97,12 @@ func mysql2es(ctx *context.Context, tblName string) error {
 	switch tblName {
 	case m_equipModel.TableName():
 		d := dao.NewLOLMEquipmentDAO()
-		version, err := d.GetLOLMEquipmentMaxVersion()
+		rs, err := d.GetLOLMEquipmentMaxVersion()
 		if err != nil {
 			return err
 		}
 
-		equipment, err := d.GetLOLMEquipment(version)
+		equipment, err := d.GetLOLMEquipment(rs.Version)
 		if err != nil {
 			return err
 		}
@@ -140,12 +140,12 @@ func mysql2es(ctx *context.Context, tblName string) error {
 		}()
 	case equipModel.TableName():
 		d := dao.NewLOLEquipmentDAO()
-		version, err := d.GetLOLEquipmentMaxVersion()
+		rs, err := d.GetLOLEquipmentMaxVersion()
 		if err != nil {
 			return err
 		}
 
-		equipment, err := d.GetLOLEquipment(version)
+		equipment, err := d.GetLOLEquipment(rs.Version)
 		if err != nil {
 			return err
 		}

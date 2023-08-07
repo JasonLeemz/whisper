@@ -9,7 +9,7 @@ import (
 type LOLEquipment interface {
 	Add(data []*model.LOLEquipment) (int64, error)
 	Find(query []string, cond map[string]interface{}) ([]*model.LOLEquipment, error)
-	GetLOLEquipmentMaxVersion() (string, error)
+	GetLOLEquipmentMaxVersion() (*model.LOLEquipment, error)
 	GetLOLEquipment(version string) ([]*model.LOLEquipment, error)
 }
 
@@ -36,20 +36,11 @@ func (dao *LOLEquipmentDAO) Add(equips []*model.LOLEquipment) (int64, error) {
 	return result.RowsAffected, result.Error
 }
 
-func (dao *LOLEquipmentDAO) GetLOLEquipmentMaxVersion() (string, error) {
-	result, err := dao.Find([]string{
-		"max(ctime) as ctime",
-		"fileTime",
-		"version",
-	}, nil)
-	if err != nil {
-		return "", err
-	}
-	if result == nil {
-		return "", nil
-	}
-
-	return result[0].Version, nil
+func (dao *LOLEquipmentDAO) GetLOLEquipmentMaxVersion() (*model.LOLEquipment, error) {
+	tx := dao.db.Model(&model.LOLEquipment{})
+	var result model.LOLEquipment
+	tx = tx.Order("version desc").First(&result)
+	return &result, tx.Error
 }
 
 func (dao *LOLEquipmentDAO) GetLOLEquipment(version string) ([]*model.LOLEquipment, error) {
@@ -75,7 +66,7 @@ func NewLOLEquipmentDAO() *LOLEquipmentDAO {
 type LOLMEquipment interface {
 	Add(equips []*model.LOLMEquipment) (int64, error)
 	Find(query []string, cond map[string]interface{}) ([]*model.LOLMEquipment, error)
-	GetLOLMEquipmentMaxVersion() (string, error)
+	GetLOLMEquipmentMaxVersion() (*model.LOLMEquipment, error)
 	GetLOLMEquipment(version string) ([]*model.LOLMEquipment, error)
 }
 
@@ -100,20 +91,11 @@ func (dao *LOLMEquipmentDAO) Add(equips []*model.LOLMEquipment) (int64, error) {
 	result := dao.db.Create(equips)
 	return result.RowsAffected, result.Error
 }
-func (dao *LOLMEquipmentDAO) GetLOLMEquipmentMaxVersion() (string, error) {
-	result, err := dao.Find([]string{
-		"max(ctime) as ctime",
-		"fileTime",
-		"version",
-	}, nil)
-	if err != nil {
-		return "", err
-	}
-	if result == nil {
-		return "", nil
-	}
-
-	return result[0].Version, nil
+func (dao *LOLMEquipmentDAO) GetLOLMEquipmentMaxVersion() (*model.LOLMEquipment, error) {
+	tx := dao.db.Model(&model.LOLMEquipment{})
+	var result model.LOLMEquipment
+	tx = tx.Order("version desc").First(&result)
+	return &result, tx.Error
 }
 func (dao *LOLMEquipmentDAO) GetLOLMEquipment(version string) ([]*model.LOLMEquipment, error) {
 	// 查当前版本所有数据
