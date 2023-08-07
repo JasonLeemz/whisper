@@ -13,6 +13,5 @@ func SearchBox(ctx *context.Context) {
 	ctx.Render("index.html", map[string]interface{}{
 		"lol_version":  v1,
 		"lolm_version": v2,
-		"total_num":    1024,
 	})
 }

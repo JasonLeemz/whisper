@@ -21,6 +21,7 @@ func main() {
 	router := gin.New()
 	router.Use(gin.Logger(), gin.Recovery())
 	router.Use(middleware.Trace())
+	router.Delims("{[{", "}]}")
 	router.LoadHTMLGlob("web/template/*")
 
 	page := router.Group("/")

@@ -11,7 +11,7 @@
 <body>
 
 <div class="body-tips layui-bg-green layui-font-16">
-    Tips: 当前端游版本为 {{ .lol_version }}，手游版本为 {{ .lolm_version }}
+    Tips: 当前端游版本为 {[{ .lol_version }]}，手游版本为 {[{ .lolm_version }]}
 </div>
 
 <form action="###" id="search-box">
@@ -52,167 +52,67 @@
             </div>
         </div>
 
-        <div class="search-result-tips layui-border-box layui-font-13">为您找到相关结果约{{ .total_num }}个</div>
-        <div class="layui-timeline">
-            <div class="layui-timeline-item">
-                <i class="layui-icon layui-timeline-axis"> <i class="layui-icon layui-icon-face-smile"></i> </i>
-                <div class="layui-timeline-content layui-text">
-                    <h4 class="layui-timeline-title">
-                        <div class="layui-inline img-wrap">
-                            <img src="https://game.gtimg.cn/images/lol/act/img/item/223033.png" alt="">
-                        </div>
-                        凡性的提醒
-                    </h4>
-                    <div>
-                        <span class="layui-badge layui-bg-gray">price:3000</span>
-                        <span class="layui-badge layui-bg-gray">sell:2100</span>
-                        <span class="layui-badge layui-bg-gray">total:3000</span>
-                        <span class="layui-badge layui-bg-gray">maps:斗魂竞技场</span>
-                    </div>
+        <div id="view"></div>
 
-                    <div class="layui-font-13 mainText">
-                        <mainText>
-                            <stats>
-                                <buffedStat>45</buffedStat>
-                                攻击力<br>
-                                <buffedStat>35%</buffedStat>
-                                护甲穿透<br>
-                                <attention>20%</attention>
-                                暴击几率
-                            </stats>
-                            <br>
-
-                            <passive>脓毒：</passive>
-                            对敌方英雄造成物理伤害时会施加
-                            <status>40%重伤</status>
-                            效果，持续3秒。<br><br>
-                            <rules>
-                                <status>重伤</status>
-                                会降低治疗效果和生命回复的效能。
-                            </rules>
-                        </mainText>
-                        <br>
-                    </div>
-
-                </div>
-            </div>
-            <div class="layui-timeline-item">
-                <i class="layui-icon layui-timeline-axis"> <i class="layui-icon layui-icon-face-smile"></i> </i>
-                <div class="layui-timeline-content layui-text">
-                    <h4 class="layui-timeline-title">
-                        <div class="layui-inline img-wrap">
-                            <img src="https://game.gtimg.cn/images/lol/act/img/item/223033.png" alt="">
-                        </div>
-                        凡性的提醒
-                    </h4>
-                    <div>
-                        <span class="layui-badge layui-bg-gray">price:3000</span>
-                        <span class="layui-badge layui-bg-gray">sell:2100</span>
-                        <span class="layui-badge layui-bg-gray">total:3000</span>
-                        <span class="layui-badge layui-bg-gray">maps:斗魂竞技场</span>
-                    </div>
-
-                    <div class="layui-font-13 mainText">
-                        <mainText>
-                            <stats>
-                                <buffedStat>45</buffedStat>
-                                攻击力<br>
-                                <buffedStat>35%</buffedStat>
-                                护甲穿透<br>
-                                <attention>20%</attention>
-                                暴击几率
-                            </stats>
-                            <br>
-
-                            <passive>脓毒：</passive>
-                            对敌方英雄造成物理伤害时会施加
-                            <status>40%重伤</status>
-                            效果，持续3秒。<br><br>
-                            <rules>
-                                <status>重伤</status>
-                                会降低治疗效果和生命回复的效能。
-                            </rules>
-                        </mainText>
-                        <br>
-                    </div>
-
-                </div>
-            </div>
-            <div class="layui-timeline-item">
-                <i class="layui-icon layui-timeline-axis"> <i class="layui-icon layui-icon-face-smile"></i> </i>
-                <div class="layui-timeline-content layui-text">
-                    <h4 class="layui-timeline-title">
-                        <div class="layui-inline img-wrap">
-                            <img src="https://game.gtimg.cn/images/lol/act/img/item/223033.png" alt="">
-                        </div>
-                        凡性的提醒
-                    </h4>
-                    <div>
-                        <span class="layui-badge layui-bg-gray">price:3000</span>
-                        <span class="layui-badge layui-bg-gray">sell:2100</span>
-                        <span class="layui-badge layui-bg-gray">total:3000</span>
-                        <span class="layui-badge layui-bg-gray">maps:斗魂竞技场</span>
-                    </div>
-
-                    <div class="layui-font-13 mainText">
-                        <mainText>
-                            <stats>
-                                <buffedStat>45</buffedStat>
-                                攻击力<br>
-                                <buffedStat>35%</buffedStat>
-                                护甲穿透<br>
-                                <attention>20%</attention>
-                                暴击几率
-                            </stats>
-                            <br>
-
-                            <passive>脓毒：</passive>
-                            对敌方英雄造成物理伤害时会施加
-                            <status>40%重伤</status>
-                            效果，持续3秒。<br><br>
-                            <rules>
-                                <status>重伤</status>
-                                会降低治疗效果和生命回复的效能。
-                            </rules>
-                        </mainText>
-                        <br>
-                    </div>
-
-                </div>
-            </div>
-        </div>
     </div>
 </form>
 
 
 <script src="/js/layui.js"></script>
+<script id="TPL" type="text/html">
+    <div class="search-result-tips layui-border-box layui-font-13">{{= d.tips }}</div>
+    <div class="layui-timeline">
+        {{#  layui.each(d.lists, function(index, item){ }}
+        <div class="layui-timeline-item">
+            <i class="layui-icon layui-timeline-axis"> <i class="layui-icon layui-icon-face-smile"></i> </i>
+            <div class="layui-timeline-content layui-text">
+                <h4 class="layui-timeline-title">
+                    <div class="layui-inline img-wrap">
+                        <img src="{{= item.iconPath }}" alt="">
+                    </div>
+                    {{= item.name }}
+                </h4>
+                <div>
+                    <span class="layui-badge layui-bg-gray">price:{{= item.price }}</span>
+                    <span class="layui-badge layui-bg-gray">sell:{{= item.sell }}</span>
+                    <span class="layui-badge layui-bg-gray">total:{{= item.total }}</span>
+                    <span class="layui-badge layui-bg-gray">maps:{{= item.maps }}</span>
+                </div>
+                <div class="layui-font-13 mainText">
+                    {{- item.description }}
+                </div>
+            </div>
+        </div>
+        {{#  }); }}
+    </div>
+</script>
 <script>
     layui.use(function () {
-        var $ = layui.$;
-        var form = layui.form;
+        let $ = layui.$;
+        let form = layui.form;
         // 输入框点缀事件 - 搜索示例
         form.on('input-affix(search)', function (data) {
-            var elem = data.elem; // 输入框
-            var kw = elem.value; // 输入框的值
+            let elem = data.elem; // 输入框
+            let kw = elem.value; // 输入框的值
             if (!kw) {
                 layer.msg('请输入搜索内容');
                 return elem.focus()
             }
 
             // 请求数据
-            var category = [];
+            let category = [];
             $('input[name="category"]:checked').each(function () {
                 category.push($(this).val().split(",")[0]);
                 category.push($(this).val().split(",")[1]);
             });
-            var maps = [];
+            let maps = [];
             $('input[name="map"]:checked').each(function () {
                 if ($(this).prop("disabled") === true) {
                     return
                 }
                 maps.push($(this).val());
             });
-            var req = {
+            let req = {
                 "key_words": kw,
                 "platform": $('input[name="platform"]:checked').val(),
                 "category": category,
@@ -228,7 +128,15 @@
                     if (res.err_no !== 0) {
                         layer.msg(res.err_msg);
                     } else {
-                        layer.msg(res.data.tips);
+                        let laytpl = layui.laytpl;
+                        // 渲染
+                        let getTpl = document.getElementById('TPL').innerHTML; // 获取模板字符
+                        let elemView = document.getElementById('view'); // 视图对象
+                        // 渲染并输出结果
+                        laytpl(getTpl).render(res.data, function(str){
+                            elemView.innerHTML = str;
+                        });
+
                     }
                 },
                 error: function () {
@@ -238,8 +146,8 @@
         });
 
         form.on('radio(platform)', function (data) {
-            var elem = data.elem; // 输入框
-            var platform = elem.value; // 输入框的值
+            let elem = data.elem; // 输入框
+            let platform = elem.value; // 输入框的值
             if (platform == 1) {
                 $(".maps-cond-ext").prop("disabled", true)//禁用
                 $(".maps-cond-ext").next(".layui-form-checkbox").addClass(".layui-checkbox-disbaled layui-disabled");
@@ -250,6 +158,7 @@
             form.render();
         });
     });
+
 </script>
 </body>
 </html>
