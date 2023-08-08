@@ -18,9 +18,10 @@
 <form class="layui-form" id="search-box">
     <div class="layui-fluid layui-form">
         <div class="layui-input-wrap">
-            <input name="key_words" type="text" lay-affix="search" lay-filter="search" lay-options="{split: true}"
-                   placeholder="搜索…"
-                   class="layui-input">
+            <input name="key_words" type="text" placeholder="搜索…" class="layui-input">
+            <button class="layui-btn search-button" type="submit">
+                <i class="layui-icon layui-icon-search"></i>
+            </button>
         </div>
 
         <div class="blank"></div>
@@ -57,7 +58,7 @@
 
     </div>
 
-    <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="demo-login">登录</button>
+<!--    <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="demo-login">登录</button>-->
 </form>
 
 <script src="/js/layui.js"></script>
@@ -93,41 +94,16 @@
         let $ = layui.$;
         let form = layui.form;
 
-        // 输入框点缀事件 - 搜索示例
-        form.on('input-affix(search)', query);
-        form.on('radio(platform)', function (data) {
-            let elem = data.elem; // 输入框
-            let platform = elem.value; // 输入框的值
-            if (platform == 1) {
-                $(".maps-cond-ext").prop("disabled", true)//禁用
-                $(".maps-cond-ext").next(".layui-form-checkbox").addClass(".layui-checkbox-disbaled layui-disabled");
-            } else {
-                $(".maps-cond-ext").prop("disabled", false)
-                $(".maps-cond-ext").next(".layui-form-checkbox").removeClass("layui-checkbox-disbaled layui-disabled");
-            }
-            form.render();
-        });
+        // 任意位置按钮触发提交
+        $('#search-box').on('submit', function(event){
+            event.preventDefault();
 
-        // 提交事件
-        form.on('submit(demo-login)', function(data){
-            var field = data.field; // 获取表单字段值
-            // 显示填写结果，仅作演示用
-            layer.alert(JSON.stringify(field), {
-                title: '当前填写的字段值'
-            });
-            // 此处可执行 Ajax 等操作
-            // …
-            return false; // 阻止默认 form 跳转
-        });
-        function query(data) {
-            let elem = data.elem; // 输入框
-            let kw = elem.value; // 输入框的值
-            if (!kw) {
+            let key_words = $('input[name="key_words"]').val()
+            if (!key_words) {
                 layer.msg('请输入搜索内容');
                 return elem.focus()
             }
 
-            // 请求数据
             let category = [];
             $('input[name="category"]:checked').each(function () {
                 category.push($(this).val().split(",")[0]);
@@ -141,11 +117,30 @@
                 maps.push($(this).val());
             });
             let req = {
-                "key_words": kw,
+                "key_words": key_words,
                 "platform": $('input[name="platform"]:checked').val(),
                 "category": category,
                 "map": maps,
             };
+
+            // 请求数据
+            render(req)
+        });
+
+        form.on('radio(platform)', function (data) {
+            let elem = data.elem; // 输入框
+            let platform = elem.value; // 输入框的值
+            if (platform == 1) {
+                $(".maps-cond-ext").prop("disabled", true)//禁用
+                $(".maps-cond-ext").next(".layui-form-checkbox").addClass(".layui-checkbox-disbaled layui-disabled");
+            } else {
+                $(".maps-cond-ext").prop("disabled", false)
+                $(".maps-cond-ext").next(".layui-form-checkbox").removeClass("layui-checkbox-disbaled layui-disabled");
+            }
+            form.render();
+        });
+
+        function render(req) {
             $.ajax({
                 url: "/query",
                 method: "POST",

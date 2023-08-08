@@ -90,8 +90,7 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 
 		for _, m := range item.Maps {
 			eqModel := tmp
-			mt := m
-			eqModel.Maps = mt
+			eqModel.Maps = m
 
 			equips = append(equips, &eqModel)
 		}
