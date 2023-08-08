@@ -9,19 +9,19 @@ import (
 	"whisper/pkg/es"
 )
 
-type ESEquipment interface {
+type ESSkill interface {
 	CreateIndex(ctx *context.Context) error
-	Equipment2ES(ctx *context.Context, data []*model.ESEquipment) error
+	Heroes2ES(ctx *context.Context, data []*model.ESSkill) error
 }
 
-type ESEquipmentDAO struct {
+type ESSkillDAO struct {
 	esClient *elastic.Client
 }
 
-func (dao *ESEquipmentDAO) CreateIndex(ctx *context.Context) error {
+func (dao *ESSkillDAO) CreateIndex(ctx *context.Context) error {
 
 	// 索引是否存在
-	var esModel model.ESEquipment
+	var esModel model.ESSkill
 	idxName := esModel.GetIndexName()
 
 	exists, err := es.ESClient.IndexExists(idxName).Do(ctx)
@@ -41,8 +41,8 @@ func (dao *ESEquipmentDAO) CreateIndex(ctx *context.Context) error {
 	return nil
 }
 
-func (dao *ESEquipmentDAO) Equipment2ES(ctx *context.Context, data []*model.ESEquipment) error {
-	var esModel model.ESEquipment
+func (dao *ESSkillDAO) Skill2ES(ctx *context.Context, data []*model.ESSkill) error {
+	var esModel model.ESSkill
 	idxName := esModel.GetIndexName()
 	// 导入数据
 	for _, e := range data {
@@ -55,8 +55,8 @@ func (dao *ESEquipmentDAO) Equipment2ES(ctx *context.Context, data []*model.ESEq
 	return nil
 }
 
-func NewESEquipmentDAO() *ESEquipmentDAO {
-	return &ESEquipmentDAO{
+func NewESSkillDAO() *ESSkillDAO {
+	return &ESSkillDAO{
 		esClient: es.ESClient,
 	}
 }

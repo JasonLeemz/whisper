@@ -30,7 +30,7 @@ func main() {
 		page.Static("js", "web/static/js")
 		page.Static("font", "web/static/font")
 		page.StaticFile("favicon.ico", "web/static/favicon.ico")
-		page.GET("/search_box", context.Handle(controller.SearchBox))
+		page.GET("/", context.Handle(controller.SearchBox))
 	}
 
 	lol := router.Group("/lol")

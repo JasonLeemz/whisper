@@ -38,21 +38,17 @@ func QueryRune(ctx *context.Context, platform int) (any, *errors.Error) {
 func reloadRuneForLOL(ctx *context.Context, r *dto.LOLRune) {
 	// 判断库中是否存在最新版本，如果存在就不更新
 	runeDAO := dao.NewLOLRuneDAO()
-	result, err := runeDAO.Find([]string{
-		"max(ctime) as ctime",
-		"fileTime",
-		"version",
-	}, nil)
+	result, err := runeDAO.GetLOLRuneMaxVersion()
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 		return
 	}
 
-	if len(result) > 0 {
+	if result != nil {
 		log.Logger.Info(ctx,
-			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result[0].Version, result[0].FileTime, r.Version, r.FileTime),
+			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result.Version, result.FileTime, r.Version, r.FileTime),
 		)
-		x, err := common.CompareTime(result[0].FileTime, r.FileTime)
+		x, err := common.CompareTime(result.FileTime, r.FileTime)
 		if err != nil {
 			log.Logger.Error(ctx, errors.New(err))
 			return
@@ -93,21 +89,17 @@ func reloadRuneForLOL(ctx *context.Context, r *dto.LOLRune) {
 func reloadRuneForLOLM(ctx *context.Context, r *dto.LOLMRune) {
 	// 判断库中是否存在最新版本，如果存在就不更新
 	runeDAO := dao.NewLOLMRuneDAO()
-	result, err := runeDAO.Find([]string{
-		"max(ctime) as ctime",
-		"fileTime",
-		"version",
-	}, nil)
+	result, err := runeDAO.GetLOLMRuneMaxVersion()
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 		return
 	}
 
-	if len(result) > 0 {
+	if result != nil {
 		log.Logger.Info(ctx,
-			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result[0].Version, result[0].FileTime, r.Version, r.FileTime),
+			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result.Version, result.FileTime, r.Version, r.FileTime),
 		)
-		x, err := common.CompareTime(result[0].FileTime, r.FileTime)
+		x, err := common.CompareTime(result.FileTime, r.FileTime)
 		if err != nil {
 			log.Logger.Error(ctx, errors.New(err))
 			return

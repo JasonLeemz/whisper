@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"errors"
 	"gorm.io/gorm"
 	"whisper/internal/model"
 	"whisper/pkg/mysql"
@@ -40,6 +41,9 @@ func (dao *LOLEquipmentDAO) GetLOLEquipmentMaxVersion() (*model.LOLEquipment, er
 	tx := dao.db.Model(&model.LOLEquipment{})
 	var result model.LOLEquipment
 	tx = tx.Order("version desc").First(&result)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	return &result, tx.Error
 }
 
@@ -95,6 +99,9 @@ func (dao *LOLMEquipmentDAO) GetLOLMEquipmentMaxVersion() (*model.LOLMEquipment,
 	tx := dao.db.Model(&model.LOLMEquipment{})
 	var result model.LOLMEquipment
 	tx = tx.Order("version desc").First(&result)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	return &result, tx.Error
 }
 func (dao *LOLMEquipmentDAO) GetLOLMEquipment(version string) ([]*model.LOLMEquipment, error) {

@@ -39,21 +39,17 @@ func reloadSkillForLOL(ctx *context.Context, s *dto.LOLSkill) {
 
 	// 判断库中是否存在最新版本，如果存在就不更新
 	skillDAO := dao.NewLOLSkillDAO()
-	result, err := skillDAO.Find([]string{
-		"max(ctime) as ctime",
-		"fileTime",
-		"version",
-	}, nil)
+	result, err := skillDAO.GetLOLSkillMaxVersion()
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 		return
 	}
 
-	if len(result) > 0 {
+	if result != nil {
 		log.Logger.Info(ctx,
-			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result[0].Version, result[0].FileTime, s.Version, s.FileTime),
+			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result.Version, result.FileTime, s.Version, s.FileTime),
 		)
-		x, err := common.CompareTime(result[0].FileTime, s.FileTime)
+		x, err := common.CompareTime(result.FileTime, s.FileTime)
 		if err != nil {
 			log.Logger.Error(ctx, errors.New(err))
 			return
@@ -69,6 +65,9 @@ func reloadSkillForLOL(ctx *context.Context, s *dto.LOLSkill) {
 	sss := make([]*model.LOLSkill, 0, len(s.SummonerSkill))
 
 	for _, ss := range s.SummonerSkill {
+		if ss.Name == "" {
+			continue
+		}
 		tmp := model.LOLSkill{
 			Name:          ss.Name,
 			Description:   ss.Description,
@@ -91,21 +90,17 @@ func reloadSkillForLOL(ctx *context.Context, s *dto.LOLSkill) {
 func reloadSkillForLOLM(ctx *context.Context, s *dto.LOLMSkill) {
 	// 判断库中是否存在最新版本，如果存在就不更新
 	skillDAO := dao.NewLOLMSkillDAO()
-	result, err := skillDAO.Find([]string{
-		"max(ctime) as ctime",
-		"fileTime",
-		"version",
-	}, nil)
+	result, err := skillDAO.GetLOLMSkillMaxVersion()
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 		return
 	}
 
-	if len(result) > 0 {
+	if result != nil {
 		log.Logger.Info(ctx,
-			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result[0].Version, result[0].FileTime, s.Version, s.FileTime),
+			fmt.Sprintf("DB Version[%s] fileTime[%s],Data Version:[%s] fileTime[%s]", result.Version, result.FileTime, s.Version, s.FileTime),
 		)
-		x, err := common.CompareTime(result[0].FileTime, s.FileTime)
+		x, err := common.CompareTime(result.FileTime, s.FileTime)
 		if err != nil {
 			log.Logger.Error(ctx, errors.New(err))
 			return
