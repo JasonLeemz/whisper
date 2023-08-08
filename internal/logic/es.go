@@ -2,6 +2,8 @@ package logic
 
 import (
 	"encoding/json"
+	errors2 "errors"
+	"fmt"
 	"strconv"
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
@@ -17,27 +19,35 @@ import (
 type SearchParams struct {
 	KeyWords string   `json:"key_words"`
 	Platform string   `json:"platform,omitempty"`
-	Category []string `json:"category,omitempty"`
+	Category string   `json:"category,omitempty"`
+	Way      []string `json:"way,omitempty"`
 	Map      []string `json:"map,omitempty"`
 }
 
-func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsEquipHits, error) {
+func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, error) {
+	indexName := p.Category
+	if indexName == "" {
+		return nil, errors2.New("indexName is nil")
+	}
 
 	query := elastic.NewBoolQuery()
 
 	// 按名字介绍
-	cate := make([]string, 0)
-	for _, m := range p.Category {
-		cate = append(cate, m)
+	way := make([]string, 0)
+	for _, m := range p.Way {
+		way = append(way, m)
 	}
-	query = query.Filter(elastic.NewMultiMatchQuery(p.KeyWords, cate...))
+	query = query.Filter(elastic.NewMultiMatchQuery(p.KeyWords, way...))
 
+	equipModel := new(model.ESEquipment)
 	// 按地图
-	maps := make([]interface{}, 0)
-	for _, m := range p.Map {
-		maps = append(maps, m)
+	if indexName == equipModel.GetIndexName() {
+		maps := make([]interface{}, 0)
+		for _, m := range p.Map {
+			maps = append(maps, m)
+		}
+		query = query.Filter(elastic.NewTermsQuery("maps", maps...))
 	}
-	query = query.Filter(elastic.NewTermsQuery("maps", maps...))
 
 	// 端游or手游
 	query = query.Filter(elastic.NewTermQuery("platform", p.Platform))
@@ -45,17 +55,90 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsEquipHits, error
 	//query = query.Filter(elastic.NewRangeQuery("id").Gte(0))
 	//query = query.Filter(elastic.NewRangeQuery("id").Lte(9999999))
 
-	var esEquip model.ESEquipment
-	res, err := es.ESClient.Search().Index(esEquip.GetIndexName()).Query(query).From(0).Size(10).Do(ctx)
+	res, err := es.ESClient.Search().Index(indexName).Query(query).From(0).Size(10).Do(ctx)
 	if err != nil {
 		return nil, err
 	}
-	resp := common.EsEquipHits{}
+
+	resp := common.EsResultHits{}
 	data, _ := json.Marshal(res.Hits)
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
 		return nil, err
 	}
+
+	switch indexName {
+	case equipModel.GetIndexName():
+		for i, hit := range resp.Hits {
+			sourceStr, _ := json.Marshal(hit.TmpSource)
+			hitData := model.ESEquipment{}
+			err = json.Unmarshal(sourceStr, &hitData)
+			if err != nil {
+				return nil, err
+			}
+			resp.Hits[i].Source.Name = hitData.Name
+			resp.Hits[i].Source.IconPath = hitData.IconPath
+			resp.Hits[i].Source.Description = hitData.Description
+			resp.Hits[i].Source.Plaintext = hitData.Plaintext
+			resp.Hits[i].Source.Version = hitData.Version
+			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Price:%s", hitData.Price))
+			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Sell:%s", hitData.Sell))
+			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Total:%s", hitData.Total))
+			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Maps:%s", hitData.Maps))
+			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
+		}
+	case new(model.ESHeroes).GetIndexName():
+		for i, hit := range resp.Hits {
+			sourceStr, _ := json.Marshal(hit.TmpSource)
+			hitData := model.ESHeroes{}
+			err = json.Unmarshal(sourceStr, &hitData)
+			if err != nil {
+				return nil, err
+			}
+			resp.Hits[i].Source.Name = hitData.Name
+			resp.Hits[i].Source.IconPath = hitData.IconPath
+			resp.Hits[i].Source.Description = hitData.Description
+			resp.Hits[i].Source.Plaintext = hitData.Plaintext
+			resp.Hits[i].Source.Version = hitData.Version
+			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Price:%s", hitData.Price))
+			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Types:%s", hitData.Types))
+			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
+		}
+	case new(model.ESRune).GetIndexName():
+		for i, hit := range resp.Hits {
+			sourceStr, _ := json.Marshal(hit.TmpSource)
+			hitData := model.ESRune{}
+			err = json.Unmarshal(sourceStr, &hitData)
+			if err != nil {
+				return nil, err
+			}
+			resp.Hits[i].Source.Name = hitData.Name
+			resp.Hits[i].Source.IconPath = hitData.IconPath
+			resp.Hits[i].Source.Description = hitData.Description
+			resp.Hits[i].Source.Plaintext = hitData.Plaintext
+			resp.Hits[i].Source.Version = hitData.Version
+			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("主系:%s", hitData.StyleName))
+			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("SlotLabel:%s", hitData.SlotLabel))
+			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
+		}
+	case new(model.ESSkill).GetIndexName():
+		for i, hit := range resp.Hits {
+			sourceStr, _ := json.Marshal(hit.TmpSource)
+			hitData := model.ESSkill{}
+			err = json.Unmarshal(sourceStr, &hitData)
+			if err != nil {
+				return nil, err
+			}
+			resp.Hits[i].Source.Name = hitData.Name
+			resp.Hits[i].Source.IconPath = hitData.IconPath
+			resp.Hits[i].Source.Description = hitData.Description
+			resp.Hits[i].Source.Plaintext = hitData.Plaintext
+			resp.Hits[i].Source.Version = hitData.Version
+			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("冷却:%s", hitData.CoolDown))
+			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
+		}
+	}
+
 	return &resp, nil
 }
 
@@ -162,7 +245,7 @@ func heroesMProduce() error {
 			tmp := d
 			esData = append(esData, &model.ESHeroes{
 				ID:       tmp.HeroId + "_" + tmp.Version,
-				Name:     tmp.Name,
+				Name:     tmp.Title + " " + tmp.Name,
 				IconPath: tmp.Avatar,
 				Price:    "GoldPrice:" + tmp.Highlightprice + "/" + "CouponPrice:" + tmp.Couponprice,
 				//Description: tmp., TODO
@@ -199,10 +282,10 @@ func heroesProduce() error {
 			var esData []*model.ESHeroes
 			tmp := d
 			esData = append(esData, &model.ESHeroes{
-				ID:   tmp.HeroId + "_" + tmp.Version,
-				Name: tmp.Name,
-				//IconPath:   tmp., TODO
-				Price: "GoldPrice:" + tmp.GoldPrice + "/" + "CouponPrice:" + tmp.CouponPrice,
+				ID:       tmp.HeroId + "_" + tmp.Version,
+				Name:     tmp.Name + " " + tmp.Title,
+				IconPath: fmt.Sprintf("https://game.gtimg.cn/images/lol/act/img/skin/small%s000.jpg", tmp.HeroId),
+				Price:    "GoldPrice:" + tmp.GoldPrice + "/" + "CouponPrice:" + tmp.CouponPrice,
 				//Description: tmp., TODO
 				//Plaintext: "",
 				Keywords: tmp.Keywords + "," + tmp.Alias + "," + tmp.Title + "," + tmp.Camp,
@@ -499,7 +582,7 @@ func skillMProduce() error {
 				CoolDown:    tmp.Cd,
 				Version:     tmp.Version,
 				FileTime:    tmp.FileTime,
-				Platform:    strconv.Itoa(common.PlatformForLOL),
+				Platform:    strconv.Itoa(common.PlatformForLOLM),
 			})
 
 			// 放入阻塞队列

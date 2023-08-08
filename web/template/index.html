@@ -39,8 +39,16 @@
 
             <div id="search-tools-cond">
                 <div class="layui-form">
-                    <input type="checkbox" name="category" value="name,keywords" title="按名字" checked>
-                    <input type="checkbox" name="category" value="description,plaintext" title="按介绍" checked>
+                    <input type="radio" lay-filter="category" name="category" value="lol_equipment" title="装备"
+                           checked>
+                    <input type="radio" lay-filter="category" name="category" value="lol_heroes" title="英雄">
+                    <input type="radio" lay-filter="category" name="category" value="lol_rune" title="符文">
+                    <input type="radio" lay-filter="category" name="category" value="lol_skill" title="召唤师技能">
+                </div>
+
+                <div class="layui-form">
+                    <input type="checkbox" name="way" value="name,keywords" title="按名字" checked>
+                    <input type="checkbox" name="way" value="description,plaintext" title="按介绍" checked>
                 </div>
 
                 <div class="layui-form search-map">
@@ -58,7 +66,7 @@
 
     </div>
 
-<!--    <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="demo-login">登录</button>-->
+    <!--    <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="demo-login">登录</button>-->
 </form>
 
 <script src="/js/layui.js"></script>
@@ -69,17 +77,17 @@
         <div class="layui-timeline-item">
             <i class="layui-icon layui-timeline-axis"> <i class="layui-icon layui-icon-tips"></i> </i>
             <div class="layui-timeline-content layui-text">
-                <h4 class="layui-timeline-title">
+                <h4 class="layui-timeline-title layui-inline">
                     <div class="layui-inline img-wrap">
                         <img src="{{= item.iconPath }}" alt="">
                     </div>
                     {{= item.name }}
                 </h4>
                 <div>
-                    <span class="layui-badge layui-bg-gray">price:{{= item.price }}</span>
-                    <span class="layui-badge layui-bg-gray">sell:{{= item.sell }}</span>
-                    <span class="layui-badge layui-bg-gray">total:{{= item.total }}</span>
-                    <span class="layui-badge layui-bg-gray">maps:{{= item.maps }}</span>
+                    {{# layui.each(item.tags, function(idx, tag){ }}
+                    <span class="layui-badge layui-bg-gray">{{= tag }}</span>
+                    {{# }); }}
+
                 </div>
                 <div class="layui-font-13 mainText">
                     {{- item.description }}
@@ -95,7 +103,7 @@
         let form = layui.form;
 
         // 任意位置按钮触发提交
-        $('#search-box').on('submit', function(event){
+        $('#search-box').on('submit', function (event) {
             event.preventDefault();
 
             let key_words = $('input[name="key_words"]').val()
@@ -104,10 +112,10 @@
                 return elem.focus()
             }
 
-            let category = [];
-            $('input[name="category"]:checked').each(function () {
-                category.push($(this).val().split(",")[0]);
-                category.push($(this).val().split(",")[1]);
+            let way = [];
+            $('input[name="way"]:checked').each(function () {
+                way.push($(this).val().split(",")[0]);
+                way.push($(this).val().split(",")[1]);
             });
             let maps = [];
             $('input[name="map"]:checked').each(function () {
@@ -119,7 +127,8 @@
             let req = {
                 "key_words": key_words,
                 "platform": $('input[name="platform"]:checked').val(),
-                "category": category,
+                "category": $('input[name="category"]:checked').val(),
+                "way": way,
                 "map": maps,
             };
 

@@ -10,7 +10,8 @@ import (
 type ReqQuery struct {
 	KeyWords string   `json:"key_words" form:"key_words"`
 	Platform string   `json:"platform,omitempty" form:"platform,omitempty"`
-	Category []string `json:"category,omitempty" form:"category,omitempty"`
+	Category string   `json:"category,omitempty" form:"category,omitempty"`
+	Way      []string `json:"way,omitempty" form:"way,omitempty"`
 	Map      []string `json:"map,omitempty" form:"map,omitempty"`
 }
 
@@ -20,14 +21,11 @@ type RespQuery struct {
 }
 
 type list struct {
-	Name        string `json:"name,omitempty"`
-	IconPath    string `json:"iconPath,omitempty"`
-	Price       string `json:"price,omitempty"`
-	Description string `json:"description,omitempty"`
-	Plaintext   string `json:"plaintext,omitempty"`
-	Sell        string `json:"sell,omitempty"`
-	Total       string `json:"total,omitempty"`
-	Maps        string `json:"maps,omitempty"`
+	Name        string   `json:"name"`
+	IconPath    string   `json:"iconPath"`
+	Description string   `json:"description"`
+	Plaintext   string   `json:"plaintext"`
+	Tags        []string `json:"tags"`
 }
 
 func Query(ctx *context.Context) {
@@ -41,6 +39,7 @@ func Query(ctx *context.Context) {
 		KeyWords: req.KeyWords,
 		Platform: req.Platform,
 		Category: req.Category,
+		Way:      req.Way,
 		Map:      req.Map,
 	}
 
@@ -60,12 +59,9 @@ func Query(ctx *context.Context) {
 		t := list{
 			Name:        hit.Source.Name,
 			IconPath:    hit.Source.IconPath,
-			Price:       hit.Source.Price,
 			Description: hit.Source.Description,
 			Plaintext:   hit.Source.Plaintext,
-			Sell:        hit.Source.Sell,
-			Total:       hit.Source.Total,
-			Maps:        hit.Source.Maps,
+			Tags:        hit.Source.Tags,
 		}
 
 		resp.Lists = append(resp.Lists, &t)
