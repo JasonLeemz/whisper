@@ -32,12 +32,19 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 
 	query := elastic.NewBoolQuery()
 
+	// 高亮搜索结果
+	hl := elastic.NewHighlight()
+	fields := make([]*elastic.HighlighterField, 0, len(p.Way))
+
 	// 按名字介绍
 	way := make([]string, 0)
-	for _, m := range p.Way {
-		way = append(way, m)
+	for _, w := range p.Way {
+		way = append(way, w)
+		fields = append(fields, elastic.NewHighlighterField(w))
 	}
-	query = query.Filter(elastic.NewMultiMatchQuery(p.KeyWords, way...))
+	query = query.Must(elastic.NewMultiMatchQuery(p.KeyWords, way...))
+	hl = hl.Fields(fields...)
+	hl = hl.PreTags("<em>").PostTags("</em>")
 
 	equipModel := new(model.ESEquipment)
 	// 按地图
@@ -46,16 +53,25 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 		for _, m := range p.Map {
 			maps = append(maps, m)
 		}
-		query = query.Filter(elastic.NewTermsQuery("maps", maps...))
+		query = query.Must(elastic.NewTermsQuery("maps", maps...))
 	}
 
 	// 端游or手游
-	query = query.Filter(elastic.NewTermQuery("platform", p.Platform))
+	query = query.Must(elastic.NewTermQuery("platform", p.Platform))
 
 	//query = query.Filter(elastic.NewRangeQuery("id").Gte(0))
 	//query = query.Filter(elastic.NewRangeQuery("id").Lte(9999999))
 
-	res, err := es.ESClient.Search().Index(indexName).Query(query).From(0).Size(10).Do(ctx)
+	sortByScore := elastic.NewFieldSort("_score").Desc()
+
+	res, err := es.ESClient.Search().
+		Index(indexName).
+		Highlight(hl).
+		Query(query).
+		SortBy(sortByScore).
+		From(0).Size(10).
+		Pretty(true).
+		Do(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +201,7 @@ func mysql2es(ctx *context.Context, tblName string) error {
 	var m_heroesModel model.LOLMHeroes
 
 	var runeModel model.LOLRune
-	var m_runeModel model.LOLMHeroes
+	var m_runeModel model.LOLMRune
 
 	var skillModel model.LOLSkill
 	var m_skillModel model.LOLMSkill

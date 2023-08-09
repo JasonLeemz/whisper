@@ -54,6 +54,12 @@ body .body-tips {
 /*#search-tools-switch .layui-icon-right:before{*/
 /*    transform: rotate(180deg) !important;*/
 /*}*/
+
+.layui-timeline-content em {
+    font-style: inherit;
+    color: #ff5722 !important;
+}
+
 .layui-timeline-title img, .layui-timeline-title .img-wrap {
     width: 35px;
     height: 35px;

@@ -40,6 +40,23 @@ func Heroes(ctx *context.Context) {
 	ctx.Reply(equip, errors.New(err))
 }
 
+type ReqHeroesAttribute struct {
+	Platform int    `form:"platform" json:"platform" binding:"-"`
+	HeroID   string `form:"hero_id" json:"hero_id" binding:"required"`
+}
+
+func HeroesAttribute(ctx *context.Context) {
+
+	req := &ReqHeroesAttribute{}
+	if err := ctx.Bind(req); err != nil {
+		return
+	}
+
+	attr, err := logic.HeroAttribute(ctx, req.HeroID, req.Platform)
+
+	ctx.Reply(attr, errors.New(err))
+}
+
 type ReqRune struct {
 	Platform int `form:"platform" json:"platform" binding:"-"`
 }

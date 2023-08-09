@@ -12,12 +12,13 @@ type Total struct {
 }
 
 type Hits struct {
-	Score     float64     `json:"_score,omitempty"`
-	Index     string      `json:"_index,omitempty"`
-	Type      string      `json:"_type,omitempty"`
-	Id        string      `json:"_id,omitempty"`
-	TmpSource interface{} `json:"_source,omitempty"`
-	Source    Source      `json:"source,omitempty"`
+	Score     float64             `json:"_score,omitempty"`
+	Index     string              `json:"_index,omitempty"`
+	Type      string              `json:"_type,omitempty"`
+	Id        string              `json:"_id,omitempty"`
+	TmpSource interface{}         `json:"_source,omitempty"`
+	Highlight map[string][]string `json:"highlight,omitempty"`
+	Source    Source              `json:"source,omitempty"`
 }
 
 type Source struct {

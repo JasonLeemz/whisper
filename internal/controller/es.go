@@ -56,6 +56,16 @@ func Query(ctx *context.Context) {
 		resp.Tips += fmt.Sprintf(",篇幅有限只展示%d条", display)
 	}
 	for _, hit := range result.Hits {
+		if name, ok := hit.Highlight["name"]; ok {
+			if len(name) > 0 {
+				hit.Source.Name = name[0]
+			}
+		}
+		if desc, ok := hit.Highlight["description"]; ok {
+			if len(desc) > 0 {
+				hit.Source.Description = desc[0]
+			}
+		}
 		t := list{
 			Name:        hit.Source.Name,
 			IconPath:    hit.Source.IconPath,
