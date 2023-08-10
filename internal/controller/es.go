@@ -1,10 +1,14 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
+	"strconv"
+	"whisper/internal/dto"
 	"whisper/internal/logic"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
+	"whisper/pkg/log"
 )
 
 type ReqQuery struct {
@@ -71,7 +75,7 @@ func Query(ctx *context.Context) {
 			ID:          hit.Id,
 			Name:        hit.Source.Name,
 			IconPath:    hit.Source.IconPath,
-			Description: hit.Source.Description,
+			Description: prettyHeroDesc(ctx, hit.Source.Description, req.Platform, req.Category),
 			Plaintext:   hit.Source.Plaintext,
 			Tags:        hit.Source.Tags,
 		}
@@ -96,3 +100,66 @@ func Build(ctx *context.Context) {
 
 	ctx.Reply(nil, errors.New(err))
 }
+
+func prettyHeroDesc(ctx *context.Context, desc, platform, category string) string {
+	if desc == "" {
+		return ""
+	}
+
+	if platform != "0" && platform != "1" {
+		return desc
+	}
+
+	if category != "lol_heroes" {
+		return desc
+	}
+
+	//pretty := ""
+	heroDesc := make([]*dto.HeroDescription, 0, 5)
+	err := json.Unmarshal([]byte(desc), &heroDesc)
+	if err != nil {
+		return desc
+	}
+
+	mDesc := make(map[int]*dto.HeroDescription)
+	for _, d := range heroDesc {
+		mDesc[d.Sort] = d
+	}
+	sDesc := ""
+
+	for i := 0; i < 5; i++ {
+		if _, ok := mDesc[i]; !ok {
+			log.Logger.Warn(ctx, "hero desc error", mDesc)
+			return desc
+		}
+		sk := mDesc[i].SpellKey
+		if i > 0 {
+			if platform == "0" {
+				sk = mDesc[i].SpellKey
+			} else if platform == "1" {
+				sk = strconv.Itoa(i)
+			}
+
+		}
+
+		sDesc += fmt.Sprintf(descTPL,
+			mDesc[i].AbilityIconPath,
+			mDesc[i].Name,
+			sk,
+			mDesc[i].Description,
+		)
+	}
+
+	return sDesc
+}
+
+const descTPL = `
+<ul>
+	<li>
+		<img src="%s" />
+		<h6>%s</h6>
+		<span>%s</span>
+		<div>%s</div>
+	</li>
+</ul>
+`

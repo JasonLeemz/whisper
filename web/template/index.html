@@ -19,6 +19,8 @@
     <div class="layui-fluid layui-form">
         <div class="layui-input-wrap">
             <input name="key_words" type="text" placeholder="搜索…" class="layui-input">
+            <i class="layui-icon layui-icon-clear layui-bg-gray"></i>
+
             <button class="layui-btn search-button" type="submit">
                 <i class="layui-icon layui-icon-search"></i>
             </button>
@@ -102,6 +104,9 @@
         let $ = layui.$;
         let form = layui.form;
 
+        $(".layui-icon-clear").on('click',function (event){
+            $('input[name="key_words"]').val("")
+        })
         // 任意位置按钮触发提交
         $('#search-box').on('submit', function (event) {
             event.preventDefault();

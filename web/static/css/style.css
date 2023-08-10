@@ -25,6 +25,15 @@ body .body-tips {
     right: 0;
 }
 
+.layui-icon-clear {
+    position: absolute;
+    top: 0;
+    right: 70px;
+    border: none;
+    background:none !important;
+    cursor: pointer;
+}
+
 .search-tools {
     height: auto;
     padding: 10px 0;
@@ -87,3 +96,38 @@ body .body-tips {
 .layui-timeline-item .mainText status {
     font-weight: bold;
 }
+
+.layui-timeline-item .mainText ul {
+    padding: 0;
+    margin: 0;
+}
+
+.layui-timeline-item .mainText li {
+    list-style: none;
+}
+
+.layui-timeline-item .mainText li div {
+    font-size: 12px;
+    line-height: 12px;
+    margin: 5px 0 15px 0;
+}
+
+.layui-timeline-item .mainText li h6 {
+    display: inline-block;
+}
+
+.layui-timeline-item .mainText img {
+    width: 25px;
+    height: 25px;
+}
+
+.layui-timeline-item .mainText span {
+    color: #7d7d7d;
+}
+
+/*.layui-timeline-item .mainText img:hover {*/
+/*    position: absolute;*/
+/*    z-index: 999;*/
+/*    width: 50px;*/
+/*    height: 50px;*/
+/*}*/
