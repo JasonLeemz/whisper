@@ -107,8 +107,8 @@ body .body-tips {
 }
 
 .layui-timeline-item .mainText li div {
-    font-size: 12px;
-    line-height: 12px;
+    font-size: 10px;
+    line-height: 14px;
     margin: 5px 0 15px 0;
 }
 
@@ -119,9 +119,14 @@ body .body-tips {
 .layui-timeline-item .mainText img {
     width: 25px;
     height: 25px;
+    border-radius: 50%;
 }
 
 .layui-timeline-item .mainText span {
+    color: #7d7d7d;
+}
+
+.layui-timeline-item .mainText div {
     color: #7d7d7d;
 }
 
