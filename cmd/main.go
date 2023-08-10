@@ -48,6 +48,11 @@ func main() {
 		es.POST("/index/build", context.Handle(controller.Build))
 	}
 
+	db := router.Group("/")
+	{
+		db.POST("/alias/heroes", context.Handle(controller.AliasHeroes))
+		db.POST("/alias/equip", context.Handle(controller.AliasEquip))
+	}
 	run.Init()
 
 	srv := &http.Server{

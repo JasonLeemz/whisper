@@ -2,6 +2,7 @@ package dao
 
 import (
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
 	"whisper/internal/model"
 	"whisper/pkg/mysql"
@@ -12,6 +13,7 @@ type LOLEquipment interface {
 	Find(query []string, cond map[string]interface{}) ([]*model.LOLEquipment, error)
 	GetLOLEquipmentMaxVersion() (*model.LOLEquipment, error)
 	GetLOLEquipment(version string) ([]*model.LOLEquipment, error)
+	GetLOLEquipmentWithExt(version string) ([]*model.LOLEquipment, error)
 }
 
 type LOLEquipmentDAO struct {
@@ -59,6 +61,38 @@ func (dao *LOLEquipmentDAO) GetLOLEquipment(version string) ([]*model.LOLEquipme
 	return equip, err
 }
 
+func (dao *LOLEquipmentDAO) GetLOLEquipmentWithExt(version string) ([]*model.LOLEquipment, error) {
+	// 查当前版本所有数据
+	result := make([]*model.LOLEquipment, 0)
+	sql := `
+SELECT
+	equip.itemId,
+	equip.name,
+	CONCAT_WS(',', equip.keywords, alias.keywords, alias.keywords_py) AS keywords,
+	equip.description,
+	equip.plaintext,
+	equip.iconPath,
+	equip.price,
+	equip.sell,
+	equip.total,
+	equip.suitHeroId,
+	equip.maps,
+	equip.from,
+	equip.into,
+	equip.types,
+	equip.version,
+	equip.fileTime
+FROM
+	lol_equipment equip
+	LEFT JOIN equip_alias alias ON equip.name = alias.name
+WHERE
+	equip.version = '%s' and alias.platform = 0
+`
+	sql = fmt.Sprintf(sql, version)
+	err := dao.db.Exec(sql).Find(&result).Error
+	return result, err
+}
+
 func NewLOLEquipmentDAO() *LOLEquipmentDAO {
 	return &LOLEquipmentDAO{
 		db: mysql.DB,
@@ -72,6 +106,7 @@ type LOLMEquipment interface {
 	Find(query []string, cond map[string]interface{}) ([]*model.LOLMEquipment, error)
 	GetLOLMEquipmentMaxVersion() (*model.LOLMEquipment, error)
 	GetLOLMEquipment(version string) ([]*model.LOLMEquipment, error)
+	GetLOLMEquipmentWithExt(version string) ([]*model.LOLMEquipment, error)
 }
 
 type LOLMEquipmentDAO struct {
@@ -114,6 +149,33 @@ func (dao *LOLMEquipmentDAO) GetLOLMEquipment(version string) ([]*model.LOLMEqui
 		return nil, err
 	}
 	return equip, err
+}
+
+func (dao *LOLMEquipmentDAO) GetLOLMEquipmentWithExt(version string) ([]*model.LOLMEquipment, error) {
+	// 查当前版本所有数据
+	result := make([]*model.LOLMEquipment, 0)
+	sql := `
+SELECT
+	equip.equipId,
+	equip.name,
+	equip.iconPath,
+	equip.price,
+	equip.description,
+	CONCAT_WS(',', equip.searchKey, alias.keywords, alias.keywords_py) AS keywords,
+	equip.from,
+	equip.into,
+	equip.type,
+	equip.version,
+	equip.fileTime
+FROM
+	lolm_equipment equip
+	LEFT JOIN equip_alias alias ON equip.name = alias.name
+WHERE
+	equip.version = '%s' and alias.platform = 0
+`
+	sql = fmt.Sprintf(sql, version)
+	err := dao.db.Exec(sql).Find(&result).Error
+	return result, err
 }
 
 func NewLOLMEquipmentDAO() *LOLMEquipmentDAO {

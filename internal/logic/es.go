@@ -5,6 +5,8 @@ import (
 	errors2 "errors"
 	"fmt"
 	"strconv"
+	"strings"
+	"whisper/internal/dto"
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
 	"whisper/internal/model/DAO"
@@ -116,8 +118,8 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 			resp.Hits[i].Source.Description = hitData.Description
 			resp.Hits[i].Source.Plaintext = hitData.Plaintext
 			resp.Hits[i].Source.Version = hitData.Version
-			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Price:%s", hitData.Price))
-			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Types:%s", hitData.Types))
+
+			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, strings.Split(hitData.Roles, ",")...)
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
 		}
 	case new(model.ESRune).GetIndexName():
@@ -250,29 +252,53 @@ func heroesMProduce() error {
 		return err
 	}
 
-	data, err := d.GetLOLMHeroes(rs.Version)
+	data, err := d.GetLOLMHeroesWithExt(rs.Version)
 	if err != nil {
 		return err
 	}
 
+	spellDao := dao.NewHeroSpellDAO()
 	go func() {
 		for _, d := range data {
 			var esData []*model.ESHeroes
 			tmp := d
-			esData = append(esData, &model.ESHeroes{
-				ID:       tmp.HeroId + "_" + tmp.Version,
-				Name:     tmp.Title + " " + tmp.Name,
+			esHero := model.ESHeroes{
+				ID:       tmp.HeroId,
+				Name:     tmp.Title + " " + tmp.Name + "(" + tmp.Alias + ")",
 				IconPath: tmp.Avatar,
 				Price:    "GoldPrice:" + tmp.Highlightprice + "/" + "CouponPrice:" + tmp.Couponprice,
-				//Description: tmp., TODO
+				Roles:    tmp.Roles,
 				//Plaintext: "",
-				Keywords: tmp.Alias + "," + tmp.Title,
+				Keywords: tmp.Searchkey,
 				//Maps:      "",
 				//Types:    "",
 				Version:  tmp.Version,
 				FileTime: tmp.FileTime,
 				Platform: strconv.Itoa(common.PlatformForLOLM),
-			})
+			}
+
+			// 查询技能
+			spells, err2 := spellDao.GetSpells(tmp.HeroId)
+			if err2 != nil {
+
+			}
+
+			heroSpell := make([]*dto.HeroDescription, 0, 5)
+			for _, spell := range spells {
+				desc := &dto.HeroDescription{
+					SpellKey:        spell.SpellKey,
+					Sort:            spell.Sort,
+					Name:            spell.Name,
+					Description:     spell.Description,
+					AbilityIconPath: spell.AbilityIconPath,
+					Detail:          spell.Detail,
+					Version:         spell.Version,
+				}
+				heroSpell = append(heroSpell, desc)
+			}
+			s, _ := json.Marshal(heroSpell)
+			esHero.Description = string(s)
+			esData = append(esData, &esHero)
 
 			// 放入阻塞队列
 			heroesChan <- esData
@@ -288,29 +314,50 @@ func heroesProduce() error {
 		return err
 	}
 
-	data, err := d.GetLOLHeroes(rs.Version)
+	data, err := d.GetLOLHeroesWithExt(rs.Version)
 	if err != nil {
 		return err
 	}
 
+	spellDao := dao.NewHeroSpellDAO()
 	go func() {
 		for _, d := range data {
 			var esData []*model.ESHeroes
 			tmp := d
-			esData = append(esData, &model.ESHeroes{
-				ID:       tmp.HeroId + "_" + tmp.Version,
-				Name:     tmp.Name + " " + tmp.Title,
-				IconPath: fmt.Sprintf("https://game.gtimg.cn/images/lol/act/img/skin/small%s000.jpg", tmp.HeroId),
+			esHero := model.ESHeroes{
+				Name:     tmp.Name + " " + tmp.Title + "(" + tmp.Alias + ")",
+				IconPath: tmp.Avatar,
 				Price:    "GoldPrice:" + tmp.GoldPrice + "/" + "CouponPrice:" + tmp.CouponPrice,
-				//Description: tmp., TODO
+				Roles:    tmp.Roles,
 				//Plaintext: "",
-				Keywords: tmp.Keywords + "," + tmp.Alias + "," + tmp.Title + "," + tmp.Camp,
+				Keywords: tmp.Keywords + "," + tmp.Alias + "," + tmp.Title,
 				//Maps:      "",
 				//Types:    "",
 				Version:  tmp.Version,
 				FileTime: tmp.FileTime,
 				Platform: strconv.Itoa(common.PlatformForLOL),
-			})
+			}
+
+			spells, err2 := spellDao.GetSpells(tmp.HeroId)
+			if err2 != nil {
+
+			}
+			heroSpell := make([]*dto.HeroDescription, 0, 5)
+			for _, spell := range spells {
+				desc := &dto.HeroDescription{
+					SpellKey:        spell.SpellKey,
+					Sort:            spell.Sort,
+					Name:            spell.Name,
+					Description:     spell.Description,
+					AbilityIconPath: spell.AbilityIconPath,
+					Detail:          spell.Detail,
+					Version:         spell.Version,
+				}
+				heroSpell = append(heroSpell, desc)
+			}
+			s, _ := json.Marshal(heroSpell)
+			esHero.Description = string(s)
+			esData = append(esData, &esHero)
 
 			// 放入阻塞队列
 			heroesChan <- esData
@@ -341,7 +388,7 @@ func equipProduce() error {
 		return err
 	}
 
-	equipment, err := d.GetLOLEquipment(rs.Version)
+	equipment, err := d.GetLOLEquipmentWithExt(rs.Version)
 	if err != nil {
 		return err
 	}
@@ -387,7 +434,7 @@ func equipMProduce() error {
 		return err
 	}
 
-	equipment, err := d.GetLOLMEquipment(rs.Version)
+	equipment, err := d.GetLOLMEquipmentWithExt(rs.Version)
 	if err != nil {
 		return err
 	}
@@ -409,7 +456,7 @@ func equipMProduce() error {
 				//SuitHeroId:   tmp.SuitHeroId,
 				//SuitHeroName: tmp.SuitHeroId, // todo
 				//SuitHeroIcon: tmp.SuitHeroId, // todo
-				Keywords: tmp.SearchKey, // 数据为空
+				Keywords: tmp.SearchKey, // 仅LOLM字段 数据为空
 				Maps:     "召唤师峡谷",
 				From:     tmp.From, // todo
 				Into:     tmp.Into, // todo

@@ -157,3 +157,16 @@ type Spells struct {
 	//Costvalue string   `json:"costvalue,omitempty"`
 	//SpellId string `json:"spellId,omitempty"`
 }
+
+// --------------------------------------------------------
+
+// HeroDescription 英雄技能介绍
+type HeroDescription struct {
+	SpellKey        string `json:"spellKey"`
+	Sort            int    `json:"sort"` // 用于展示数据的时候排序
+	Name            string `json:"name"`
+	Description     string `json:"description"`
+	AbilityIconPath string `json:"abilityIconPath"`
+	Detail          string `json:"detail"`
+	Version         string `json:"version"`
+}

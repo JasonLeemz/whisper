@@ -4,9 +4,11 @@ type ESHeroes struct {
 	ID          string `json:"id"`
 	Name        string `json:"name,omitempty"`
 	IconPath    string `json:"iconPath,omitempty"`
+	Roles       string `json:"roles,omitempty"`
 	Price       string `json:"price,omitempty"`
 	Description string `json:"description,omitempty"`
 	Plaintext   string `json:"plaintext,omitempty"`
+	Spells      string `json:"spells,omitempty"`
 	Keywords    string `json:"keywords,omitempty"`
 	Maps        string `json:"maps,omitempty"`
 	Types       string `json:"types,omitempty"`
@@ -31,6 +33,13 @@ func (e *ESHeroes) GetMapping() string {
             "description": {
                 "type": "text",
                 "analyzer": "ik_smart"
+            },
+			"spells": {
+                "type": "text",
+                "analyzer": "ik_smart"
+            },
+			"roles": {
+                "type": "keyword"
             },
             "fileTime": {
                 "type": "keyword"
