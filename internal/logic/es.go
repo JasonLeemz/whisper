@@ -1,20 +1,23 @@
 package logic
 
 import (
+	context2 "context"
 	"encoding/json"
 	errors2 "errors"
 	"fmt"
+	"github.com/olivere/elastic/v7"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
+	dao "whisper/internal/model/DAO"
+
 	"whisper/internal/dto"
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
-	"whisper/internal/model/DAO"
-	"whisper/pkg/es"
-
-	"github.com/olivere/elastic/v7"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
+	"whisper/pkg/es"
 	"whisper/pkg/log"
 )
 
@@ -170,14 +173,36 @@ func BuildIndex(ctx *context.Context, index string) error {
 		queue = append(queue, index)
 	}
 
-	// 表数据直接建索引
-	for _, tbl := range queue {
-		err := mysql2es(ctx, tbl)
-		if err != nil {
-			log.Logger.Error(ctx, err)
-			return err
+	// 如果esmapping不存在就新建
+	// 创建索引
+	if err := createIndex(ctx); err != nil {
+		return err
+	}
+
+	wg := sync.WaitGroup{}
+	cancelCtx, cancelFunc := context2.WithCancel(ctx)
+	defer cancelFunc()
+
+	//var eserr error
+
+	select {
+	case <-cancelCtx.Done():
+		break
+	default:
+		// 表数据直接建索引
+		for _, tbl := range queue {
+			wg.Add(1)
+			go func(tbl string) {
+				err := mysql2es(ctx, tbl, &wg)
+				if err != nil {
+					log.Logger.Error(ctx, err)
+					cancelFunc()
+				}
+			}(tbl)
 		}
 	}
+
+	wg.Wait()
 	return nil
 }
 
@@ -186,66 +211,66 @@ var heroesChan = make(chan []*model.ESHeroes, 100)   // 最多起100个协程处
 var runeChan = make(chan []*model.ESRune, 100)       // 最多起100个协程处理索引
 var skillChan = make(chan []*model.ESSkill, 100)     // 最多起100个协程处理索引
 
-func mysql2es(ctx *context.Context, tblName string) error {
-	// 创建索引
-	if err := createIndex(ctx); err != nil {
-		return err
-	}
+func mysql2es(ctx *context.Context, tblName string, wg *sync.WaitGroup) error {
+	defer wg.Done()
+
 	go equipCustomer(ctx)
-	go heroesCustomer(ctx)
-	go runeCustomer(ctx)
+	//go heroesCustomer(ctx)
+	//go runeCustomer(ctx)
 	go skillCustomer(ctx)
 
-	var equipModel model.LOLEquipment
-	var m_equipModel model.LOLMEquipment
+	var (
+		//equipModel   model.LOLEquipment
+		//m_equipModel model.LOLMEquipment
 
-	var heroesModel model.LOLHeroes
-	var m_heroesModel model.LOLMHeroes
+		heroesModel   model.LOLHeroes
+		m_heroesModel model.LOLMHeroes
 
-	var runeModel model.LOLRune
-	var m_runeModel model.LOLMRune
+		//runeModel   model.LOLRune
+		//m_runeModel model.LOLMRune
 
-	var skillModel model.LOLSkill
-	var m_skillModel model.LOLMSkill
+		//skillModel   model.LOLSkill
+		//m_skillModel model.LOLMSkill
+	)
 
 	switch tblName {
-	case runeModel.TableName():
-		if err := runeProduce(); err != nil {
-			return err
-		}
-	case m_runeModel.TableName():
-		if err := runeMProduce(); err != nil {
-			return err
-		}
-	case skillModel.TableName():
-
-		if err := skillProduce(); err != nil {
-			return err
-		}
-	case m_skillModel.TableName():
-		if err := skillMProduce(); err != nil {
-			return err
-		}
+	//case runeModel.TableName():
+	//	if err := runeProduce(ctx); err != nil {
+	//		return err
+	//	}
+	//case m_runeModel.TableName():
+	//	if err := runeMProduce(); err != nil {
+	//		return err
+	//	}
+	//case skillModel.TableName():
+	//
+	//	if err := skillProduce(); err != nil {
+	//		return err
+	//	}
+	//case m_skillModel.TableName():
+	//	if err := skillMProduce(); err != nil {
+	//		return err
+	//	}
 	case heroesModel.TableName():
-		if err := heroesProduce(); err != nil {
+		if err := heroesProduce(ctx); err != nil {
 			return err
 		}
 	case m_heroesModel.TableName():
-		if err := heroesMProduce(); err != nil {
+		if err := heroesMProduce(ctx); err != nil {
 			return err
 		}
-	case m_equipModel.TableName():
-		if err := equipMProduce(); err != nil {
-			return err
-		}
-	case equipModel.TableName():
-		if err := equipProduce(); err != nil {
-			return err
-		}
+		//case m_equipModel.TableName():
+		//	if err := equipMProduce(); err != nil {
+		//		return err
+		//	}
+		//case equipModel.TableName():
+		//	if err := equipProduce(); err != nil {
+		//		return err
+		//	}
 	}
 	return nil
 }
-func heroesMProduce() error {
+func heroesMProduce(ctx *context.Context) error {
 	d := dao.NewLOLMHeroesDAO()
 	rs, err := d.GetLOLMHeroesMaxVersion()
 	if err != nil {
@@ -257,57 +282,94 @@ func heroesMProduce() error {
 		return err
 	}
 
-	spellDao := dao.NewHeroSpellDAO()
-	go func() {
-		for _, d := range data {
-			var esData []*model.ESHeroes
-			tmp := d
-			esHero := model.ESHeroes{
-				ID:       tmp.HeroId,
-				Name:     tmp.Title + " " + tmp.Name + "(" + tmp.Alias + ")",
-				IconPath: tmp.Avatar,
-				Price:    "GoldPrice:" + tmp.Highlightprice + "/" + "CouponPrice:" + tmp.Couponprice,
-				Roles:    tmp.Roles,
-				//Plaintext: "",
-				Keywords: tmp.Searchkey,
-				//Maps:      "",
-				//Types:    "",
-				Version:  tmp.Version,
-				FileTime: tmp.FileTime,
-				Platform: strconv.Itoa(common.PlatformForLOLM),
-			}
+	cancelCtx, cancelFunc := context2.WithCancel(ctx)
+	defer cancelFunc()
+	var (
+		runningTask = make(chan struct{}, 10) //最多起100个协程处理索引
+		successTask = int32(0)
+		failTask    = int32(0)
+		doneTask    = int32(0)
+		allTask     = len(data)
+		wg          = &sync.WaitGroup{}
+	)
 
-			// 查询技能
-			spells, err2 := spellDao.GetSpells(tmp.HeroId)
-			if err2 != nil {
+	select {
+	case <-cancelCtx.Done():
+		break
+	default:
+		spellDao := dao.NewHeroSpellDAO()
+		hd := dao.NewESHeroesDAO()
 
-			}
+		for _, row := range data {
+			wg.Add(1)
 
-			heroSpell := make([]*dto.HeroDescription, 0, 5)
-			for _, spell := range spells {
-				desc := &dto.HeroDescription{
-					SpellKey:        spell.SpellKey,
-					Sort:            spell.Sort,
-					Name:            spell.Name,
-					Description:     spell.Description,
-					AbilityIconPath: spell.AbilityIconPath,
-					Detail:          spell.Detail,
-					Version:         spell.Version,
+			go func(row *model.LOLMHeroesEXT) {
+				defer func() {
+					<-runningTask // 正在运行 -1
+					atomic.AddInt32(&doneTask, 1)
+					wg.Done()
+				}()
+				runningTask <- struct{}{}
+
+				var esData []*model.ESHeroes
+				tmp := row
+				esHero := model.ESHeroes{
+					ID:       tmp.HeroId,
+					Name:     tmp.Title + " " + tmp.Name + "(" + tmp.Alias + ")",
+					IconPath: tmp.Avatar,
+					Price:    "GoldPrice:" + tmp.Highlightprice + "/" + "CouponPrice:" + tmp.Couponprice,
+					Roles:    tmp.Roles,
+					//Plaintext: "",
+					Keywords: tmp.Searchkey,
+					Version:  tmp.Version,
+					FileTime: tmp.FileTime,
+					Platform: strconv.Itoa(common.PlatformForLOLM),
 				}
-				heroSpell = append(heroSpell, desc)
-			}
-			s, _ := json.Marshal(heroSpell)
-			esHero.Description = string(s)
-			esData = append(esData, &esHero)
 
-			// 放入阻塞队列
-			heroesChan <- esData
+				// 查询技能
+				spells, err2 := spellDao.GetSpells(tmp.HeroId)
+				if err2 != nil {
+					log.Logger.Error(ctx, err2)
+					atomic.AddInt32(&failTask, 1)
+					cancelFunc()
+					return
+				}
 
+				heroSpell := make([]*dto.HeroDescription, 0, 5)
+				for _, spell := range spells {
+					desc := &dto.HeroDescription{
+						SpellKey:        spell.SpellKey,
+						Sort:            spell.Sort,
+						Name:            spell.Name,
+						Description:     spell.Description,
+						AbilityIconPath: spell.AbilityIconPath,
+						Detail:          spell.Detail,
+						Version:         spell.Version,
+					}
+					heroSpell = append(heroSpell, desc)
+				}
+				s, _ := json.Marshal(heroSpell)
+				esHero.Description = string(s)
+				esData = append(esData, &esHero)
+
+				err3 := hd.Heroes2ES(ctx, esData)
+				if err3 != nil {
+					log.Logger.Error(ctx, err3)
+					atomic.AddInt32(&failTask, 1)
+					cancelFunc()
+					return
+				} else {
+					atomic.AddInt32(&successTask, 1)
+				}
+			}(row)
 		}
-	}()
+	}
+
+	wg.Wait()
+	log.Logger.Info(ctx, fmt.Sprintf("LOLM Hero Task Done: allTask:%d, success:%d, fail:%d, done:%d", allTask, successTask, failTask, doneTask))
 	return nil
 }
-func heroesProduce() error {
+func heroesProduce(ctx *context.Context) error {
 	d := dao.NewLOLHeroesDAO()
 	rs, err := d.GetLOLHeroesMaxVersion()
 	if err != nil {
@@ -319,51 +381,88 @@ func heroesProduce() error {
 		return err
 	}
 
-	spellDao := dao.NewHeroSpellDAO()
-	go func() {
-		for _, d := range data {
-			var esData []*model.ESHeroes
-			tmp := d
-			esHero := model.ESHeroes{
-				Name:     tmp.Name + " " + tmp.Title + "(" + tmp.Alias + ")",
-				IconPath: tmp.Avatar,
-				Price:    "GoldPrice:" + tmp.GoldPrice + "/" + "CouponPrice:" + tmp.CouponPrice,
-				Roles:    tmp.Roles,
-				//Plaintext: "",
-				Keywords: tmp.Keywords + "," + tmp.Alias + "," + tmp.Title,
-				//Maps:      "",
-				//Types:    "",
-				Version:  tmp.Version,
-				FileTime: tmp.FileTime,
-				Platform: strconv.Itoa(common.PlatformForLOL),
-			}
+	cancelCtx, cancelFunc := context2.WithCancel(ctx)
+	defer cancelFunc()
+	var (
+		runningTask = make(chan struct{}, 10) //最多起100个协程处理索引
+		successTask = int32(0)
+		failTask    = int32(0)
+		doneTask    = int32(0)
+		allTask     = len(data)
+		wg          = &sync.WaitGroup{}
+	)
 
-			spells, err2 := spellDao.GetSpells(tmp.HeroId)
-			if err2 != nil {
+	select {
+	case <-cancelCtx.Done():
+		break
+	default:
+		spellDao := dao.NewHeroSpellDAO()
+		hd := dao.NewESHeroesDAO()
+		for _, row := range data {
+			wg.Add(1)
 
-			}
-			heroSpell := make([]*dto.HeroDescription, 0, 5)
-			for _, spell := range spells {
-				desc := &dto.HeroDescription{
-					SpellKey:        spell.SpellKey,
-					Sort:            spell.Sort,
-					Name:            spell.Name,
-					Description:     spell.Description,
-					AbilityIconPath: spell.AbilityIconPath,
-					Detail:          spell.Detail,
-					Version:         spell.Version,
+			go func(row *model.LOLHeroesEXT) {
+				defer func() {
+					<-runningTask // 正在运行 -1
+					atomic.AddInt32(&doneTask, 1)
+					wg.Done()
+				}()
+				runningTask <- struct{}{}
+
+				var esData []*model.ESHeroes
+				tmp := row
+				esHero := model.ESHeroes{
+					ID:       tmp.HeroId,
+					Name:     tmp.Name + " " + tmp.Title + "(" + tmp.Alias + ")",
+					IconPath: tmp.Avatar,
+					Price:    "GoldPrice:" + tmp.GoldPrice + "/" + "CouponPrice:" + tmp.CouponPrice,
+					Roles:    tmp.Roles,
+					//Plaintext: "",
+					Keywords: tmp.Keywords + "," + tmp.Alias + "," + tmp.Title,
+					Version:  tmp.Version,
+					FileTime: tmp.FileTime,
+					Platform: strconv.Itoa(common.PlatformForLOL),
 				}
-				heroSpell = append(heroSpell, desc)
-			}
-			s, _ := json.Marshal(heroSpell)
-			esHero.Description = string(s)
-			esData = append(esData, &esHero)
 
-			// 放入阻塞队列
-			heroesChan <- esData
+				spells, err2 := spellDao.GetSpells(tmp.HeroId)
+				if err2 != nil {
+					log.Logger.Error(ctx, err2)
+					atomic.AddInt32(&failTask, 1)
+					cancelFunc()
+					return
+				}
+				heroSpell := make([]*dto.HeroDescription, 0, 5)
+				for _, spell := range spells {
+					desc := &dto.HeroDescription{
+						SpellKey:        spell.SpellKey,
+						Sort:            spell.Sort,
+						Name:            spell.Name,
+						Description:     spell.Description,
+						AbilityIconPath: spell.AbilityIconPath,
+						Detail:          spell.Detail,
+						Version:         spell.Version,
+					}
+					heroSpell = append(heroSpell, desc)
+				}
+				s, _ := json.Marshal(heroSpell)
+				esHero.Description = string(s)
+				esData = append(esData, &esHero)
 
+				err3 := hd.Heroes2ES(ctx, esData)
+				if err3 != nil {
+					log.Logger.Error(ctx, err3)
+					atomic.AddInt32(&failTask, 1)
+					cancelFunc()
+					return
+				} else {
+					atomic.AddInt32(&successTask, 1)
+				}
+			}(row)
 		}
-	}()
+	}
+
+	wg.Wait()
+	log.Logger.Info(ctx, fmt.Sprintf("LOL Hero Task Done: allTask:%d, success:%d, fail:%d, done:%d", allTask, successTask, failTask, doneTask))
 	return nil
 }
 func heroesCustomer(ctx *context.Context) {
@@ -488,7 +587,7 @@ func equipCustomer(ctx *context.Context) {
 	}
 }
 
-func runeProduce() error {
+func runeProduce(ctx *context.Context) error {
 	d := dao.NewLOLRuneDAO()
 	rs, err := d.GetLOLRuneMaxVersion()
 	if err != nil {
@@ -500,30 +599,65 @@ func runeProduce() error {
 		return err
 	}
 
-	go func() {
+	cancelCtx, cancelFunc := context2.WithCancel(ctx)
+	defer cancelFunc()
+
+	var (
+		runningTask = make(chan struct{}, 10) //最多起100个协程处理索引
+		successTask = int32(0)
+		failTask    = int32(0)
+		doneTask    = int32(0)
+		allTask     = len(data)
+		wg          = &sync.WaitGroup{}
+	)
+
+	select {
+	case <-cancelCtx.Done():
+		break
+	default:
+		rd := dao.NewESRuneDAO()
+
 		for _, row := range data {
-			var esData []*model.ESRune
-			tmp := row
-			esData = append(esData, &model.ESRune{
-				ID:          strconv.Itoa(int(tmp.Id)) + "_" + tmp.Name + "_" + tmp.Version,
-				Name:        tmp.Name,
-				IconPath:    tmp.Icon,
-				Tooltip:     tmp.Tooltip,
-				Description: tmp.Longdesc,
-				Plaintext:   tmp.Shortdesc,
-				Keywords:    tmp.Key,
-				SlotLabel:   tmp.SlotLabel,
-				StyleName:   tmp.StyleName,
-				Version:     tmp.Version,
-				FileTime:    tmp.FileTime,
-				Platform:    strconv.Itoa(common.PlatformForLOL),
-			})
+			wg.Add(1)
+			go func(row *model.LOLRune) {
+				defer func() {
+					<-runningTask // 正在运行 -1
+					atomic.AddInt32(&doneTask, 1)
+					wg.Done()
+				}()
+				runningTask <- struct{}{} // 正在运行 +1
 
-			// 放入阻塞队列
-			runeChan <- esData
+				var esData []*model.ESRune
+				tmp := row
+				esData = append(esData, &model.ESRune{
+					ID:          tmp.Name + "_" + tmp.Version,
+					Name:        tmp.Name,
+					IconPath:    tmp.Icon,
+					Tooltip:     tmp.Tooltip,
+					Description: tmp.Longdesc,
+					Plaintext:   tmp.Shortdesc,
+					Keywords:    tmp.Key,
+					SlotLabel:   tmp.SlotLabel,
+					StyleName:   tmp.StyleName,
+					Version:     tmp.Version,
+					FileTime:    tmp.FileTime,
+					Platform:    strconv.Itoa(common.PlatformForLOL),
+				})
 
+				err := rd.Rune2ES(ctx, esData)
+				if err != nil {
+					log.Logger.Error(ctx, err)
+					atomic.AddInt32(&failTask, 1)
+					cancelFunc()
+					return
+				} else {
+					atomic.AddInt32(&successTask, 1)
+				}
+			}(row)
 		}
-	}()
+	}
+	wg.Wait()
+	log.Logger.Info(ctx, fmt.Sprintf("LOL Rune Task Done: allTask:%d, success:%d, fail:%d, done:%d", allTask, successTask, failTask, doneTask))
 	return nil
 }
 func runeMProduce() error {
