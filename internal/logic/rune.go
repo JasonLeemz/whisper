@@ -139,3 +139,49 @@ func reloadRuneForLOLM(ctx *context.Context, r *dto.LOLMRune) {
 		log.Logger.Error(ctx, errors.New(err))
 	}
 }
+
+func QueryRuneType(ctx *context.Context, platform int) (any, *errors.Error) {
+
+	if platform == common.PlatformForLOL {
+		return nil, errors.New(errors2.New("暂不支持"), errors.ErrNoInvalidInput)
+	} else if platform == common.PlatformForLOLM {
+		runes, err := service.QueryRuneTypeForLOLM(ctx)
+		if err != nil {
+			log.Logger.Warn(ctx, err)
+		}
+		reloadRuneTypeForLOLM(ctx, runes)
+		return runes, nil
+	}
+
+	return nil, errors.New(errors2.New("请指定游戏平台"), errors.ErrNoInvalidInput)
+}
+
+func reloadRuneTypeForLOLM(ctx *context.Context, rt *dto.LOLMRuneType) {
+	// 判断库中是否存在最新版本，如果存在就不更新
+	rtDAO := dao.NewRuneTypeDAO()
+	_, err := rtDAO.DeleteAll(map[string]interface{}{
+		"platform": common.PlatformForLOLM,
+	})
+	if err != nil {
+		log.Logger.Error(ctx, errors.New(err))
+		return
+	}
+
+	// 入库更新
+	rs := make([]*model.RuneType, 0, len(rt.RuneTypes))
+
+	for _, t := range rt.RuneTypes {
+		tmp := model.RuneType{
+			Name:     t.Name,
+			SubType:  t.SubType,
+			Type:     t.Type,
+			Platform: common.PlatformForLOLM,
+		}
+		rs = append(rs, &tmp)
+	}
+
+	_, err = rtDAO.Add(rs)
+	if err != nil {
+		log.Logger.Error(ctx, errors.New(err))
+	}
+}

@@ -38,23 +38,25 @@ func (e *ESRune) GetMapping() string {
                 "type": "text",
                 "analyzer": "ik_smart"
             },
-            "iconPath": {
-                "type": "keyword"
-            },
             "tooltip": {
+                "type": "text",
+                "analyzer": "ik_smart"
+            },
+            "styleName": {
+                "type": "text",
+                "analyzer": "ik_smart"
+            },
+			"types": {
                 "type": "text",
                 "analyzer": "ik_smart"
             },
             "slotLabel": {
                 "type": "keyword"
             },
-            "styleName": {
+            "iconPath": {
                 "type": "keyword"
             },
             "maps": {
-                "type": "keyword"
-            },
-            "types": {
                 "type": "keyword"
             },
             "fileTime": {

@@ -158,8 +158,6 @@ func (dao *LOLMHeroesDAO) GetLOLMHeroesWithExt(version string) ([]*model.LOLMHer
 	// 查当前版本所有数据
 	result := make([]*model.LOLMHeroesEXT, 0)
 	sql := `
-
-
 SELECT
 	GROUP_CONCAT(role.role SEPARATOR ',') AS roles,
 	hero.heroId,

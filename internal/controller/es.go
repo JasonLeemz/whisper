@@ -86,7 +86,8 @@ func Query(ctx *context.Context) {
 }
 
 type ReqBuild struct {
-	Index string `json:"index,omitempty" binding:"-"`
+	Index   string `json:"index,omitempty" binding:"-"`
+	ReBuild bool   `json:"rebuild,omitempty"`
 }
 
 func Build(ctx *context.Context) {
@@ -96,7 +97,7 @@ func Build(ctx *context.Context) {
 		return
 	}
 
-	err := logic.BuildIndex(ctx, req.Index)
+	err := logic.BuildIndex(ctx, req.Index, req.ReBuild)
 
 	ctx.Reply(nil, errors.New(err))
 }
@@ -142,10 +143,24 @@ func prettyHeroDesc(ctx *context.Context, desc, platform, category string) strin
 
 		}
 
+		sDetail := ""
+		if mDesc[i].Detail != "" {
+			list := make([]string, 0, 4)
+			err := json.Unmarshal([]byte(mDesc[i].Detail), &list)
+			if err != nil {
+				log.Logger.Error(ctx, "Unmarshal mDesc[i].Detail fail:", err)
+			}
+
+			for _, row := range list {
+				sDetail += fmt.Sprintf(detailTPL, row)
+			}
+		}
+
 		sDesc += fmt.Sprintf(descTPL,
 			mDesc[i].AbilityIconPath,
 			mDesc[i].Name,
 			sk,
+			sDetail,
 			mDesc[i].Description,
 		)
 	}
@@ -159,7 +174,10 @@ const descTPL = `
 		<img src="%s" />
 		<h6>%s</h6>
 		<span>%s</span>
-		<div>%s</div>
+		<div title="%s">%s</div>
 	</li>
 </ul>
+`
+const detailTPL = `
+%s
 `

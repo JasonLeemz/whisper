@@ -128,6 +128,25 @@ body .body-tips {
 
 .layui-timeline-item .mainText div {
     color: #7d7d7d;
+    cursor: pointer;
+    padding-left: 29px;
+}
+
+.layui-timeline-item .mainText .detail {
+    /*display: block;*/
+    display: none;
+    margin:5px 10px;
+}
+
+.layui-timeline-item .mainText ul {
+    /*margin: 0 0 0 10px;*/
+    /*font-size: 8px;*/
+    /*line-height: 12px;*/
+}
+
+.layui-timeline-item .mainText ul li {
+    padding: 0;
+    margin: 0;
 }
 
 /*.layui-timeline-item .mainText img:hover {*/

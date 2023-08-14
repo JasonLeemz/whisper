@@ -87,7 +87,7 @@
                 </h4>
                 <div>
                     {{# layui.each(item.tags, function(idx, tag){ }}
-                    <span class="layui-badge layui-bg-gray">{{= tag }}</span>
+                    <span class="layui-badge layui-bg-gray">{{- tag }}</span>
                     {{# }); }}
 
                 </div>
@@ -182,6 +182,17 @@
                 }
             })
         }
+
+
+        // 通过事件简单演示动画过程
+        // $('.detail-wrap').on('click', function(){
+        //     $(".detail-wrap .detail").slideToggle();
+        //     // elem.find(".detail").removeClass("layui-hide");
+        //     // // elem.removeClass(animName);
+        //     // setTimeout(function(){
+        //     //     elem.addClass("layui-anim-downbit"); // 给目标元素追加「往下滑入」的动画
+        //     // });
+        // });
     });
 
 

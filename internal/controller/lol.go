@@ -73,6 +73,22 @@ func Rune(ctx *context.Context) {
 	ctx.Reply(equip, errors.New(err))
 }
 
+type ReqRuneType struct {
+	Platform int `form:"platform" json:"platform" binding:"-"`
+}
+
+func RuneType(ctx *context.Context) {
+
+	req := &ReqRuneType{}
+	if err := ctx.Bind(req); err != nil {
+		return
+	}
+
+	equip, err := logic.QueryRuneType(ctx, req.Platform)
+
+	ctx.Reply(equip, errors.New(err))
+}
+
 type ReqSkill struct {
 	Platform int `form:"platform" json:"platform" binding:"-"`
 }

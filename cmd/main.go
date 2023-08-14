@@ -39,6 +39,7 @@ func main() {
 		lol.POST("/heroes", context.Handle(controller.Heroes))
 		lol.POST("/heroes/attr", context.Handle(controller.HeroesAttribute))
 		lol.POST("/rune", context.Handle(controller.Rune))
+		lol.POST("/rune/type", context.Handle(controller.RuneType))
 		lol.POST("/skill", context.Handle(controller.Skill))
 	}
 

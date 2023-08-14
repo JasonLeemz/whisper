@@ -11,6 +11,7 @@ import (
 
 type ESHeroes interface {
 	CreateIndex(ctx *context.Context) error
+	DeleteIndex(ctx *context.Context) error
 	Heroes2ES(ctx *context.Context, data []*model.ESHeroes) error
 }
 
@@ -36,6 +37,29 @@ func (dao *ESHeroesDAO) CreateIndex(ctx *context.Context) error {
 		}
 		if !createIndex.Acknowledged {
 			return errors.New(fmt.Sprintf("expected IndicesCreateResult.Acknowledged %v; got %v", true, createIndex.Acknowledged))
+		}
+	}
+	return nil
+}
+
+func (dao *ESHeroesDAO) DeleteIndex(ctx *context.Context) error {
+
+	// 索引是否存在
+	var esModel model.ESHeroes
+	idxName := esModel.GetIndexName()
+
+	exists, err := es.ESClient.IndexExists(idxName).Do(ctx)
+	if err != nil {
+		return err
+	}
+	if exists {
+		// 删除索引
+		deleteIndex, err := es.ESClient.DeleteIndex(idxName).Do(ctx)
+		if err != nil {
+			return err
+		}
+		if !deleteIndex.Acknowledged {
+			return errors.New(fmt.Sprintf("expected IndicesDeleteResult.Acknowledged %v; got %v", true, deleteIndex.Acknowledged))
 		}
 	}
 	return nil

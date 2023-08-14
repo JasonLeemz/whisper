@@ -2,6 +2,7 @@ package dao
 
 import (
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
 	"whisper/internal/model"
 	"whisper/pkg/mysql"
@@ -42,14 +43,17 @@ func (dao *LOLSkillDAO) GetLOLSkillMaxVersion() (*model.LOLSkill, error) {
 
 func (dao *LOLSkillDAO) GetLOLSkill(version string) ([]*model.LOLSkill, error) {
 	// 查当前版本所有数据
-	cond := map[string]interface{}{
-		"version": version,
-	}
-	data, err := dao.Find(nil, cond)
+	//cond := map[string]interface{}{
+	//	"version": version,
+	//}
+	var result []*model.LOLSkill
+	cond := fmt.Sprintf("version = '%s' and gamemode <> ''", version)
+	err := dao.db.Where(cond).Find(&result).Error
+	//data, err := dao.Find(nil, cond)
 	if err != nil {
 		return nil, err
 	}
-	return data, err
+	return result, err
 }
 
 func NewLOLSkillDAO() *LOLSkillDAO {

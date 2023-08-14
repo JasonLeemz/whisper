@@ -182,3 +182,20 @@ func GetLOLMHeroAttribute(ctx *context.Context, heroID string) (*dto.HeroAttribu
 	err = json.Unmarshal(body, &r)
 	return &r, err
 }
+
+// QueryRuneTypeForLOLM https://mlol.qt.qq.com/go/zone/views_layout?key=lr_rune_type
+func QueryRuneTypeForLOLM(ctx *context.Context) (*dto.LOLMRuneType, error) {
+	url := fmt.Sprintf("%s", config.GlobalConfig.LolM.RuneType)
+	log.Logger.Info(ctx, "url="+url)
+
+	// 发送 GetForm 请求
+	runeType := dto.LOLMRuneType{}
+
+	body, err := http.GetForm(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &runeType)
+	return &runeType, err
+}

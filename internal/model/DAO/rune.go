@@ -2,6 +2,7 @@ package dao
 
 import (
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
 	"whisper/internal/model"
 	"whisper/pkg/mysql"
@@ -101,14 +102,28 @@ func (dao *LOLMRuneDAO) GetLOLMRuneMaxVersion() (*model.LOLMRune, error) {
 
 func (dao *LOLMRuneDAO) GetLOLMRune(version string) ([]*model.LOLMRune, error) {
 	// 查当前版本所有数据
-	cond := map[string]interface{}{
-		"version": version,
-	}
-	data, err := dao.Find(nil, cond)
-	if err != nil {
-		return nil, err
-	}
-	return data, err
+	sql := `
+SELECT
+	r.name,
+	r.runeId,
+	r.attrName,
+	r.description,
+	r.detailInfo,
+	r.iconPath,
+	rt.name as type,
+	r.fileTime,
+	r.version
+FROM
+	lolm_rune r
+	LEFT JOIN rune_type rt ON r.type = rt.type
+WHERE
+	r.version = '%s'
+`
+	result := make([]*model.LOLMRune, 0)
+	sql = fmt.Sprintf(sql, version)
+	err := dao.db.Raw(sql).Scan(&result).Error
+
+	return result, err
 }
 
 func NewLOLMRuneDAO() *LOLMRuneDAO {
