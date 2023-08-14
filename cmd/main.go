@@ -9,12 +9,14 @@ import (
 	"time"
 	"whisper/init"
 	"whisper/internal/controller"
+	"whisper/internal/logic"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
 	"whisper/pkg/log"
 	"whisper/pkg/middleware"
 
 	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron/v3"
 )
 
 func main() {
@@ -77,6 +79,17 @@ func main() {
 			log.Logger.Panic(err)
 		}
 	}()
+
+	// 启动定时任务
+	c := cron.New()
+	_, err := c.AddFunc("01 21 * * *", func() {
+		fmt.Println(time.Now())
+		logic.Cron()
+	})
+	if err != nil {
+		panic(err)
+	}
+	c.Start()
 
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)

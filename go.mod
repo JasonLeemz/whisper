@@ -8,6 +8,7 @@ require (
 	github.com/mozillazg/go-pinyin v0.20.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/olivere/elastic/v7 v7.0.32
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/cast v1.5.1
 	github.com/spf13/viper v1.16.0
 	go.uber.org/zap v1.24.0

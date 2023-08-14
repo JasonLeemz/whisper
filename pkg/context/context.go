@@ -61,3 +61,20 @@ func (c *Context) Bind(obj any) error {
 	}
 	return nil
 }
+
+func NewContext() *Context {
+	ctx := &Context{
+		Context: &gin.Context{},
+	}
+
+	//req := &http.Request{
+	//	Header: http.Header{},
+	//}
+
+	req := new(http.Request)
+	req.Header = make(http.Header)
+	tr := trace.GetTrace(req)
+	ctx.Set(trace.TraceID, tr.TraceID)
+
+	return ctx
+}

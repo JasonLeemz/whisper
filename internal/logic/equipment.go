@@ -119,20 +119,6 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 
 	}
 
-	// TODO 记录英雄适配装备表
-	//hsDao := dao.NewHeroesSuitDAO()
-	//_, err = hsDao.Add(heroesSuit)
-	//if err != nil {
-	//	log.Logger.Error(ctx, errors.New(err))
-	//}
-
-	// TODO 记录装备所属类型表
-	//etDao := dao.NewEquipTypeDAO()
-	//_, err = etDao.Add(equipType)
-	//if err != nil {
-	//	log.Logger.Error(ctx, errors.New(err))
-	//}
-
 	// 记录装备信息
 	_, err = equipDao.Add(equips)
 	if err != nil {
