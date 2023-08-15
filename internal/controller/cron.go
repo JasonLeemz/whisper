@@ -7,6 +7,7 @@ import (
 )
 
 func Cron(ctx *context.Context) {
+
 	logic.Cron(ctx)
 	ctx.Reply(nil, errors.New(nil))
 }
