@@ -6,16 +6,15 @@ import (
 	errors2 "errors"
 	"fmt"
 	"github.com/olivere/elastic/v7"
+	"html"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
-	dao "whisper/internal/model/DAO"
-	"whisper/pkg/pinyin"
-
 	"whisper/internal/dto"
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
+	dao "whisper/internal/model/DAO"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
 	"whisper/pkg/es"
@@ -137,11 +136,16 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 			resp.Hits[i].Source.Name = hitData.Name + "(" + hitData.StyleName + ")"
 			resp.Hits[i].Source.IconPath = hitData.IconPath
 			resp.Hits[i].Source.Description = strings.Replace(hitData.Description, "<hr>", "", -1)
-			//resp.Hits[i].Source.Plaintext = hitData.Plaintext
+			resp.Hits[i].Source.Plaintext = hitData.Plaintext
 			resp.Hits[i].Source.Version = hitData.Version
 			//resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Type:%s", hitData.StyleName))
-			if hitData.Plaintext != "" {
-				resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("%s", strings.Replace(hitData.Plaintext, "<br>", "", -1)))
+			if hitData.Tooltip != "" {
+				tooltip := html.UnescapeString(hitData.Tooltip)
+				//tooltip = strings.Replace(hitData.Tooltip, "&lt;br&gt;", "", -1)
+				//tooltip = strings.Replace(tooltip, "&lt;hr&gt;", "", -1)
+				tooltip = strings.Replace(tooltip, "<br>", "", -1)
+				tooltip = strings.Replace(tooltip, "<hr>", "", -1)
+				resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, tooltip)
 			}
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
 		}
@@ -516,26 +520,26 @@ func buildEquipIndex(ctx *context.Context) error {
 				var esEquip []*model.ESEquipment
 				tmp := row
 				esEquip = append(esEquip, &model.ESEquipment{
-					ID:           tmp.ItemId + "_" + tmp.Maps,
-					EquipId:      tmp.ItemId,
-					Name:         tmp.Name,
-					IconPath:     tmp.IconPath,
-					Price:        tmp.Price,
-					Description:  tmp.Description,
-					Plaintext:    tmp.Plaintext,
-					Sell:         tmp.Sell,
-					Total:        tmp.Total,
-					SuitHeroId:   tmp.SuitHeroId,
-					SuitHeroName: tmp.SuitHeroId, // todo
-					SuitHeroIcon: tmp.SuitHeroId, // todo
-					Keywords:     tmp.Keywords,
-					Maps:         tmp.Maps,
-					From:         tmp.From,  // todo
-					Into:         tmp.Into,  // todo
-					Types:        tmp.Types, // todo
-					Version:      tmp.Version,
-					FileTime:     tmp.FileTime,
-					Platform:     strconv.Itoa(common.PlatformForLOL),
+					ID:          tmp.ItemId + "_" + tmp.Maps,
+					EquipId:     tmp.ItemId,
+					Name:        tmp.Name,
+					IconPath:    tmp.IconPath,
+					Price:       tmp.Price,
+					Description: tmp.Description,
+					Plaintext:   tmp.Plaintext,
+					Sell:        tmp.Sell,
+					Total:       tmp.Total,
+					SuitHeroId:  tmp.SuitHeroId,
+					//SuitHeroName: tmp.SuitHeroId, // todo
+					//SuitHeroIcon: tmp.SuitHeroId, // todo
+					Keywords: tmp.Keywords,
+					Maps:     tmp.Maps,
+					//From:         tmp.From,  // todo
+					//Into:         tmp.Into,  // todo
+					//Types:        tmp.Types, // todo
+					Version:  tmp.Version,
+					FileTime: tmp.FileTime,
+					Platform: strconv.Itoa(common.PlatformForLOL),
 				})
 
 				err2 := ed.Equipment2ES(ctx, esEquip)
@@ -599,7 +603,7 @@ func buildMEquipIndex(ctx *context.Context) error {
 				tmp := row
 
 				esEquip = append(esEquip, &model.ESEquipment{
-					ID:          tmp.EquipId + "_lolm",
+					ID:          tmp.EquipId + "召唤师峡谷",
 					EquipId:     tmp.EquipId,
 					Name:        tmp.Name,
 					IconPath:    tmp.IconPath,
@@ -611,10 +615,10 @@ func buildMEquipIndex(ctx *context.Context) error {
 					//SuitHeroId:   tmp.SuitHeroId,
 					//SuitHeroName: tmp.SuitHeroId, // todo
 					//SuitHeroIcon: tmp.SuitHeroId, // todo
-					Keywords: tmp.SearchKey, // 仅LOLM字段 数据为空
+					Keywords: tmp.SearchKey, // 仅LOLM字段
 					Maps:     "召唤师峡谷",
-					From:     tmp.From, // todo
-					Into:     tmp.Into, // todo
+					//From:     tmp.From, // todo
+					//Into:     tmp.Into, // todo
 					Types:    tmp.Type,
 					Version:  tmp.Version,
 					FileTime: tmp.FileTime,
@@ -680,7 +684,6 @@ func buildRuneIndex(ctx *context.Context) error {
 
 				var esData []*model.ESRune
 				tmp := row
-				py, first := pinyin.Trans(tmp.Name)
 				esData = append(esData, &model.ESRune{
 					ID:          tmp.Name + "_" + tmp.Version,
 					Name:        tmp.Name,
@@ -688,7 +691,7 @@ func buildRuneIndex(ctx *context.Context) error {
 					Tooltip:     tmp.Tooltip,
 					Description: tmp.Longdesc,
 					Plaintext:   tmp.Shortdesc,
-					Keywords:    tmp.Key + "," + py + "," + first,
+					Keywords:    tmp.Keywords,
 					SlotLabel:   tmp.SlotLabel,
 					StyleName:   tmp.StyleName,
 					Version:     tmp.Version,
@@ -753,23 +756,22 @@ func buildMRuneIndex(ctx *context.Context) error {
 
 				var esData []*model.ESRune
 				tmp := row
-				NamePY, NameF := pinyin.Trans(tmp.Name)
-				TypePY, TypeF := pinyin.Trans(tmp.Type)
+
 				esData = append(esData, &model.ESRune{
 					ID:          tmp.RuneId + "_" + tmp.Name + "_" + tmp.Version,
 					Name:        tmp.Name,
 					IconPath:    tmp.IconPath,
-					Tooltip:     tmp.Description,
+					Tooltip:     tmp.AttrName,
 					Description: tmp.DetailInfo,
-					Plaintext:   tmp.AttrName,
-					Keywords:    NamePY + "," + NameF + "," + TypePY + "," + TypeF + "," + tmp.Type,
-					SlotLabel:   "",
-					StyleName:   tmp.Type,
-					Maps:        "",
-					Types:       tmp.Type,
-					Version:     tmp.Version,
-					FileTime:    tmp.FileTime,
-					Platform:    strconv.Itoa(common.PlatformForLOLM),
+					Plaintext:   tmp.Description,
+					Keywords:    tmp.Keywords,
+					//SlotLabel:   "",
+					//StyleName:   "",
+					//Maps:        "",
+					Types:    tmp.Type,
+					Version:  tmp.Version,
+					FileTime: tmp.FileTime,
+					Platform: strconv.Itoa(common.PlatformForLOLM),
 				})
 
 				err := rd.Rune2ES(ctx, esData)
@@ -832,14 +834,13 @@ func buildSkillIndex(ctx *context.Context) error {
 
 				var esData []*model.ESSkill
 				tmp := row
-				py, first := pinyin.Trans(tmp.Name)
 				esData = append(esData, &model.ESSkill{
 					ID:          tmp.Name + "_" + "LOL" + "_" + tmp.Version,
 					Name:        tmp.Name,
 					IconPath:    tmp.Icon,
 					Description: tmp.Description,
 					Plaintext:   "",
-					Keywords:    py + "," + first,
+					Keywords:    tmp.Keywords,
 					Maps:        tmp.Gamemode,
 					CoolDown:    tmp.Cooldown,
 					Version:     tmp.Version,
@@ -905,14 +906,13 @@ func buildMSkillIndex(ctx *context.Context) error {
 
 				var esData []*model.ESSkill
 				tmp := row
-				py, first := pinyin.Trans(tmp.Name)
 				esData = append(esData, &model.ESSkill{
 					ID:          tmp.Name + "_" + "LOLM" + "_" + tmp.Version,
 					Name:        tmp.Name,
 					IconPath:    tmp.IconPath,
 					Description: tmp.FuncDesc,
 					Plaintext:   "",
-					Keywords:    py + "," + first,
+					Keywords:    tmp.Keywords,
 					Maps:        tmp.Mode,
 					CoolDown:    tmp.Cd,
 					Version:     tmp.Version,

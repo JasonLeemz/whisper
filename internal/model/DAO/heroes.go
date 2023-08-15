@@ -8,6 +8,15 @@ import (
 	"whisper/pkg/mysql"
 )
 
+type LOLHeroes interface {
+	Add([]*model.LOLHeroes) (int64, error)
+	Find(query []string, cond map[string]interface{}) ([]*model.LOLHeroes, error)
+	Update(data *model.LOLHeroes, cond map[string]interface{}) (int64, error)
+	GetLOLHeroesMaxVersion() (*model.LOLHeroes, error)
+	GetLOLHeroes(version string) ([]*model.LOLHeroes, error)
+	GetLOLHeroesWithExt(version string) ([]*model.LOLHeroesEXT, error)
+}
+
 type LOLHeroesDAO struct {
 	db *gorm.DB
 }
@@ -31,10 +40,15 @@ func (dao *LOLHeroesDAO) Add(heroes []*model.LOLHeroes) (int64, error) {
 	return result.RowsAffected, result.Error
 }
 
+func (dao *LOLHeroesDAO) Update(data *model.LOLHeroes, cond map[string]interface{}) (int64, error) {
+	result := dao.db.Model(model.LOLHeroes{}).Where(cond).Updates(data)
+	return result.RowsAffected, result.Error
+}
+
 func (dao *LOLHeroesDAO) GetLOLHeroesMaxVersion() (*model.LOLHeroes, error) {
 	tx := dao.db.Model(&model.LOLHeroes{})
 	var result model.LOLHeroes
-	tx = tx.Order("version desc").First(&result)
+	tx = tx.Where("status = 0").Order("version desc").First(&result)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -45,6 +59,7 @@ func (dao *LOLHeroesDAO) GetLOLHeroes(version string) ([]*model.LOLHeroes, error
 	// 查当前版本所有数据
 	cond := map[string]interface{}{
 		"version": version,
+		"status":  0,
 	}
 	data, err := dao.Find(nil, cond)
 	if err != nil {
@@ -80,6 +95,7 @@ FROM
 	LEFT JOIN hero_alias alias ON CONCAT_WS(' ', hero.name, hero.title) = alias.name
 WHERE
 	hero.version = '%s'
+	AND hero.status = 0
 	AND attr.version = '%s'
 	AND attr.platform = 0
 	AND alias.platform = 0
@@ -99,15 +115,16 @@ func NewLOLHeroesDAO() *LOLHeroesDAO {
 	}
 }
 
-type LOLHeroes interface {
-	Add([]*model.LOLHeroes) (int64, error)
-	Find(query []string, cond map[string]interface{}) ([]*model.LOLHeroes, error)
-	GetLOLHeroesMaxVersion() (*model.LOLHeroes, error)
-	GetLOLHeroes(version string) ([]*model.LOLHeroes, error)
-	GetLOLHeroesWithExt(version string) ([]*model.LOLHeroesEXT, error)
-}
-
 // --------------------------------------------------------
+
+type LOLMHeroes interface {
+	Add([]*model.LOLMHeroes) (int64, error)
+	Find(query []string, cond map[string]interface{}) ([]*model.LOLMHeroes, error)
+	Update(data *model.LOLMHeroes, cond map[string]interface{}) (int64, error)
+	GetLOLMHeroesMaxVersion() (*model.LOLMHeroes, error)
+	GetLOLMHeroes(version string) ([]*model.LOLMHeroes, error)
+	GetLOLMHeroesWithExt(version string) ([]*model.LOLMHeroesEXT, error)
+}
 
 type LOLMHeroesDAO struct {
 	db *gorm.DB
@@ -132,10 +149,15 @@ func (dao *LOLMHeroesDAO) Add(heroes []*model.LOLMHeroes) (int64, error) {
 	return result.RowsAffected, result.Error
 }
 
+func (dao *LOLMHeroesDAO) Update(data *model.LOLMHeroes, cond map[string]interface{}) (int64, error) {
+	result := dao.db.Model(model.LOLMHeroes{}).Where(cond).Updates(data)
+	return result.RowsAffected, result.Error
+}
+
 func (dao *LOLMHeroesDAO) GetLOLMHeroesMaxVersion() (*model.LOLMHeroes, error) {
 	tx := dao.db.Model(&model.LOLMHeroes{})
 	var result model.LOLMHeroes
-	tx = tx.Order("version desc").First(&result)
+	tx = tx.Where("status = 0").Order("version desc").First(&result)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -146,6 +168,7 @@ func (dao *LOLMHeroesDAO) GetLOLMHeroes(version string) ([]*model.LOLMHeroes, er
 	// 查当前版本所有数据
 	cond := map[string]interface{}{
 		"version": version,
+		"status":  0,
 	}
 	data, err := dao.Find(nil, cond)
 	if err != nil {
@@ -184,6 +207,7 @@ FROM
 	LEFT JOIN hero_role role ON hero.heroId = role.hero_id
 WHERE
 	hero.version = '%s'
+	AND hero.status = 0
 	AND attr.version = '%s'
 	AND attr.platform = 1
 	-- AND alias.platform = 1
@@ -201,12 +225,4 @@ func NewLOLMHeroesDAO() *LOLMHeroesDAO {
 	return &LOLMHeroesDAO{
 		db: mysql.DB,
 	}
-}
-
-type LOLMHeroes interface {
-	Add([]*model.LOLMHeroes) (int64, error)
-	Find(query []string, cond map[string]interface{}) ([]*model.LOLMHeroes, error)
-	GetLOLMHeroesMaxVersion() (*model.LOLMHeroes, error)
-	GetLOLMHeroes(version string) ([]*model.LOLMHeroes, error)
-	GetLOLMHeroesWithExt(version string) ([]*model.LOLMHeroesEXT, error)
 }

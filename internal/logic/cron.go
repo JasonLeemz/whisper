@@ -9,9 +9,10 @@ import (
 	"whisper/pkg/log"
 )
 
-func Cron() {
-
-	ctx := context.NewContext()
+func Cron(ctx *context.Context) {
+	if ctx == nil {
+		ctx = context.NewContext()
+	}
 	_, cancelFunc := context2.WithTimeout(ctx, 10*time.Second)
 	defer cancelFunc()
 
@@ -88,7 +89,7 @@ func Cron() {
 	}()
 
 	wg.Wait()
-
+	log.Logger.Info(ctx, "start building index...")
 	err = BuildIndex(ctx, "", false)
 	if err != nil {
 		log.Logger.Error(ctx, err)

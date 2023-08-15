@@ -25,6 +25,7 @@ type LOLEquipment struct {
 	FileTime    string    `gorm:"column:fileTime;default:;NOT NULL"`
 	Ctime       time.Time `gorm:"column:ctime;default:current_timestamp();NOT NULL"`
 	Utime       time.Time `gorm:"column:utime;default:current_timestamp();NOT NULL"`
+	Status      uint8     `gorm:"column:status;default:0;NOT NULL"`
 }
 
 func (e *LOLEquipment) TableName() string {
@@ -74,6 +75,7 @@ type LOLMEquipment struct {
 	FileTime        string    `gorm:"column:fileTime;default:;NOT NULL"`
 	Ctime           time.Time `gorm:"column:ctime;default:current_timestamp();NOT NULL"`
 	Utime           time.Time `gorm:"column:utime;default:current_timestamp();NOT NULL"`
+	Status          uint8     `gorm:"column:status;default:0;NOT NULL"`
 }
 
 func (e *LOLMEquipment) TableName() string {

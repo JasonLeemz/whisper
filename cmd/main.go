@@ -56,6 +56,11 @@ func main() {
 		db.POST("/alias/heroes", context.Handle(controller.AliasHeroes))
 		db.POST("/alias/equip", context.Handle(controller.AliasEquip))
 	}
+
+	inner := router.Group("/")
+	{
+		inner.POST("/cron", context.Handle(controller.Cron))
+	}
 	run.Init()
 
 	srv := &http.Server{
@@ -84,7 +89,7 @@ func main() {
 	c := cron.New()
 	_, err := c.AddFunc("10 0 * * *", func() {
 		fmt.Println(time.Now())
-		logic.Cron()
+		logic.Cron(nil)
 	})
 	if err != nil {
 		panic(err)

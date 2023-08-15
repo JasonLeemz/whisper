@@ -3,11 +3,13 @@ package logic
 import (
 	errors2 "errors"
 	"fmt"
+	"time"
 	"whisper/internal/dto"
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
 	dao "whisper/internal/model/DAO"
 	"whisper/pkg/log"
+	"whisper/pkg/pinyin"
 
 	"whisper/internal/service"
 	"whisper/pkg/context"
@@ -58,12 +60,33 @@ func reloadRuneForLOL(ctx *context.Context, r *dto.LOLRune) {
 			log.Logger.Info(ctx, "原始数据版本和当前获取数据的版本相等,不更新")
 			return
 		}
+		// 有可能日期更新了，但是版本号没变
+		if result.Version == r.Version {
+			// 将db中该版本的数据status置为1
+			cond := map[string]interface{}{
+				"version": result.Version,
+				"status":  0,
+			}
+			data := model.LOLRune{
+				Status: 1,
+			}
+			up, err := runeDAO.Update(&data, cond)
+			if err != nil {
+				log.Logger.Error(ctx, err)
+				return
+			}
+			log.Logger.Info(ctx, "当前版本数据不是最新,已经软删除,生效行数:", up)
+		}
 	}
 
+	log.Logger.Info(ctx, "running record LOL rune data...")
+	startT := time.Now()
 	// 入库更新
 	rs := make([]*model.LOLRune, 0, len(r.Rune))
 
 	for _, rr := range r.Rune {
+		namePY, nameF := pinyin.Trans(rr.Name)
+		searchKey := rr.Key + "," + rr.StyleName + "," + namePY + "," + nameF
 		tmp := model.LOLRune{
 			Name:      rr.Name,
 			Icon:      rr.Icon,
@@ -71,6 +94,7 @@ func reloadRuneForLOL(ctx *context.Context, r *dto.LOLRune) {
 			Tooltip:   rr.Tooltip,
 			Shortdesc: rr.ShortDesc,
 			Longdesc:  rr.LongDesc,
+			Keywords:  searchKey,
 			SlotLabel: rr.SlotLabel,
 			StyleName: rr.StyleName,
 			Version:   r.Version,
@@ -84,6 +108,8 @@ func reloadRuneForLOL(ctx *context.Context, r *dto.LOLRune) {
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 	}
+
+	log.Logger.Info(ctx, fmt.Sprintf("finish record LOL rune data. Since:%fs", time.Since(startT).Seconds()))
 }
 
 func reloadRuneForLOLM(ctx *context.Context, r *dto.LOLMRune) {
@@ -109,18 +135,42 @@ func reloadRuneForLOLM(ctx *context.Context, r *dto.LOLMRune) {
 			log.Logger.Info(ctx, "原始数据版本和当前获取数据的版本相等,不更新")
 			return
 		}
+
+		// 有可能日期更新了，但是版本号没变
+		if result.Version == r.Version {
+			// 将db中该版本的数据status置为1
+			cond := map[string]interface{}{
+				"version": result.Version,
+				"status":  0,
+			}
+			data := model.LOLMRune{
+				Status: 1,
+			}
+			up, err := runeDAO.Update(&data, cond)
+			if err != nil {
+				log.Logger.Error(ctx, err)
+				return
+			}
+			log.Logger.Info(ctx, "当前版本数据不是最新,已经软删除,生效行数:", up)
+		}
 	}
 
+	log.Logger.Info(ctx, "running record LOLM rune data...")
+	startT := time.Now()
 	// 入库更新
 	rs := make([]*model.LOLMRune, 0, len(r.RuneList))
 
 	for _, rr := range r.RuneList {
+		namePY, nameF := pinyin.Trans(rr.Name)
+		searchKey := rr.AttrName + "," + rr.Type + "," + namePY + "," + nameF
+
 		tmp := model.LOLMRune{
 			RuneId:               rr.RuneId,
 			Name:                 rr.Name,
 			Description:          rr.Description,
 			DetailInfo:           rr.DetailInfo,
 			AttrName:             rr.AttrName,
+			Keywords:             searchKey,
 			Type:                 rr.Type,
 			IconPath:             rr.IconPath,
 			SortOrder:            rr.SortOrder,
@@ -138,6 +188,8 @@ func reloadRuneForLOLM(ctx *context.Context, r *dto.LOLMRune) {
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 	}
+
+	log.Logger.Info(ctx, fmt.Sprintf("finish record LOLM rune data. Since:%fs", time.Since(startT).Seconds()))
 }
 
 func QueryRuneType(ctx *context.Context, platform int) (any, *errors.Error) {

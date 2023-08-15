@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cast"
 	"math"
 	"strings"
+	"time"
 	"whisper/internal/dto"
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
@@ -14,6 +15,7 @@ import (
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
 	"whisper/pkg/log"
+	"whisper/pkg/pinyin"
 )
 
 func QueryEquipments(ctx *context.Context, platform int) (any, *errors.Error) {
@@ -62,14 +64,37 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 			log.Logger.Info(ctx, "原始数据版本和当前获取数据的版本相等,不更新")
 			return
 		}
+
+		// 有可能日期更新了，但是版本号没变
+		if result.Version == equip.Version {
+			// 将db中该版本的数据status置为1
+			cond := map[string]interface{}{
+				"version": result.Version,
+				"status":  0,
+			}
+			data := model.LOLEquipment{
+				Status: 1,
+			}
+			up, err := equipDao.Update(&data, cond)
+			if err != nil {
+				log.Logger.Error(ctx, err)
+				return
+			}
+			log.Logger.Info(ctx, "当前版本数据不是最新,已经软删除,生效行数:", up)
+		}
 	}
 
+	log.Logger.Info(ctx, "running record LOL equipment data...")
+	startT := time.Now()
 	// 入库更新
 	equips := make([]*model.LOLEquipment, 0, len(equip.Items)+int(math.Floor(float64(len(equip.Items)/3))))
 	heroesSuit := make([]*model.HeroesSuit, 0)
 	equipType := make([]*model.EquipType, 0)
 
 	for _, item := range equip.Items {
+		namePY, nameF := pinyin.Trans(item.Name)
+		searchKey := namePY + "," + nameF
+
 		tmp := model.LOLEquipment{
 			ItemId:      item.ItemId,
 			Name:        item.Name,
@@ -80,7 +105,7 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 			Sell:        item.Sell,
 			Total:       item.Total,
 			Tag:         item.Tag,
-			Keywords:    item.Keywords,
+			Keywords:    item.Keywords + "," + searchKey,
 			Version:     equip.Version,
 			FileTime:    equip.FileTime,
 
@@ -124,6 +149,8 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 	}
+
+	log.Logger.Info(ctx, fmt.Sprintf("finish record LOL equipment data. Since:%fs", time.Since(startT).Seconds()))
 }
 
 func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
@@ -150,12 +177,35 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 			log.Logger.Info(ctx, "原始数据版本和当前获取数据的版本相等,不更新")
 			return
 		}
+
+		// 有可能日期更新了，但是版本号没变
+		if result.Version == equip.Version {
+			// 将db中该版本的数据status置为1
+			cond := map[string]interface{}{
+				"version": result.Version,
+				"status":  0,
+			}
+			data := model.LOLMEquipment{
+				Status: 1,
+			}
+			up, err := equipDao.Update(&data, cond)
+			if err != nil {
+				log.Logger.Error(ctx, err)
+				return
+			}
+			log.Logger.Info(ctx, "当前版本数据不是最新,已经软删除,生效行数:", up)
+		}
 	}
 
+	log.Logger.Info(ctx, "running record LOLM equipment data...")
+	startT := time.Now()
 	// 入库更新
 	equips := make([]*model.LOLMEquipment, 0, len(equip.EquipList))
 
 	for _, item := range equip.EquipList {
+
+		namePY, nameF := pinyin.Trans(item.Name)
+		searchKey := namePY + "," + nameF + "," + item.Type + "," + item.Level
 		tmp := model.LOLMEquipment{
 			EquipId:  item.EquipId,
 			Name:     item.Name,
@@ -190,11 +240,12 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 			Into:            item.Into,
 			Tags:            item.Tags,
 			UnName:          item.UnName,
-			SearchKey:       item.SearchKey,
+			SearchKey:       searchKey,
 			Version:         equip.Version,
 			FileTime:        equip.FileTime,
 
-			Description: strings.Join(item.Description, "<br>"),
+			Description: strings.Join(item.Description, ""),
+			//Description: strings.Join(item.Description, "<br>"),
 		}
 
 		equips = append(equips, &tmp)
@@ -204,34 +255,32 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 	}
+
+	log.Logger.Info(ctx, fmt.Sprintf("finish record LOLM equipment data. Since:%fs", time.Since(startT).Seconds()))
 }
 
 func GetCurrentLOLVersion(ctx *context.Context) string {
 	equipDao := dao.NewLOLEquipmentDAO()
-	result, err := equipDao.Find([]string{
-		"max(version) as version",
-	}, nil)
+	result, err := equipDao.GetLOLEquipmentMaxVersion()
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 		return ""
 	}
 	if result != nil {
-		return result[0].Version
+		return result.Version
 	}
 	return ""
 }
 
 func GetCurrentLOLMVersion(ctx *context.Context) string {
 	equipDao := dao.NewLOLMEquipmentDAO()
-	result, err := equipDao.Find([]string{
-		"max(version) as version",
-	}, nil)
+	result, err := equipDao.GetLOLMEquipmentMaxVersion()
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 		return ""
 	}
 	if result != nil {
-		return result[0].Version
+		return result.Version
 	}
 	return ""
 }

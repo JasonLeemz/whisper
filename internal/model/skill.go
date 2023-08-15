@@ -6,6 +6,7 @@ type LOLSkill struct {
 	Id            uint64    `gorm:"column:id;primary_key;AUTO_INCREMENT;NOT NULL"`
 	Name          string    `gorm:"column:name;default:;NOT NULL"`
 	Description   string    `gorm:"column:description;default:;NOT NULL"`
+	Keywords      string    `gorm:"column:keywords;default:;NOT NULL"`
 	Summonerlevel string    `gorm:"column:summonerlevel;default:;NOT NULL"`
 	Cooldown      string    `gorm:"column:cooldown;default:;NOT NULL"`
 	Gamemode      string    `gorm:"column:gamemode;default:;NOT NULL"`
@@ -14,6 +15,7 @@ type LOLSkill struct {
 	FileTime      string    `gorm:"column:fileTime;default:;NOT NULL"`
 	Ctime         time.Time `gorm:"column:ctime;default:current_timestamp();NOT NULL"`
 	Utime         time.Time `gorm:"column:utime;default:current_timestamp();NOT NULL"`
+	Status        uint8     `gorm:"column:status;default:0;NOT NULL"`
 }
 
 func (s *LOLSkill) TableName() string {
@@ -28,6 +30,7 @@ type LOLMSkill struct {
 	Name      string    `gorm:"column:name;default:;NOT NULL"`
 	IconPath  string    `gorm:"column:iconPath;default:;NOT NULL"`
 	FuncDesc  string    `gorm:"column:funcDesc;default:;NOT NULL"`
+	Keywords  string    `gorm:"column:keywords;default:;NOT NULL"`
 	Cd        string    `gorm:"column:cd;default:;NOT NULL"`
 	Video     string    `gorm:"column:video;default:;NOT NULL"`
 	Unlocklv  string    `gorm:"column:unlocklv;default:;NOT NULL"`
@@ -37,6 +40,7 @@ type LOLMSkill struct {
 	FileTime  string    `gorm:"column:fileTime;default:;NOT NULL"`
 	Ctime     time.Time `gorm:"column:ctime;default:current_timestamp();NOT NULL"`
 	Utime     time.Time `gorm:"column:utime;default:current_timestamp();NOT NULL"`
+	Status    uint8     `gorm:"column:status;default:0;NOT NULL"`
 }
 
 func (s *LOLMSkill) TableName() string {

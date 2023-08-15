@@ -11,6 +11,7 @@ import (
 type LOLEquipment interface {
 	Add(data []*model.LOLEquipment) (int64, error)
 	Find(query []string, cond map[string]interface{}) ([]*model.LOLEquipment, error)
+	Update(data *model.LOLEquipment, cond map[string]interface{}) (int64, error)
 	GetLOLEquipmentMaxVersion() (*model.LOLEquipment, error)
 	GetLOLEquipment(version string) ([]*model.LOLEquipment, error)
 	GetLOLEquipmentWithExt(version string) ([]*model.LOLEquipment, error)
@@ -39,10 +40,15 @@ func (dao *LOLEquipmentDAO) Add(equips []*model.LOLEquipment) (int64, error) {
 	return result.RowsAffected, result.Error
 }
 
+func (dao *LOLEquipmentDAO) Update(data *model.LOLEquipment, cond map[string]interface{}) (int64, error) {
+	result := dao.db.Model(model.LOLEquipment{}).Where(cond).Updates(data)
+	return result.RowsAffected, result.Error
+}
+
 func (dao *LOLEquipmentDAO) GetLOLEquipmentMaxVersion() (*model.LOLEquipment, error) {
 	tx := dao.db.Model(&model.LOLEquipment{})
 	var result model.LOLEquipment
-	tx = tx.Order("version desc").First(&result)
+	tx = tx.Where("status = 0").Order("version desc").First(&result)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -53,6 +59,7 @@ func (dao *LOLEquipmentDAO) GetLOLEquipment(version string) ([]*model.LOLEquipme
 	// 查当前版本所有数据
 	cond := map[string]interface{}{
 		"version": version,
+		"status":  0,
 	}
 	equip, err := dao.Find(nil, cond)
 	if err != nil {
@@ -86,7 +93,7 @@ FROM
 	lol_equipment equip
 	LEFT JOIN equip_alias alias ON equip.name = alias.name
 WHERE
-	equip.version = '%s' and alias.platform = 0
+	equip.version = '%s' and equip.status = 0 and equip.maps <> '' and alias.platform = 0
 `
 	sql = fmt.Sprintf(sql, version)
 	err := dao.db.Exec(sql).Find(&result).Error
@@ -104,6 +111,7 @@ func NewLOLEquipmentDAO() *LOLEquipmentDAO {
 type LOLMEquipment interface {
 	Add(equips []*model.LOLMEquipment) (int64, error)
 	Find(query []string, cond map[string]interface{}) ([]*model.LOLMEquipment, error)
+	Update(data *model.LOLMEquipment, cond map[string]interface{}) (int64, error)
 	GetLOLMEquipmentMaxVersion() (*model.LOLMEquipment, error)
 	GetLOLMEquipment(version string) ([]*model.LOLMEquipment, error)
 	GetLOLMEquipmentWithExt(version string) ([]*model.LOLMEquipment, error)
@@ -130,10 +138,16 @@ func (dao *LOLMEquipmentDAO) Add(equips []*model.LOLMEquipment) (int64, error) {
 	result := dao.db.Create(equips)
 	return result.RowsAffected, result.Error
 }
+
+func (dao *LOLMEquipmentDAO) Update(data *model.LOLMEquipment, cond map[string]interface{}) (int64, error) {
+	result := dao.db.Model(model.LOLMEquipment{}).Where(cond).Updates(data)
+	return result.RowsAffected, result.Error
+}
+
 func (dao *LOLMEquipmentDAO) GetLOLMEquipmentMaxVersion() (*model.LOLMEquipment, error) {
 	tx := dao.db.Model(&model.LOLMEquipment{})
 	var result model.LOLMEquipment
-	tx = tx.Order("version desc").First(&result)
+	tx = tx.Where("status = 0").Order("version desc").First(&result)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -143,6 +157,7 @@ func (dao *LOLMEquipmentDAO) GetLOLMEquipment(version string) ([]*model.LOLMEqui
 	// 查当前版本所有数据
 	cond := map[string]interface{}{
 		"version": version,
+		"status":  0,
 	}
 	equip, err := dao.Find(nil, cond)
 	if err != nil {
@@ -171,7 +186,7 @@ FROM
 	lolm_equipment equip
 	LEFT JOIN equip_alias alias ON equip.name = alias.name
 WHERE
-	equip.version = '%s' and alias.platform = 0
+	equip.version = '%s' and equip.status = 0 and alias.platform = 0
 `
 	sql = fmt.Sprintf(sql, version)
 	err := dao.db.Exec(sql).Find(&result).Error

@@ -34,7 +34,7 @@ func (dao *LOLSkillDAO) Add(r []*model.LOLSkill) (int64, error) {
 func (dao *LOLSkillDAO) GetLOLSkillMaxVersion() (*model.LOLSkill, error) {
 	tx := dao.db.Model(&model.LOLSkill{})
 	var result model.LOLSkill
-	tx = tx.Order("version desc").First(&result)
+	tx = tx.Where("status = 0").Order("version desc").First(&result)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -47,13 +47,18 @@ func (dao *LOLSkillDAO) GetLOLSkill(version string) ([]*model.LOLSkill, error) {
 	//	"version": version,
 	//}
 	var result []*model.LOLSkill
-	cond := fmt.Sprintf("version = '%s' and gamemode <> ''", version)
+	cond := fmt.Sprintf("version = '%s' and status = 0 and gamemode <> ''", version)
 	err := dao.db.Where(cond).Find(&result).Error
 	//data, err := dao.Find(nil, cond)
 	if err != nil {
 		return nil, err
 	}
 	return result, err
+}
+
+func (dao *LOLSkillDAO) Update(data *model.LOLSkill, cond map[string]interface{}) (int64, error) {
+	result := dao.db.Model(model.LOLSkill{}).Where(cond).Updates(data)
+	return result.RowsAffected, result.Error
 }
 
 func NewLOLSkillDAO() *LOLSkillDAO {
@@ -65,6 +70,7 @@ func NewLOLSkillDAO() *LOLSkillDAO {
 type LOLSkill interface {
 	Add([]*model.LOLSkill) (int64, error)
 	Find(query []string, cond map[string]interface{}) ([]*model.LOLSkill, error)
+	Update(data *model.LOLSkill, cond map[string]interface{}) (int64, error)
 	GetLOLSkillMaxVersion() (*model.LOLSkill, error)
 	GetLOLSkill(version string) ([]*model.LOLSkill, error)
 }
@@ -94,10 +100,15 @@ func (dao *LOLMSkillDAO) Add(r []*model.LOLMSkill) (int64, error) {
 	return result.RowsAffected, result.Error
 }
 
+func (dao *LOLMSkillDAO) Update(data *model.LOLMSkill, cond map[string]interface{}) (int64, error) {
+	result := dao.db.Model(model.LOLMSkill{}).Where(cond).Updates(data)
+	return result.RowsAffected, result.Error
+}
+
 func (dao *LOLMSkillDAO) GetLOLMSkillMaxVersion() (*model.LOLMSkill, error) {
 	tx := dao.db.Model(&model.LOLMSkill{})
 	var result model.LOLMSkill
-	tx = tx.Order("version desc").First(&result)
+	tx = tx.Where("status = 0").Order("version desc").First(&result)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -108,6 +119,7 @@ func (dao *LOLMSkillDAO) GetLOLMSkill(version string) ([]*model.LOLMSkill, error
 	// 查当前版本所有数据
 	cond := map[string]interface{}{
 		"version": version,
+		"status":  0,
 	}
 	data, err := dao.Find(nil, cond)
 	if err != nil {
@@ -125,6 +137,7 @@ func NewLOLMSkillDAO() *LOLMSkillDAO {
 type LOLMSkill interface {
 	Add([]*model.LOLMSkill) (int64, error)
 	Find(query []string, cond map[string]interface{}) ([]*model.LOLMSkill, error)
+	Update(data *model.LOLMSkill, cond map[string]interface{}) (int64, error)
 	GetLOLMSkillMaxVersion() (*model.LOLMSkill, error)
 	GetLOLMSkill(version string) ([]*model.LOLMSkill, error)
 }

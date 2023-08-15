@@ -14,10 +14,12 @@ type LOLRune struct {
 	Longdesc  string    `gorm:"column:longdesc"`
 	SlotLabel string    `gorm:"column:slotLabel;default:;NOT NULL"`
 	StyleName string    `gorm:"column:styleName;default:;NOT NULL"`
+	Keywords  string    `gorm:"column:keywords;default:;NOT NULL"`
 	Version   string    `gorm:"column:version;default:;NOT NULL"`
 	FileTime  string    `gorm:"column:fileTime;default:;NOT NULL"`
 	Ctime     time.Time `gorm:"column:ctime;default:current_timestamp();NOT NULL"`
 	Utime     time.Time `gorm:"column:utime;default:current_timestamp();NOT NULL"`
+	Status    uint8     `gorm:"column:status;default:0;NOT NULL"`
 }
 
 func (l *LOLRune) TableName() string {
@@ -34,6 +36,7 @@ type LOLMRune struct {
 	DetailInfo           string    `gorm:"column:detailInfo;default:;NOT NULL"`
 	AttrName             string    `gorm:"column:attrName;default:;NOT NULL"`
 	Type                 string    `gorm:"column:type;default:;NOT NULL"`
+	Keywords             string    `gorm:"column:keywords;default:;NOT NULL"`
 	IconPath             string    `gorm:"column:iconPath;default:;NOT NULL"`
 	SortOrder            string    `gorm:"column:sortOrder;default:;NOT NULL"`
 	UnlockLv             string    `gorm:"column:unlockLv;default:;NOT NULL"`
@@ -43,6 +46,7 @@ type LOLMRune struct {
 	FileTime             string    `gorm:"column:fileTime;default:;NOT NULL"`
 	Ctime                time.Time `gorm:"column:ctime;default:current_timestamp();NOT NULL"`
 	Utime                time.Time `gorm:"column:utime;default:current_timestamp();NOT NULL"`
+	Status               uint8     `gorm:"column:status;default:0;NOT NULL"`
 }
 
 func (l *LOLMRune) TableName() string {
