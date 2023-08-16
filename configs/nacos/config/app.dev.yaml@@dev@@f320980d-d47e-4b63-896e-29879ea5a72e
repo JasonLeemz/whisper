@@ -1,0 +1,35 @@
+app:
+  ip: 0.0.0.0
+  port: 8123
+
+log:
+  path: ./logs/whisper.log
+  sqlLog: ./logs/sql.log
+  esLog: ./logs/es.log
+  logLevel: 0 #debug
+
+database:
+  host: mariadb.ybdx.xyz
+  port: 3306
+  username: root
+  password: root
+  db: whisper
+
+redis:
+  host: 192.168.31.21
+  port: 6379
+  password: MhxzKhl*
+  db: 0
+
+mq:
+  schema: amqp
+  host: 192.168.31.99
+  port: 5672
+  username: admin
+  password: MhxzKhl*
+
+es:
+  host: 192.168.31.97
+  port: 9200
+  buildIndex: [ "lol_equipment","lol_heroes","lol_rune","lol_skill","lolm_equipment","lolm_heroes","lolm_rune","lolm_skill" ]
+

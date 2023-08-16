@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	errors2 "errors"
 	"fmt"
-	"github.com/olivere/elastic/v7"
 	"html"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
+
+	"github.com/olivere/elastic/v7"
 	"whisper/internal/dto"
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
@@ -139,7 +140,7 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 			resp.Hits[i].Source.Plaintext = hitData.Plaintext
 			resp.Hits[i].Source.Version = hitData.Version
 			//resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Type:%s", hitData.StyleName))
-			if hitData.Tooltip != "" {
+			if hitData.Tooltip != "" && len(hitData.Tooltip) <= 10 {
 				tooltip := html.UnescapeString(hitData.Tooltip)
 				//tooltip = strings.Replace(hitData.Tooltip, "&lt;br&gt;", "", -1)
 				//tooltip = strings.Replace(tooltip, "&lt;hr&gt;", "", -1)
@@ -765,6 +766,7 @@ func buildMRuneIndex(ctx *context.Context) error {
 					Description: tmp.DetailInfo,
 					Plaintext:   tmp.Description,
 					Keywords:    tmp.Keywords,
+					StyleName:   tmp.StyleName,
 					//SlotLabel:   "",
 					//StyleName:   "",
 					//Maps:        "",

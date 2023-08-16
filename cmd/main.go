@@ -87,7 +87,7 @@ func main() {
 
 	// 启动定时任务
 	c := cron.New()
-	_, err := c.AddFunc("10 0 * * *", func() {
+	_, err := c.AddFunc(config.LOLConfig.Cron.Time, func() {
 		fmt.Println(time.Now())
 		logic.Cron(nil)
 	})

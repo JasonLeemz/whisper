@@ -114,10 +114,12 @@ SELECT
 	r.name,
 	r.runeId,
 	r.attrName,
+	r.keywords,
 	r.description,
 	r.detailInfo,
 	r.iconPath,
-	rt.name as type,
+	r.type,
+	rt.name as styleName,
 	r.fileTime,
 	r.version
 FROM

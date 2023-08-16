@@ -36,6 +36,7 @@ type LOLMRune struct {
 	DetailInfo           string    `gorm:"column:detailInfo;default:;NOT NULL"`
 	AttrName             string    `gorm:"column:attrName;default:;NOT NULL"`
 	Type                 string    `gorm:"column:type;default:;NOT NULL"`
+	StyleName            string    `gorm:"column:styleName;default:;NOT NULL"` // 仅LOL字段，为了统一处理数据，冗余这个字段
 	Keywords             string    `gorm:"column:keywords;default:;NOT NULL"`
 	IconPath             string    `gorm:"column:iconPath;default:;NOT NULL"`
 	SortOrder            string    `gorm:"column:sortOrder;default:;NOT NULL"`

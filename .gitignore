@@ -6,4 +6,4 @@ go.sum
 *_test.go
 log/*.log
 logs/*.log
-configs/*.yaml
+#configs/*.yaml

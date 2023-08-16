@@ -1,11 +1,43 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/spf13/viper"
+	"github.com/nacos-group/nacos-sdk-go/v2/vo"
+	"gopkg.in/yaml.v3"
+	"whisper/pkg/nacos"
 )
 
-var GlobalConfig *Config
+var (
+	GlobalConfig *Config
+	LOLConfig    *LolConfig
+)
+
+type LolConfig struct {
+	Lol  LolCfg  `yaml:"lol"`
+	LolM LolmCfg `yaml:"lolm"`
+	Cron CronCfg `yaml:"cron"`
+}
+type CronCfg struct {
+	Time    string `yaml:"time"`
+	ReBuild bool   `yaml:"rebuild"`
+}
+type LolCfg struct {
+	Equipment string `yaml:"equipment"`
+	Heroes    string `yaml:"heroes"`
+	Hero      string `yaml:"hero"`
+	Rune      string `yaml:"rune"`
+	Skill     string `yaml:"skill"`
+}
+type LolmCfg struct {
+	Equipment       string `yaml:"equipment"`
+	Heroes          string `yaml:"heroes"`
+	Hero            string `yaml:"hero"`
+	Rune            string `yaml:"rune"`
+	RuneType        string `yaml:"runeType"`
+	Skill           string `yaml:"skill"`
+	RecommendHeroes string `yaml:"recommendHeroes"`
+}
 
 type Config struct {
 	App      AppCfg      `yaml:"app"`
@@ -14,16 +46,11 @@ type Config struct {
 	MQ       MQCfg       `yaml:"mq"`
 	ES       ESCfg       `yaml:"es"`
 	Log      LogCfg      `yaml:"log"`
-	Lol      LolCfg      `yaml:"lol"`
-	LolM     LolmCfg     `yaml:"lolm"`
-	Search   SearchCfg   `yaml:"search"`
 }
-
 type AppCfg struct {
 	IP   string `yaml:"ip"`
 	Port string `yaml:"port"`
 }
-
 type DatabaseCfg struct {
 	Host     string `yaml:"host"`
 	Password string `yaml:"password"`
@@ -37,7 +64,6 @@ type RedisCfg struct {
 	Password string `yaml:"password"`
 	DB       int    `yaml:"db"`
 }
-
 type MQCfg struct {
 	Schema   string `yaml:"schema"`
 	Host     string `yaml:"host"`
@@ -45,13 +71,11 @@ type MQCfg struct {
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 }
-
 type ESCfg struct {
 	Host       string   `yaml:"host"`
 	Port       string   `yaml:"port"`
 	BuildIndex []string `yaml:"buildIndex"`
 }
-
 type LogCfg struct {
 	LogLevel int    `yaml:"logLevel"`
 	Path     string `yaml:"path"`
@@ -59,45 +83,49 @@ type LogCfg struct {
 	EsLog    string `yaml:"esLog"`
 }
 
-type LolCfg struct {
-	Equipment string `yaml:"equipment"`
-	Heroes    string `yaml:"heroes"`
-	Hero      string `yaml:"hero"`
-	Rune      string `yaml:"rune"`
-	Skill     string `yaml:"skill"`
-}
-
-type LolmCfg struct {
-	Equipment       string `yaml:"equipment"`
-	Heroes          string `yaml:"heroes"`
-	Hero            string `yaml:"hero"`
-	Rune            string `yaml:"rune"`
-	RuneType        string `yaml:"runeType"`
-	Skill           string `yaml:"skill"`
-	RecommendHeroes string `yaml:"recommendHeroes"`
-}
-type SearchCfg struct {
-	MapsLOL  []string `yaml:"mapsLOL"`
-	MapsLOLM []string `yaml:"mapsLOLM"`
-}
-
 func Init() {
-	path := "./configs/app.dev.yaml"
-	//path := "/Users/limingze/GolandProjects/whisper/configs/app.dev.yaml"
-	viper.SetConfigFile(path) // 指定配置文件路径
-	//viper.SetConfigName("config")         // 配置文件名称(无扩展名)
-	//viper.SetConfigType("yaml")           // 如果配置文件的名称中没有扩展名，则需要配置此项
-	//viper.AddConfigPath("/etc/appname/")  // 查找配置文件所在的路径
-	//viper.AddConfigPath("$HOME/.appname") // 多次调用以添加多个搜索路径
-	//viper.AddConfigPath(".")              // 还可以在工作目录中查找配置
-	err := viper.ReadInConfig() // 查找并读取配置文件
-	if err != nil {             // 处理读取配置文件的错误
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+
+	// 初始化Nacos
+	nacos.Init()
+	content, err := nacos.ConfigClient.GetConfig(vo.ConfigParam{
+		DataId: nacos.NacosConfig.Nacos.DataID,
+		Group:  nacos.NacosConfig.Nacos.Group,
+	})
+
+	err = yaml.Unmarshal([]byte(content), &GlobalConfig)
+	if err != nil {
+		panic(fmt.Errorf("Failed to unmarshal nacos config: %s \n", err))
 	}
 
-	err = viper.Unmarshal(&GlobalConfig)
+	cfg, _ := json.Marshal(*GlobalConfig)
+	fmt.Println(string(cfg))
+
+	// lolconfig
+	content, err = nacos.ConfigClient.GetConfig(vo.ConfigParam{
+		DataId: nacos.NacosConfig.LOL.DataID,
+		Group:  nacos.NacosConfig.LOL.Group,
+	})
+
+	err = yaml.Unmarshal([]byte(content), &LOLConfig)
 	if err != nil {
-		panic(fmt.Errorf("Failed to unmarshal config: %s \n", err))
-		return
+		panic(fmt.Errorf("Failed to unmarshal LOLConfig: %s \n", err))
+	}
+
+	cfg, _ = json.Marshal(*LOLConfig)
+	fmt.Println(string(cfg))
+
+	err = nacos.ConfigClient.ListenConfig(vo.ConfigParam{
+		DataId: nacos.NacosConfig.LOL.DataID,
+		Group:  nacos.NacosConfig.LOL.Group,
+		OnChange: func(namespace, group, dataId, data string) {
+			err = yaml.Unmarshal([]byte(content), &LOLConfig)
+			fmt.Println(fmt.Sprintf("LOLConfig: %#v \n", LOLConfig))
+			if err != nil {
+				fmt.Println(fmt.Sprintf("Failed to unmarshal nacos config: %s \n", err))
+			}
+		},
+	})
+	if err != nil {
+		panic(err)
 	}
 }

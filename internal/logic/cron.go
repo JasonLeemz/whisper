@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 	"whisper/internal/logic/common"
+	"whisper/pkg/config"
 	"whisper/pkg/context"
 	"whisper/pkg/log"
 )
@@ -18,14 +19,13 @@ func Cron(ctx *context.Context) {
 
 	wg := &sync.WaitGroup{}
 	wg.Add(4)
-	var err error
 
 	go func() {
 		defer func() {
 			wg.Done()
 		}()
 
-		_, err = QueryEquipments(ctx, common.PlatformForLOL)
+		_, err := QueryEquipments(ctx, common.PlatformForLOL)
 		if err != nil {
 			log.Logger.Error(ctx, err)
 		}
@@ -39,7 +39,7 @@ func Cron(ctx *context.Context) {
 		defer func() {
 			wg.Done()
 		}()
-		_, err = QueryHeroes(ctx, common.PlatformForLOL)
+		_, err := QueryHeroes(ctx, common.PlatformForLOL)
 		if err != nil {
 			log.Logger.Error(ctx, err)
 		}
@@ -63,7 +63,7 @@ func Cron(ctx *context.Context) {
 			wg.Done()
 		}()
 
-		_, err = QueryRune(ctx, common.PlatformForLOL)
+		_, err := QueryRune(ctx, common.PlatformForLOL)
 		if err != nil {
 			log.Logger.Error(ctx, err)
 		}
@@ -78,7 +78,7 @@ func Cron(ctx *context.Context) {
 			wg.Done()
 		}()
 
-		_, err = QuerySkill(ctx, common.PlatformForLOL)
+		_, err := QuerySkill(ctx, common.PlatformForLOL)
 		if err != nil {
 			log.Logger.Error(ctx, err)
 		}
@@ -90,7 +90,7 @@ func Cron(ctx *context.Context) {
 
 	wg.Wait()
 	log.Logger.Info(ctx, "start building index...")
-	err = BuildIndex(ctx, "", false)
+	err := BuildIndex(ctx, "", config.LOLConfig.Cron.ReBuild)
 	if err != nil {
 		log.Logger.Error(ctx, err)
 	}
