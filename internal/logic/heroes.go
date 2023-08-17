@@ -87,7 +87,6 @@ func HeroAttribute(ctx *context.Context, heroID string, platform int) (*dto.Hero
 			doTaskNum++
 			taskWaiter.Add(1)
 
-			var lk sync.Mutex
 			// do task
 			go func() {
 				defer func() {
@@ -106,16 +105,12 @@ func HeroAttribute(ctx *context.Context, heroID string, platform int) (*dto.Hero
 						atomic.AddInt32(&successTaskNum, 1) // 执行成功的task数量+1
 						if err := recordHeroAttr(ctx, attribute, platform); err != nil {
 							log.Logger.Error(ctx, err)
-							lk.Lock()
-							lk.Unlock()
 							taskErr = err
 							cancelFunc()
 						}
 						return
 					} else {
 						log.Logger.Error(ctx, err)
-						lk.Lock()
-						lk.Unlock()
 						taskErr = err
 						cancelFunc()
 					}

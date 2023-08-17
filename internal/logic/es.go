@@ -103,9 +103,12 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 			resp.Hits[i].Source.Description = hitData.Description
 			resp.Hits[i].Source.Plaintext = hitData.Plaintext
 			resp.Hits[i].Source.Version = hitData.Version
-			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Price:%s", hitData.Price))
-			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Sell:%s", hitData.Sell))
-			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Total:%s", hitData.Total))
+			if hitData.Plaintext != "" && !strings.EqualFold(hitData.Plaintext, hitData.Description) {
+				resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("%s", hitData.Plaintext))
+			}
+			//resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Price:%s", hitData.Price))
+			//resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Sell:%s", hitData.Sell))
+			//resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Total:%s", hitData.Total))
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Maps:%s", hitData.Maps))
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
 		}
@@ -163,7 +166,9 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 			resp.Hits[i].Source.Description = hitData.Description
 			resp.Hits[i].Source.Plaintext = hitData.Plaintext
 			resp.Hits[i].Source.Version = hitData.Version
-			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("冷却:%s", hitData.CoolDown))
+			if hitData.CoolDown != "" {
+				resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("冷却:%s", hitData.CoolDown))
+			}
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
 		}
 	}
