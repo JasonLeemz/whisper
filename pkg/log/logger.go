@@ -205,8 +205,8 @@ func getLogWriter(logPath string) zapcore.WriteSyncer {
 	lumberJackLogger := &lumberjack.Logger{
 		Filename:   logPath,
 		MaxSize:    10, // 切割大小M
-		MaxBackups: 3,  // 保留最大数量
-		MaxAge:     1,
+		MaxBackups: 5,  // 保留最大数量
+		MaxAge:     30,
 		Compress:   false,
 		LocalTime:  true,
 	}

@@ -17,6 +17,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
+	_ "net/http/pprof" // 开启 pprof
 )
 
 func main() {
