@@ -67,10 +67,6 @@ func NewContext() *Context {
 		Context: &gin.Context{},
 	}
 
-	//req := &http.Request{
-	//	Header: http.Header{},
-	//}
-
 	req := new(http.Request)
 	req.Header = make(http.Header)
 	tr := trace.GetTrace(req)

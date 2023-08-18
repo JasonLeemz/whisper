@@ -3,7 +3,8 @@ go.sum
 .idea/*
 .DS_Store
 ._.DS_Store
-*_test.go
+*.test
+*.out
 log/*.log
 logs/*.log
 configs/nacos/

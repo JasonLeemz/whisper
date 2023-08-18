@@ -3,11 +3,12 @@ package main
 import (
 	context2 "context"
 	"fmt"
+	"github.com/robfig/cron/v3"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
-	"whisper/init"
+	run "whisper/init"
 	"whisper/internal/controller"
 	"whisper/internal/logic"
 	"whisper/pkg/config"
@@ -15,13 +16,13 @@ import (
 	"whisper/pkg/log"
 	"whisper/pkg/middleware"
 
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
-	"github.com/robfig/cron/v3"
-	_ "net/http/pprof" // 开启 pprof
 )
 
 func main() {
 	router := gin.New()
+	pprof.Register(router, "dev/pprof")
 	router.Use(gin.Logger(), gin.Recovery())
 	router.Use(middleware.Trace())
 	router.Delims("{[{", "}]}")

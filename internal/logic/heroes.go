@@ -28,7 +28,7 @@ func HeroAttribute(ctx *context.Context, heroID string, platform int) (*dto.Hero
 		if err != nil {
 			return nil, err
 		}
-		err = recordHeroAttr(ctx, attribute, platform)
+		err = recordHeroRoleAndSpell(ctx, attribute, platform)
 		return attribute, err
 	}
 
@@ -88,7 +88,7 @@ func HeroAttribute(ctx *context.Context, heroID string, platform int) (*dto.Hero
 			taskWaiter.Add(1)
 
 			// do task
-			go func() {
+			go func(id string) {
 				defer func() {
 					taskWaiter.Done()
 
@@ -103,7 +103,7 @@ func HeroAttribute(ctx *context.Context, heroID string, platform int) (*dto.Hero
 					attribute, err := heroAttribute(ctx, id, platform)
 					if err == nil {
 						atomic.AddInt32(&successTaskNum, 1) // 执行成功的task数量+1
-						if err := recordHeroAttr(ctx, attribute, platform); err != nil {
+						if err := recordHeroRoleAndSpell(ctx, attribute, platform); err != nil {
 							log.Logger.Error(ctx, err)
 							taskErr = err
 							cancelFunc()
@@ -116,7 +116,7 @@ func HeroAttribute(ctx *context.Context, heroID string, platform int) (*dto.Hero
 					}
 				}
 
-			}()
+			}(id)
 
 		}
 
@@ -364,7 +364,7 @@ func heroAttribute(ctx *context.Context, heroID string, platform int) (*dto.Hero
 
 var lock sync.Mutex
 
-func recordHeroAttr(ctx *context.Context, data *dto.HeroAttribute, platform int) error {
+func recordHeroRoleAndSpell(ctx *context.Context, data *dto.HeroAttribute, platform int) error {
 
 	lock.Lock()
 	defer lock.Unlock()
