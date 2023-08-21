@@ -14,3 +14,8 @@ lol:
   nameSpace: f320980d-d47e-4b63-896e-29879ea5a72e
   dataID: lol_config
   group: dev
+
+equip:
+  nameSpace: f320980d-d47e-4b63-896e-29879ea5a72e
+  dataID: lol_equip_dict
+  group: dev

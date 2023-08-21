@@ -24,17 +24,19 @@ func main() {
 	router := gin.New()
 	pprof.Register(router, "dev/pprof")
 	router.Use(gin.Logger(), gin.Recovery())
+	router.Use(middleware.Cors())
 	router.Use(middleware.Trace())
-	router.Delims("{[{", "}]}")
-	router.LoadHTMLGlob("web/template/*")
+	//router.Delims("{[{", "}]}")
+	//router.LoadHTMLGlob("web/template/*")
 
 	page := router.Group("/")
 	{
-		page.Static("css", "web/static/css")
-		page.Static("js", "web/static/js")
-		page.Static("font", "web/static/font")
-		page.StaticFile("favicon.ico", "web/static/favicon.ico")
+		//page.Static("css", "web/static/css")
+		//page.Static("js", "web/static/js")
+		//page.Static("font", "web/static/font")
+		//page.StaticFile("favicon.ico", "web/static/favicon.ico")
 		page.GET("/", context.Handle(controller.SearchBox))
+		page.GET("/version", context.Handle(controller.QueryVersion))
 	}
 
 	lol := router.Group("/lol")
@@ -45,6 +47,7 @@ func main() {
 		lol.POST("/rune", context.Handle(controller.Rune))
 		lol.POST("/rune/type", context.Handle(controller.RuneType))
 		lol.POST("/skill", context.Handle(controller.Skill))
+		lol.POST("/equip/extract", context.Handle(controller.EquipExtract))
 	}
 
 	es := router.Group("/")

@@ -12,8 +12,10 @@ import (
 	"whisper/internal/model"
 	dao "whisper/internal/model/DAO"
 	"whisper/internal/service"
+	"whisper/pkg/config"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
+	"whisper/pkg/jieba"
 	"whisper/pkg/log"
 	"whisper/pkg/pinyin"
 )
@@ -283,4 +285,28 @@ func GetCurrentLOLMVersion(ctx *context.Context) string {
 		return result.Version
 	}
 	return ""
+}
+
+func ExtractKeyWords(ctx *context.Context, platform int) []string {
+
+	ed := dao.NewLOLEquipmentDAO()
+	v, err := ed.GetLOLEquipmentMaxVersion()
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return nil
+	}
+	equips, err := ed.GetLOLEquipment(v.Version)
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return nil
+	}
+
+	//keyWords :=
+
+	for _, equip := range equips {
+		//equip.Description
+		words := jieba.Analyzer(equip.Description, config.EquipDict.Keywords, config.EquipDict.Stopwords)
+		log.Logger.Info(ctx, words)
+	}
+	return nil
 }

@@ -1,0 +1,103 @@
+@import './base.css';
+
+body .body-tips {
+    padding: 3px 8px;
+    margin-bottom: 20px;
+}
+.wrap{
+    font: 14px Helvetica Neue,Helvetica,PingFang SC,Tahoma,Arial,sans-serif;
+    position: relative;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+.ant-layout-content{
+    background: #fff;
+}
+.blank {
+    height: 5px;
+}
+.ant-divider{
+    margin: 10px 0;
+}
+.timeline-h4{
+    color: #3a3a3a !important;
+    position: relative;
+    margin-bottom: 10px;
+    line-height: 22px;
+    font-weight: 700;
+}
+.timeline-h4 span{
+    margin-left: 5px;
+}
+.mainText {
+    color: rgba(0,0,0,.85) !important;
+    font-size: 13px;
+    line-height: 1.8;
+}
+.mainText buffedStat {
+    font-weight: bold;
+}
+
+.mainText attention {
+    font-weight: bold;
+}
+
+.mainText passive {
+    font-weight: bold;
+}
+
+.mainText status {
+    font-weight: bold;
+}
+
+.mainText ul {
+    padding: 0;
+    margin: 0;
+}
+
+.mainText li {
+    list-style: none;
+}
+
+.mainText li div {
+    font-size: 10px;
+    line-height: 14px;
+    margin: 5px 0 15px 0;
+}
+
+.mainText li h6 {
+    display: inline-block;
+}
+
+.mainText img {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+}
+
+.mainText span {
+    color: #7d7d7d;
+}
+
+.mainText div {
+    color: #7d7d7d;
+    cursor: pointer;
+    padding-left: 29px;
+}
+
+.mainText .detail {
+    /*display: block;*/
+    display: none;
+    margin:5px 10px;
+}
+
+.mainText ul {
+    /*margin: 0 0 0 10px;*/
+    /*font-size: 8px;*/
+    /*line-height: 12px;*/
+}
+
+.mainText ul li {
+    padding: 0;
+    margin: 0;
+}

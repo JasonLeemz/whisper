@@ -11,8 +11,13 @@ import (
 var (
 	GlobalConfig *Config
 	LOLConfig    *LolConfig
+	EquipDict    *EquipConfig
 )
 
+type EquipConfig struct {
+	Keywords  []string `json:"keywords"`
+	Stopwords []string `json:"stopwords"`
+}
 type LolConfig struct {
 	Lol  LolCfg  `yaml:"lol"`
 	LolM LolmCfg `yaml:"lolm"`
@@ -43,6 +48,7 @@ type Config struct {
 	App      AppCfg      `yaml:"app"`
 	Database DatabaseCfg `yaml:"database"`
 	Redis    RedisCfg    `yaml:"redis"`
+	Mongodb  MongodbCfg  `yaml:"mongodb"`
 	MQ       MQCfg       `yaml:"mq"`
 	ES       ESCfg       `yaml:"es"`
 	Log      LogCfg      `yaml:"log"`
@@ -57,6 +63,10 @@ type DatabaseCfg struct {
 	Port     int    `yaml:"port"`
 	Username string `yaml:"username"`
 	DB       string `yaml:"db"`
+}
+type MongodbCfg struct {
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
 }
 type RedisCfg struct {
 	Host     string `yaml:"host"`
@@ -120,6 +130,32 @@ func Init() {
 		OnChange: func(namespace, group, dataId, data string) {
 			err = yaml.Unmarshal([]byte(content), &LOLConfig)
 			fmt.Println(fmt.Sprintf("LOLConfig: %#v \n", LOLConfig))
+			if err != nil {
+				fmt.Println(fmt.Sprintf("Failed to unmarshal nacos config: %s \n", err))
+			}
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	// lol_equip_dict
+	content, err = nacos.ConfigClient.GetConfig(vo.ConfigParam{
+		DataId: nacos.NacosConfig.Equip.DataID,
+		Group:  nacos.NacosConfig.Equip.Group,
+	})
+
+	err = yaml.Unmarshal([]byte(content), &EquipDict)
+	if err != nil {
+		panic(fmt.Errorf("Failed to unmarshal LOLConfig: %s \n", err))
+	}
+
+	err = nacos.ConfigClient.ListenConfig(vo.ConfigParam{
+		DataId: nacos.NacosConfig.LOL.DataID,
+		Group:  nacos.NacosConfig.LOL.Group,
+		OnChange: func(namespace, group, dataId, data string) {
+			err = yaml.Unmarshal([]byte(content), &EquipDict)
+			fmt.Println(fmt.Sprintf("EquipDict: %#v \n", EquipDict))
 			if err != nil {
 				fmt.Println(fmt.Sprintf("Failed to unmarshal nacos config: %s \n", err))
 			}

@@ -104,3 +104,19 @@ func Skill(ctx *context.Context) {
 
 	ctx.Reply(equip, errors.New(err))
 }
+
+type ReqEquipExtract struct {
+	Platform int `form:"platform" json:"platform" binding:"-"`
+}
+
+func EquipExtract(ctx *context.Context) {
+
+	req := &ReqEquipExtract{}
+	if err := ctx.Bind(req); err != nil {
+		return
+	}
+
+	words := logic.ExtractKeyWords(ctx, req.Platform)
+
+	ctx.Reply(words, errors.New(nil))
+}

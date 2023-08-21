@@ -40,11 +40,22 @@ func Query(ctx *context.Context) {
 		return
 	}
 
+	way := make([]string, 0, 4)
+	for _, w := range req.Way {
+		if w == "name" {
+			way = append(way, "name", "keywords")
+		}
+
+		if w == "description" {
+			way = append(way, "description", "plaintext")
+		}
+	}
+
 	params := logic.SearchParams{
 		KeyWords: req.KeyWords,
 		Platform: req.Platform,
 		Category: req.Category,
-		Way:      req.Way,
+		Way:      way,
 		Map:      req.Map,
 	}
 
@@ -174,7 +185,11 @@ const descTPL = `
 		<img src="%s" />
 		<h6>%s</h6>
 		<span>%s</span>
-		<div title="%s">%s</div>
+<a-space>
+		<a-tooltip placement="topLeft" title="%s">
+		<div>%s</div>
+		</a-tooltip>
+</a-space>
 	</li>
 </ul>
 `
