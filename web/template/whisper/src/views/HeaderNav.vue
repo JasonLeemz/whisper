@@ -1,61 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 
 import { h, ref } from 'vue';
 import { SearchOutlined, ClusterOutlined, SettingOutlined,ShareAltOutlined } from '@ant-design/icons-vue';
 const current = ref(['SearchBox']);
-const items = ref([
-  {
-    key: 'SearchBox',
-    icon: () => h(SearchOutlined),
-    label: 'SearchBox',
-    title: 'SearchBox',
-  },
-  {
-    key: 'Equipment',
-    icon: () => h(ClusterOutlined),
-    label: 'Equipment',
-    title: 'Equipment',
-  },
-  {
-    key: 'Select Version',
-    icon: () => h(SettingOutlined),
-    label: 'Select Version',
-    title: 'Select Version',
-    children: [
-      {
-        type: 'group',
-        label: '当前端游版本为 {{ lol_version }}',
-        children: [
-          {
-            label: '13.14',
-            key: 'setting:13.14',
-          },
-          {
-            label: '13.14',
-            key: 'setting:13.14',
-          },
-        ],
-      },
-      {
-        type: 'group',
-        label: '当前手游版本为 {{ lolm_version }}',
-        children: [
-          {
-            label: '13.14',
-            key: 'setting:13.14',
-          },
-          {
-            label: '13.14',
-            key: 'setting:13.14',
-          },
-        ],
-      },
-    ],
-  }
-]);
 </script>
-<script>
+
+<script lang="ts">
 import axios from 'axios';
 
 export default {
@@ -68,7 +19,7 @@ export default {
 
   mounted() {
     // 使用 Axios 发起请求获取服务器数据
-    axios.get('http://127.0.0.1:8123/version')
+    axios.get('/version')
         .then(response => {
           // 将服务器返回的数据更新到组件的 serverData 字段
           this.lol_version = response.data.data.lol_version;

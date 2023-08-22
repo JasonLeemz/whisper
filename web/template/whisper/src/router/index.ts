@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import SearchBox from '../views/SearchBox.vue'
 import EquipBox from '../views/EquipBox.vue'
 
 const router = createRouter({
@@ -7,8 +8,8 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      // component: SearchBox
-      component: () => import('../views/SearchBox.vue')
+      component: SearchBox
+      // component: () => import('../views/SearchBox.vue')
     },
     {
       path: '/equip',

@@ -14,7 +14,7 @@ const mapOptions = [
 </script>
 <script>
 import axios from 'axios';
-import { message } from 'ant-design-vue';
+import {message} from 'ant-design-vue';
 
 export default {
   data() {
@@ -33,7 +33,7 @@ export default {
   },
   methods: {
     search(event) {
-      if (this.formData.key_words === ''){
+      if (this.formData.key_words === '') {
         message.error({
           top: `100px`,
           duration: 2,
@@ -55,13 +55,6 @@ export default {
           .catch(error => {
             console.error('Error fetching server data:', error);
           });
-
-      // // 方法中的 `this` 指向当前活跃的组件实例
-      // alert(`Hello ${this.name}!`)
-      // // `event` 是 DOM 原生事件
-      // if (event) {
-      //   alert(event.target.tagName)
-      // }
     }
   },
   created() {
@@ -95,7 +88,9 @@ export default {
                 <a-select-option value="0">端游</a-select-option>
                 <a-select-option value="1">手游</a-select-option>
               </a-select>
-              <a-button type="primary" @click="search" ><SearchOutlined/></a-button>
+              <a-button type="primary" @click="search">
+                <SearchOutlined/>
+              </a-button>
             </a-space-compact>
           </div>
           <div class="blank"></div>
@@ -109,7 +104,7 @@ export default {
           <div class="blank"></div>
           <a-space @click="show = !show" direction="vertical">
             <a-typography-text>更多条件
-              <RightOutlined :rotate="show ? 90 : 0" />
+              <RightOutlined :rotate="show ? 90 : 0"/>
             </a-typography-text>
           </a-space>
           <Transition name="fade">
@@ -131,7 +126,7 @@ export default {
         <a-timeline>
           <a-timeline-item v-for="item in lists" :key="item.id">
             <template #dot>
-              <InfoCircleOutlined :style="{fontSize: '16px'}" />
+              <InfoCircleOutlined :style="{fontSize: '16px'}"/>
             </template>
             <h4 class="timeline-h4">
               <a-image v-bind:src="item.iconPath"
@@ -155,9 +150,10 @@ export default {
 </template>
 
 <style scoped>
-.ant-typography{
+.ant-typography {
   cursor: pointer;
 }
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s ease;
