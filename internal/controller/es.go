@@ -28,9 +28,9 @@ type list struct {
 	ID          interface{} `json:"id"`
 	Name        string      `json:"name"`
 	IconPath    string      `json:"iconPath"`
+	Tags        []string    `json:"tags"`
 	Description string      `json:"description"`
 	Plaintext   string      `json:"plaintext"`
-	Tags        []string    `json:"tags"`
 }
 
 func Query(ctx *context.Context) {
@@ -185,11 +185,14 @@ const descTPL = `
 		<img src="%s" />
 		<h6>%s</h6>
 		<span>%s</span>
+<component>
 <a-space>
 		<a-tooltip placement="topLeft" title="%s">
 		<div>%s</div>
 		</a-tooltip>
 </a-space>
+</component>
+
 	</li>
 </ul>
 `

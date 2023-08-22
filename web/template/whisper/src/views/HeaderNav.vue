@@ -2,7 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 
 import { h, ref } from 'vue';
-import { SearchOutlined, ClusterOutlined, SettingOutlined } from '@ant-design/icons-vue';
+import { SearchOutlined, ClusterOutlined, SettingOutlined,ShareAltOutlined } from '@ant-design/icons-vue';
 const current = ref(['SearchBox']);
 const items = ref([
   {
@@ -84,7 +84,19 @@ export default {
 <template>
   <a-row>
     <a-col :span="24">
-      <a-menu v-model:selectedKeys="current" mode="horizontal" :items="items" />
+      <div class="alert-banner">
+        Tips: 当前端游版本为 {{ lol_version }}，手游版本为 {{ lolm_version }}
+      </div>
+      <a-menu v-model:selectedKeys="current" mode="horizontal" >
+        <a-menu-item key='SearchBox' >
+          <SearchOutlined />
+          <span><RouterLink to="/">检索</RouterLink></span>
+        </a-menu-item>
+        <a-menu-item key='EquipBox' >
+          <ShareAltOutlined />
+          <span><RouterLink to="/equip">装备</RouterLink></span>
+        </a-menu-item>
+      </a-menu>
     </a-col>
   </a-row>
   <div class="blank"></div>

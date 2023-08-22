@@ -1,8 +1,11 @@
-@import './base.css';
+/*@import './base.css';*/
 
-body .body-tips {
-    padding: 3px 8px;
-    margin-bottom: 20px;
+.alert-banner{
+    color: #fff;
+    padding:2px 5px;
+    line-height: 25px;
+    background-color: #141414;
+
 }
 .wrap{
     font: 14px Helvetica Neue,Helvetica,PingFang SC,Tahoma,Arial,sans-serif;
@@ -26,27 +29,20 @@ body .body-tips {
     line-height: 22px;
     font-weight: 700;
 }
+.ant-timeline-item em {
+    font-style: inherit;
+    color: #ff5722;
+}
 .timeline-h4 span{
     margin-left: 5px;
 }
 .mainText {
-    color: rgba(0,0,0,.85) !important;
+    color: rgba(0,0,0,.85);
     font-size: 13px;
     line-height: 1.8;
 }
-.mainText buffedStat {
-    font-weight: bold;
-}
 
-.mainText attention {
-    font-weight: bold;
-}
-
-.mainText passive {
-    font-weight: bold;
-}
-
-.mainText status {
+.mainText buffedStat,.mainText attention,.mainText passive,.mainText status {
     font-weight: bold;
 }
 
@@ -57,6 +53,8 @@ body .body-tips {
 
 .mainText li {
     list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .mainText li div {
@@ -67,6 +65,12 @@ body .body-tips {
 
 .mainText li h6 {
     display: inline-block;
+}
+
+.timeline-h4 .ant-image-img{
+    width: 35px;
+    height: 35px;
+    border-radius: 3px;
 }
 
 .mainText img {
@@ -86,18 +90,7 @@ body .body-tips {
 }
 
 .mainText .detail {
-    /*display: block;*/
     display: none;
     margin:5px 10px;
 }
 
-.mainText ul {
-    /*margin: 0 0 0 10px;*/
-    /*font-size: 8px;*/
-    /*line-height: 12px;*/
-}
-
-.mainText ul li {
-    padding: 0;
-    margin: 0;
-}
