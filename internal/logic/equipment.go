@@ -287,7 +287,14 @@ func GetCurrentLOLMVersion(ctx *context.Context) string {
 	return ""
 }
 
-func ExtractKeyWords(ctx *context.Context, platform int) []string {
+type equipIntro struct {
+	Name     string   `json:"name"`
+	Desc     string   `json:"desc"`
+	Price    string   `json:"price"`
+	Keywords []string `json:"keywords"`
+}
+
+func ExtractKeyWords(ctx *context.Context, platform int) map[string]equipIntro {
 
 	ed := dao.NewLOLEquipmentDAO()
 	v, err := ed.GetLOLEquipmentMaxVersion()
@@ -301,12 +308,31 @@ func ExtractKeyWords(ctx *context.Context, platform int) []string {
 		return nil
 	}
 
-	//keyWords :=
+	result := make(map[string]equipIntro)
 
-	for _, equip := range equips {
-		//equip.Description
-		words := jieba.Analyzer(equip.Description, config.EquipDict.Keywords, config.EquipDict.Stopwords)
-		log.Logger.Info(ctx, words)
+	for i, equip := range equips {
+		if i > 30 {
+			break
+		}
+		words, err := jieba.Analyzer(ctx, equip.Description, config.EquipDict.Extract.EquipWords, config.EquipDict.Stopwords)
+		if err != nil {
+			log.Logger.Error(ctx, err)
+			return nil
+		}
+		result[equip.ItemId] = equipIntro{
+			Name:     equip.Name,
+			Desc:     equip.Description,
+			Price:    equip.Total,
+			Keywords: words,
+		}
 	}
-	return nil
+
+	recordMongo(result)
+	return result
+}
+func recordMongo(ctx map[string]equipIntro) {
+}
+
+func GetEquipTypes(ctx *context.Context) map[string][]string {
+	return config.EquipDict.Extract.EquipWords
 }

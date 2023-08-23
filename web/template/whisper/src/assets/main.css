@@ -18,6 +18,7 @@
 }
 .blank {
     height: 5px;
+    clear: both;
 }
 .ant-divider{
     margin: 10px 0;

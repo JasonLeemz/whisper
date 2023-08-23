@@ -15,9 +15,15 @@ var (
 )
 
 type EquipConfig struct {
-	Keywords  []string `json:"keywords"`
-	Stopwords []string `json:"stopwords"`
+	Keywords  []string    `yaml:"keywords"`
+	Stopwords []string    `yaml:"stopwords"`
+	Extract   ExtractList `yaml:"extract"`
 }
+
+type ExtractList struct {
+	EquipWords map[string][]string `yaml:"equip"`
+}
+
 type LolConfig struct {
 	Lol  LolCfg  `yaml:"lol"`
 	LolM LolmCfg `yaml:"lolm"`
@@ -128,7 +134,7 @@ func Init() {
 		DataId: nacos.NacosConfig.LOL.DataID,
 		Group:  nacos.NacosConfig.LOL.Group,
 		OnChange: func(namespace, group, dataId, data string) {
-			err = yaml.Unmarshal([]byte(content), &LOLConfig)
+			err = yaml.Unmarshal([]byte(data), &LOLConfig)
 			fmt.Println(fmt.Sprintf("LOLConfig: %#v \n", LOLConfig))
 			if err != nil {
 				fmt.Println(fmt.Sprintf("Failed to unmarshal nacos config: %s \n", err))
@@ -151,10 +157,10 @@ func Init() {
 	}
 
 	err = nacos.ConfigClient.ListenConfig(vo.ConfigParam{
-		DataId: nacos.NacosConfig.LOL.DataID,
-		Group:  nacos.NacosConfig.LOL.Group,
+		DataId: nacos.NacosConfig.Equip.DataID,
+		Group:  nacos.NacosConfig.Equip.Group,
 		OnChange: func(namespace, group, dataId, data string) {
-			err = yaml.Unmarshal([]byte(content), &EquipDict)
+			err = yaml.Unmarshal([]byte(data), &EquipDict)
 			fmt.Println(fmt.Sprintf("EquipDict: %#v \n", EquipDict))
 			if err != nil {
 				fmt.Println(fmt.Sprintf("Failed to unmarshal nacos config: %s \n", err))

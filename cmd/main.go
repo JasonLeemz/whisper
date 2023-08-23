@@ -26,17 +26,15 @@ func main() {
 	router.Use(gin.Logger(), gin.Recovery())
 	router.Use(middleware.Cors())
 	router.Use(middleware.Trace())
-	//router.Delims("{[{", "}]}")
-	//router.LoadHTMLGlob("web/template/*")
+	router.LoadHTMLGlob("web/template/whisper/dist/*.html")
 
 	page := router.Group("/")
 	{
-		//page.Static("css", "web/static/css")
-		//page.Static("js", "web/static/js")
-		//page.Static("font", "web/static/font")
-		//page.StaticFile("favicon.ico", "web/static/favicon.ico")
+		page.Static("assets", "web/template/whisper/dist/assets/")
+		page.StaticFile("favicon.ico", "web/static/favicon.ico")
 		page.GET("/", context.Handle(controller.SearchBox))
 		page.GET("/version", context.Handle(controller.QueryVersion))
+		page.GET("/equip/types", context.Handle(controller.QueryEquipTypes))
 	}
 
 	lol := router.Group("/lol")
@@ -47,7 +45,6 @@ func main() {
 		lol.POST("/rune", context.Handle(controller.Rune))
 		lol.POST("/rune/type", context.Handle(controller.RuneType))
 		lol.POST("/skill", context.Handle(controller.Skill))
-		lol.POST("/equip/extract", context.Handle(controller.EquipExtract))
 	}
 
 	es := router.Group("/")
@@ -65,6 +62,7 @@ func main() {
 	inner := router.Group("/")
 	{
 		inner.POST("/cron", context.Handle(controller.Cron))
+		inner.POST("/extract/equip", context.Handle(controller.EquipExtract))
 	}
 	run.Init()
 

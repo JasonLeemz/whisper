@@ -44,7 +44,7 @@ export default {
         return
       }
       // 使用 Axios 发起请求获取服务器数据
-      axios.post('http://127.0.0.1:8123/query', this.formData)
+      axios.post('/query', this.formData)
           .then(response => {
             // 将服务器返回的数据更新到组件的 serverData 字段
             if (response.data.data != null) {
