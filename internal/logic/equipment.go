@@ -15,9 +15,9 @@ import (
 	"whisper/pkg/config"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
-	"whisper/pkg/jieba"
 	"whisper/pkg/log"
 	"whisper/pkg/pinyin"
+	"whisper/pkg/utils"
 )
 
 func QueryEquipments(ctx *context.Context, platform int) (any, *errors.Error) {
@@ -289,50 +289,85 @@ func GetCurrentLOLMVersion(ctx *context.Context) string {
 
 type equipIntro struct {
 	Name     string   `json:"name"`
+	Icon     string   `json:"icon"`
 	Desc     string   `json:"desc"`
 	Price    string   `json:"price"`
 	Keywords []string `json:"keywords"`
 }
 
 func ExtractKeyWords(ctx *context.Context, platform int) map[string]equipIntro {
+	result := extractEquipKeywords(ctx, platform)
+	recordMongo(ctx, result)
+	return result
+}
 
-	ed := dao.NewLOLEquipmentDAO()
-	v, err := ed.GetLOLEquipmentMaxVersion()
-	if err != nil {
-		log.Logger.Error(ctx, err)
-		return nil
-	}
-	equips, err := ed.GetLOLEquipment(v.Version)
-	if err != nil {
-		log.Logger.Error(ctx, err)
-		return nil
-	}
+func extractEquipKeywords(ctx *context.Context, platform int) map[string]equipIntro {
+	_, dict := GetEquipTypes(ctx)
+	re := utils.CompileKeywordsRegex(dict)
 
 	result := make(map[string]equipIntro)
-
-	for i, equip := range equips {
-		if i > 30 {
-			break
-		}
-		words, err := jieba.Analyzer(ctx, equip.Description, config.EquipDict.Extract.EquipWords, config.EquipDict.Stopwords)
+	if platform == common.PlatformForLOL {
+		ed := dao.NewLOLEquipmentDAO()
+		v, err := ed.GetLOLEquipmentMaxVersion()
 		if err != nil {
 			log.Logger.Error(ctx, err)
 			return nil
 		}
-		result[equip.ItemId] = equipIntro{
-			Name:     equip.Name,
-			Desc:     equip.Description,
-			Price:    equip.Total,
-			Keywords: words,
+		equips, err := ed.GetLOLEquipment(v.Version)
+		if err != nil {
+			log.Logger.Error(ctx, err)
+			return nil
+		}
+
+		for _, equip := range equips {
+			words := utils.ExtractKeywords(equip.Description, re)
+			result[equip.ItemId] = equipIntro{
+				Name:     equip.Name,
+				Icon:     equip.IconPath,
+				Desc:     equip.Description,
+				Price:    equip.Total,
+				Keywords: words,
+			}
+		}
+	} else {
+		ed := dao.NewLOLMEquipmentDAO()
+		v, err := ed.GetLOLMEquipmentMaxVersion()
+		if err != nil {
+			log.Logger.Error(ctx, err)
+			return nil
+		}
+		equips, err := ed.GetLOLMEquipment(v.Version)
+		if err != nil {
+			log.Logger.Error(ctx, err)
+			return nil
+		}
+
+		for _, equip := range equips {
+			words := utils.ExtractKeywords(equip.Description, re)
+			result[equip.EquipId] = equipIntro{
+				Name:     equip.Name,
+				Icon:     equip.IconPath,
+				Desc:     equip.Description,
+				Price:    equip.Price,
+				Keywords: words,
+			}
+		}
+	}
+	return result
+}
+
+func GetEquipTypes(ctx *context.Context) (map[string][]string, []string) {
+	dict := make([]string, 0)
+	// 添加字典用于提取关键词
+	for _, kws := range config.EquipDict.Extract.EquipWords {
+		for _, keyword := range kws {
+			dict = append(dict, keyword)
 		}
 	}
 
-	recordMongo(result)
-	return result
-}
-func recordMongo(ctx map[string]equipIntro) {
+	return config.EquipDict.Extract.EquipWords, dict
 }
 
-func GetEquipTypes(ctx *context.Context) map[string][]string {
-	return config.EquipDict.Extract.EquipWords
+func recordMongo(ctx *context.Context, data map[string]equipIntro) {
+
 }

@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -45,4 +47,34 @@ func CompareVersion(version1 string, version2 string) int {
 	}
 
 	return 0
+}
+
+func ExtractKeywords(text string, re *regexp.Regexp) []string {
+	matches := re.FindAllString(text, -1)
+
+	uniqueMatches := make(map[string]bool)
+
+	for _, match := range matches {
+		uniqueMatches[match] = true
+	}
+
+	result := make([]string, 0, len(uniqueMatches))
+	for match := range uniqueMatches {
+		result = append(result, match)
+	}
+
+	return result
+}
+
+func CompileKeywordsRegex(keywords []string) *regexp.Regexp {
+	// 使用或(|)运算符连接所有关键词，并使用转义字符\进行转义
+	regexPattern := fmt.Sprintf("(%s)", strings.Join(keywords, "|"))
+
+	// 使用正则表达式编译正则字符串
+	re, err := regexp.Compile(regexPattern)
+	if err != nil {
+		panic(err)
+	}
+
+	return re
 }

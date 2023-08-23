@@ -23,7 +23,7 @@ func QueryVersion(ctx *context.Context) {
 
 func QueryEquipTypes(ctx *context.Context) {
 
-	types := logic.GetEquipTypes(ctx)
+	types, _ := logic.GetEquipTypes(ctx)
 
 	ctx.Reply(map[string]interface{}{
 		"types": types,
