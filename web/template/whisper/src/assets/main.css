@@ -1,49 +1,57 @@
 /*@import './base.css';*/
 
-.alert-banner{
+.alert-banner {
     color: #fff;
-    padding:2px 5px;
+    padding: 2px 5px;
     line-height: 25px;
     background-color: #141414;
 
 }
-.wrap{
-    font: 14px Helvetica Neue,Helvetica,PingFang SC,Tahoma,Arial,sans-serif;
+
+.wrap {
+    font: 14px Helvetica Neue, Helvetica, PingFang SC, Tahoma, Arial, sans-serif;
     position: relative;
     margin: 0 auto;
     padding: 0 15px;
 }
-.ant-layout-content{
+
+.ant-layout-content {
     background: #fff;
 }
+
 .blank {
     height: 5px;
     clear: both;
 }
-.ant-divider{
+
+.ant-divider {
     margin: 10px 0;
 }
-.timeline-h4{
+
+.timeline-h4 {
     color: #3a3a3a !important;
     position: relative;
     margin-bottom: 10px;
     line-height: 22px;
     font-weight: 700;
 }
+
 .ant-timeline-item em {
     font-style: inherit;
     color: #ff5722;
 }
-.timeline-h4 span{
+
+.timeline-h4 span {
     margin-left: 5px;
 }
+
 .mainText {
-    color: rgba(0,0,0,.85);
+    color: rgba(0, 0, 0, .85);
     font-size: 13px;
     line-height: 1.8;
 }
 
-.mainText buffedStat,.mainText attention,.mainText passive,.mainText status {
+.mainText buffedStat, .mainText attention, .mainText passive, .mainText status {
     font-weight: bold;
 }
 
@@ -68,7 +76,7 @@
     display: inline-block;
 }
 
-.timeline-h4 .ant-image-img{
+.timeline-h4 .ant-image-img {
     width: 35px;
     height: 35px;
     border-radius: 3px;
@@ -92,6 +100,15 @@
 
 .mainText .detail {
     display: none;
-    margin:5px 10px;
+    margin: 5px 10px;
 }
 
+/**/
+.equip-card .ant-space {
+    width: 100%;
+}
+
+/*.equip-card .ant-space img {*/
+/*    width: 30px;*/
+/*    border-radius: 50%;*/
+/*}*/
