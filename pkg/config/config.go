@@ -21,7 +21,8 @@ type EquipConfig struct {
 }
 
 type ExtractList struct {
-	EquipWords map[string][]string `yaml:"equip"`
+	EquipShow []string                       `yaml:"equipShow"`
+	Equip     map[string]map[string][]string `yaml:"equip"`
 }
 
 type LolConfig struct {

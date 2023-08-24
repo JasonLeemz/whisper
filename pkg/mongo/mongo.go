@@ -3,7 +3,8 @@ package mongo
 import (
 	"context"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
+	"time"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"whisper/pkg/config"
@@ -17,10 +18,13 @@ var (
 func Init() {
 	// 创建连接对象
 	uri := fmt.Sprintf("mongodb://%s:%d", config.GlobalConfig.Mongodb.Host, config.GlobalConfig.Mongodb.Port)
-	clientOptions := options.Client().ApplyURI(uri)
+	clientOptions := options.Client().ApplyURI(uri).SetMaxPoolSize(100)
 
 	var err error
-	Client, err = mongo.Connect(context.Background(), clientOptions)
+	timeoutCtx, cancelFunc := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancelFunc()
+
+	Client, err = mongo.Connect(timeoutCtx, clientOptions)
 	if err != nil {
 		panic(err)
 	}
@@ -35,12 +39,4 @@ func Init() {
 	Database = Client.Database("whisper")
 	//.Collection("mycollection")
 
-	// 创建要插入的文档
-	document := bson.D{{"name", "John"}, {"age", 30}}
-
-	// 插入文档
-	_, err = Database.Collection("equipment").InsertOne(context.Background(), document)
-	if err != nil {
-		panic(err)
-	}
 }

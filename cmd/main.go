@@ -62,7 +62,8 @@ func main() {
 	inner := router.Group("/")
 	{
 		inner.POST("/cron", context.Handle(controller.Cron))
-		inner.POST("/extract/equip", context.Handle(controller.EquipExtract))
+		inner.POST("/equip/extract", context.Handle(controller.EquipExtract))
+		inner.POST("/equip/filter", context.Handle(controller.EquipFilter))
 	}
 	run.Init()
 

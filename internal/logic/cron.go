@@ -94,4 +94,8 @@ func Cron(ctx *context.Context) {
 	if err != nil {
 		log.Logger.Error(ctx, err)
 	}
+
+	// mongo
+	ExtractKeyWords(ctx, common.PlatformForLOL)
+	ExtractKeyWords(ctx, common.PlatformForLOLM)
 }

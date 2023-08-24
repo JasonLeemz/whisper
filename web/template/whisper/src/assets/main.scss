@@ -1,4 +1,4 @@
-/*@import './base.css';*/
+ @import './base.scss';
 
 .alert-banner {
     color: #fff;
@@ -103,12 +103,14 @@
     margin: 5px 10px;
 }
 
-/**/
 .equip-card .ant-space {
     width: 100%;
+    margin-bottom: 8px;
 }
 
-/*.equip-card .ant-space img {*/
-/*    width: 30px;*/
-/*    border-radius: 50%;*/
-/*}*/
+.wrap {
+
+    .ant-descriptions-header{
+        margin-bottom:0;
+    }
+}

@@ -13,16 +13,29 @@ export default {
   data() {
     return {
       formData: {
-        types: [],
+        platform: 0,
+        keywords: [],
       },
-      condTypes: []
+      equipTypes: [
+        {
+          cate: '',
+          sub_cate: [{
+            name: '',
+            keywordsStr: '',
+            keywordsSlice: [],
+          }],
+        }
+      ],
+      result:[],
     }
   },
-  methods: {
-    search() {
+  watch: {
+    'formData.keywords'(n) {
       // 使用 Axios 发起请求获取服务器数据
-      axios.post('/query', this.formData)
+      axios.post('/equip/filter', this.formData)
           .then(response => {
+            this.result = response.data.data
+            // console.log(response)
             // 将服务器返回的数据更新到组件的 serverData 字段
             // if (response.data.data != null) {
             //   this.tips = response.data.data.tips;
@@ -34,6 +47,10 @@ export default {
           });
     }
   },
+  methods: {
+    filter(event) {
+    }
+  },
   created() {
   },
   mounted() {
@@ -41,7 +58,7 @@ export default {
     axios.get('/equip/types')
         .then(response => {
           // 将服务器返回的数据更新到组件的 serverData 字段
-          this.condTypes = response.data.data.types;
+          this.equipTypes = response.data.data.types;
         })
         .catch(error => {
           console.error('Error fetching server data:', error);
@@ -53,30 +70,27 @@ export default {
   <a-space direction="vertical" :style="{ width: '100%' }" class="wrap">
     <a-layout>
       <a-layout-content>
-        <a-descriptions title="筛选条件">
-          <a-descriptions-item label="">
-            <a-checkbox-group name="equip-type" v-model:value="formData.types">
-              <a-checkbox v-for="(ct, index) in condTypes" :value="ct" :key="index">{{ index }}</a-checkbox>
-            </a-checkbox-group>
-          </a-descriptions-item>
-        </a-descriptions>
+        <a-form :model="formData" name="equip-box">
+          <a-checkbox-group v-model:value="formData.keywords">
+            <a-descriptions v-for="(cate, index) in equipTypes" :title="cate.cate" :key="index">
+              <a-descriptions-item >
+                <a-checkbox v-for="(sub_cate, ii) in cate.sub_cate" :key="ii" :value="sub_cate.keywordsStr">
+                  {{ sub_cate.name }}
+                </a-checkbox>
+              </a-descriptions-item>
+            </a-descriptions>
+          </a-checkbox-group>
+        </a-form>
 
-        <div class="equip-card">
+        <div class="equip-card" v-for="(item,i) in result" :key="i">
           <a-space direction="vertical">
             <a-card>
-              <a-card-meta title="蓝水晶" description="description">
-                <template #avatar >
-                  <a-avatar src="https://game.gtimg.cn/images/lgamem/act/lrlib/img/EquipIcons/lol_zfdj.png" />
+              <a-card-meta :title="item.name" description="-">
+                <template #avatar>
+                  <a-avatar :src="item.icon"/>
                 </template>
               </a-card-meta>
-              <div>生命值 +125 最大生命值\n\n该装备为辅助英雄专用，携带时小兵和野怪的击败赏金会减少。队伍中多个同类装备无法同时生效。\n\n每30秒获得1次充能（最多3次）。攻击敌方小兵时，消耗1次充能并处决生命值低于65%的小兵，将给队友提供全额赏金，自己可获得额外65金币，并回复20-80生命值。\n自己不参与小兵赏金分配，可单独获得50%赏金，并会将自己击败小兵的赏金全额提供给最近的队友。\n从野怪获得的赏金减少50%。\n\n任务：此物品获取500金币后转换为山脉壁垒。\n\n</div>
-              <div>description</div>
-            </a-card>
-            <a-card title="蓝水晶">
-              <template #avatar>
-                <img src="https://game.gtimg.cn/images/lgamem/act/lrlib/img/EquipIcons/lol_zfdj.png" />
-              </template>
-              <div></div>
+              <div v-html="item.desc"></div>
             </a-card>
           </a-space>
         </div>

@@ -77,3 +77,16 @@ type EquipList struct {
 	UnName          string        `json:"unName,omitempty"`
 	SearchKey       string        `json:"searchKey,omitempty"`
 }
+
+// --------------------------------------------------------
+
+type EquipType struct {
+	Cate    string    `json:"cate"`
+	SubCate []SubCate `json:"sub_cate"`
+}
+
+type SubCate struct {
+	Name          string   `json:"name"`
+	KeywordsSlice []string `json:"keywordsSlice"`
+	KeywordsStr   string   `json:"keywordsStr"`
+}

@@ -4,7 +4,9 @@ import (
 	errors2 "errors"
 	"fmt"
 	"github.com/spf13/cast"
+	"go.mongodb.org/mongo-driver/bson"
 	"math"
+	"sort"
 	"strings"
 	"time"
 	"whisper/internal/dto"
@@ -287,25 +289,17 @@ func GetCurrentLOLMVersion(ctx *context.Context) string {
 	return ""
 }
 
-type equipIntro struct {
-	Name     string   `json:"name"`
-	Icon     string   `json:"icon"`
-	Desc     string   `json:"desc"`
-	Price    string   `json:"price"`
-	Keywords []string `json:"keywords"`
-}
-
-func ExtractKeyWords(ctx *context.Context, platform int) map[string]equipIntro {
+func ExtractKeyWords(ctx *context.Context, platform int) map[string]model.EquipIntro {
 	result := extractEquipKeywords(ctx, platform)
-	recordMongo(ctx, result)
+	recordMongo(ctx, result, platform)
 	return result
 }
 
-func extractEquipKeywords(ctx *context.Context, platform int) map[string]equipIntro {
+func extractEquipKeywords(ctx *context.Context, platform int) map[string]model.EquipIntro {
 	_, dict := GetEquipTypes(ctx)
 	re := utils.CompileKeywordsRegex(dict)
 
-	result := make(map[string]equipIntro)
+	result := make(map[string]model.EquipIntro)
 	if platform == common.PlatformForLOL {
 		ed := dao.NewLOLEquipmentDAO()
 		v, err := ed.GetLOLEquipmentMaxVersion()
@@ -321,11 +315,14 @@ func extractEquipKeywords(ctx *context.Context, platform int) map[string]equipIn
 
 		for _, equip := range equips {
 			words := utils.ExtractKeywords(equip.Description, re)
-			result[equip.ItemId] = equipIntro{
+			result[equip.ItemId] = model.EquipIntro{
+				ID:       equip.ItemId,
 				Name:     equip.Name,
 				Icon:     equip.IconPath,
 				Desc:     equip.Description,
 				Price:    equip.Total,
+				Maps:     equip.Maps,
+				Platform: common.PlatformForLOL,
 				Keywords: words,
 			}
 		}
@@ -344,11 +341,14 @@ func extractEquipKeywords(ctx *context.Context, platform int) map[string]equipIn
 
 		for _, equip := range equips {
 			words := utils.ExtractKeywords(equip.Description, re)
-			result[equip.EquipId] = equipIntro{
+			result[equip.EquipId] = model.EquipIntro{
+				ID:       equip.EquipId,
 				Name:     equip.Name,
 				Icon:     equip.IconPath,
 				Desc:     equip.Description,
 				Price:    equip.Price,
+				Maps:     "召唤师峡谷",
+				Platform: common.PlatformForLOLM,
 				Keywords: words,
 			}
 		}
@@ -356,18 +356,85 @@ func extractEquipKeywords(ctx *context.Context, platform int) map[string]equipIn
 	return result
 }
 
-func GetEquipTypes(ctx *context.Context) (map[string][]string, []string) {
+func GetEquipTypes(ctx *context.Context) ([]*dto.EquipType, []string) {
+	equipTypes := make([]*dto.EquipType, 0)
 	dict := make([]string, 0)
-	// 添加字典用于提取关键词
-	for _, kws := range config.EquipDict.Extract.EquipWords {
-		for _, keyword := range kws {
-			dict = append(dict, keyword)
+
+	// 为了保证输出有序
+	// http://nacos.ybdx.xyz/nacos/#/configeditor?serverId=center&dataId=lol_equip_dict&group=dev&namespace=f320980d-d47e-4b63-896e-29879ea5a72e&edasAppName=&edasAppId=&searchDataId=&searchGroup=&pageSize=10&pageNo=1
+	for _, cate := range config.EquipDict.Extract.EquipShow {
+		if sub, ok := config.EquipDict.Extract.Equip[cate]; ok {
+			equipType := &dto.EquipType{
+				Cate: cate,
+			}
+
+			var sortKeys []string
+			for key := range sub {
+				sortKeys = append(sortKeys, key)
+			}
+			sort.Strings(sortKeys)
+
+			subCateStr := make([]map[string]string, 0)
+			for _, sk := range sortKeys {
+				split := strings.Split(sk, ".")
+				if len(split) < 2 {
+					continue
+				}
+				equipType.SubCate = append(equipType.SubCate, dto.SubCate{
+					Name:          sk,
+					KeywordsSlice: sub[sk],
+					KeywordsStr:   strings.Join(sub[sk], ","),
+				})
+				subCateStr = append(subCateStr, map[string]string{
+					split[1]: strings.Join(sub[sk], ","),
+				})
+
+				dict = append(dict, sub[sk]...)
+
+			}
+
+			equipTypes = append(equipTypes, equipType)
 		}
 	}
 
-	return config.EquipDict.Extract.EquipWords, dict
+	return equipTypes, dict
 }
 
-func recordMongo(ctx *context.Context, data map[string]equipIntro) {
+func recordMongo(ctx *context.Context, data map[string]model.EquipIntro, platform int) {
 
+	md := dao.NewMongoEquipmentDAO()
+	equips := make([]*model.EquipIntro, 0, len(data))
+	for _, intro := range data {
+		introCopy := intro
+		equips = append(equips, &introCopy)
+	}
+
+	cond := map[string]interface{}{
+		"platform": platform,
+	}
+	err := md.Delete(ctx, cond)
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return
+	}
+	err = md.Add(ctx, equips)
+	if err != nil {
+		log.Logger.Error(ctx, err)
+	}
+}
+
+func FilterKeyWords(ctx *context.Context, keywords []string, platform int) ([]*model.EquipIntro, error) {
+	log.Logger.Info(ctx, keywords)
+	// FromMongo
+	md := dao.NewMongoEquipmentDAO()
+
+	// 构建查询条件
+	filter := bson.M{
+		"platform": platform,
+		"maps":     "召唤师峡谷",
+		"keywords": bson.M{"$all": keywords},
+	}
+
+	result, err := md.Find(ctx, filter)
+	return result, err
 }
