@@ -23,7 +23,7 @@ type MongoEquipmentDAO struct {
 
 func (d *MongoEquipmentDAO) Find(ctx *context.Context, filter bson.M) ([]*model.EquipIntro, error) {
 
-	opts := options.Find().SetSort(bson.D{{"price", 1}})
+	opts := options.Find().SetSort(bson.D{{"price", -1}})
 	cursor, err := d.db.Collection(d.collection).Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err

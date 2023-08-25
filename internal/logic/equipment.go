@@ -316,14 +316,15 @@ func extractEquipKeywords(ctx *context.Context, platform int) map[string]model.E
 		for _, equip := range equips {
 			words := utils.ExtractKeywords(equip.Description, re)
 			result[equip.ItemId] = model.EquipIntro{
-				ID:       equip.ItemId,
-				Name:     equip.Name,
-				Icon:     equip.IconPath,
-				Desc:     equip.Description,
-				Price:    equip.Total,
-				Maps:     equip.Maps,
-				Platform: common.PlatformForLOL,
-				Keywords: words,
+				ID:        equip.ItemId,
+				Name:      equip.Name,
+				Icon:      equip.IconPath,
+				Desc:      utils.RemoveRepeatedBRTag(equip.Description),
+				Plaintext: equip.Plaintext,
+				Price:     cast.ToFloat64(equip.Total),
+				Maps:      equip.Maps,
+				Platform:  common.PlatformForLOL,
+				Keywords:  words,
 			}
 		}
 	} else {
@@ -342,14 +343,15 @@ func extractEquipKeywords(ctx *context.Context, platform int) map[string]model.E
 		for _, equip := range equips {
 			words := utils.ExtractKeywords(equip.Description, re)
 			result[equip.EquipId] = model.EquipIntro{
-				ID:       equip.EquipId,
-				Name:     equip.Name,
-				Icon:     equip.IconPath,
-				Desc:     equip.Description,
-				Price:    equip.Price,
-				Maps:     "召唤师峡谷",
-				Platform: common.PlatformForLOLM,
-				Keywords: words,
+				ID:        equip.EquipId,
+				Name:      equip.Name,
+				Icon:      equip.IconPath,
+				Desc:      utils.RemoveRepeatedBRTag(equip.Description),
+				Plaintext: "-",
+				Price:     cast.ToFloat64(equip.Price),
+				Maps:      "召唤师峡谷",
+				Platform:  common.PlatformForLOLM,
+				Keywords:  words,
 			}
 		}
 	}
@@ -381,7 +383,7 @@ func GetEquipTypes(ctx *context.Context) ([]*dto.EquipType, []string) {
 					continue
 				}
 				equipType.SubCate = append(equipType.SubCate, dto.SubCate{
-					Name:          sk,
+					Name:          split[1],
 					KeywordsSlice: sub[sk],
 					KeywordsStr:   strings.Join(sub[sk], ","),
 				})
@@ -428,11 +430,20 @@ func FilterKeyWords(ctx *context.Context, keywords []string, platform int) ([]*m
 	// FromMongo
 	md := dao.NewMongoEquipmentDAO()
 
+	kw := make([]bson.M, 0, len(keywords))
+	for _, words := range keywords {
+		in := strings.Split(words, ",")
+		kw = append(kw, bson.M{
+			"keywords": bson.M{
+				"$in": in,
+			},
+		})
+	}
 	// 构建查询条件
 	filter := bson.M{
 		"platform": platform,
 		"maps":     "召唤师峡谷",
-		"keywords": bson.M{"$all": keywords},
+		"$and":     kw,
 	}
 
 	result, err := md.Find(ctx, filter)

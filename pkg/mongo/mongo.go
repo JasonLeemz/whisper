@@ -18,7 +18,14 @@ var (
 func Init() {
 	// 创建连接对象
 	uri := fmt.Sprintf("mongodb://%s:%d", config.GlobalConfig.Mongodb.Host, config.GlobalConfig.Mongodb.Port)
-	clientOptions := options.Client().ApplyURI(uri).SetMaxPoolSize(100)
+	clientOptions := options.Client().
+		SetLoggerOptions(
+			options.Logger().SetComponentLevel(
+				1,
+				options.LogLevel(2)),
+		).
+		ApplyURI(uri).
+		SetMaxPoolSize(100)
 
 	var err error
 	timeoutCtx, cancelFunc := context.WithTimeout(context.Background(), 20*time.Second)

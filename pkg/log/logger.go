@@ -20,6 +20,7 @@ import (
 var Logger *WhisperLogger
 var GLogger *GormLogger
 var ELogger *ESLogger
+var MongoLogger *MongoSLogger
 
 type WhisperLogger struct {
 	*zap.SugaredLogger
@@ -33,6 +34,10 @@ type GormLogger struct {
 	Colorful                  bool
 	IgnoreRecordNotFoundError bool
 	ParameterizedQueries      bool
+}
+
+type MongoSLogger struct {
+	logger *zap.SugaredLogger
 }
 
 type ESLogger struct {

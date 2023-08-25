@@ -78,3 +78,12 @@ func CompileKeywordsRegex(keywords []string) *regexp.Regexp {
 
 	return re
 }
+
+func RemoveRepeatedBRTag(text string) string {
+	re := regexp.MustCompile(`(?i)(?:(?:\r\n|\r|\n|\f|\x85)+)`)
+	text = re.ReplaceAllString(text, "<br>")
+	re = regexp.MustCompile(`(?i)(?:(?:<br>)+)`)
+	text = re.ReplaceAllString(text, "<br>")
+
+	return text
+}

@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"strings"
+	"strconv"
 	"whisper/internal/logic"
 	"whisper/pkg/errors"
 
@@ -123,7 +123,7 @@ func EquipExtract(ctx *context.Context) {
 }
 
 type ReqEquipFilter struct {
-	Platform int      `form:"platform" json:"platform" binding:"-"`
+	Platform string   `form:"platform" json:"platform" binding:"-"`
 	Keywords []string `json:"keywords"`
 }
 
@@ -134,12 +134,11 @@ func EquipFilter(ctx *context.Context) {
 		return
 	}
 
-	keywords := make([]string, 0)
-	for _, filter := range req.Keywords {
-		keywords = append(keywords, strings.Split(filter, ",")...)
+	platform, err := strconv.Atoi(req.Platform)
+	if err != nil {
+		ctx.Reply(nil, errors.New(err, errors.ErrNoInvalidInput))
 	}
-
-	equips, err := logic.FilterKeyWords(ctx, keywords, req.Platform)
+	equips, err := logic.FilterKeyWords(ctx, req.Keywords, platform)
 
 	ctx.Reply(equips, errors.New(err))
 }

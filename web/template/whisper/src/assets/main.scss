@@ -1,116 +1,232 @@
- @import './base.scss';
+@import './base.scss';
 
 .alert-banner {
-    color: #fff;
-    padding: 2px 5px;
-    line-height: 25px;
-    background-color: #141414;
+  color: #fff;
+  padding: 2px 5px;
+  line-height: 25px;
+  background-color: #141414;
 
 }
 
 .wrap {
-    font: 14px Helvetica Neue, Helvetica, PingFang SC, Tahoma, Arial, sans-serif;
-    position: relative;
-    margin: 0 auto;
-    padding: 0 15px;
+  font: 14px Helvetica Neue, Helvetica, PingFang SC, Tahoma, Arial, sans-serif;
+  position: relative;
+  margin: 0 auto;
+  padding: 0 15px;
 }
 
 .ant-layout-content {
-    background: #fff;
+  background: #fff;
 }
 
 .blank {
-    height: 5px;
-    clear: both;
+  height: 5px;
+  clear: both;
 }
 
 .ant-divider {
-    margin: 10px 0;
+  margin: 10px 0;
 }
 
 .timeline-h4 {
-    color: #3a3a3a !important;
-    position: relative;
-    margin-bottom: 10px;
-    line-height: 22px;
-    font-weight: 700;
+  color: #3a3a3a !important;
+  position: relative;
+  margin-bottom: 10px;
+  line-height: 22px;
+  font-weight: 700;
 }
 
 .ant-timeline-item em {
-    font-style: inherit;
-    color: #ff5722;
+  font-style: inherit;
+  color: #ff5722;
 }
 
 .timeline-h4 span {
-    margin-left: 5px;
+  margin-left: 5px;
 }
 
 .mainText {
-    color: rgba(0, 0, 0, .85);
-    font-size: 13px;
-    line-height: 1.8;
+  color: rgba(0, 0, 0, .85);
+  font-size: 13px;
+  line-height: 1.8;
 }
 
 .mainText buffedStat, .mainText attention, .mainText passive, .mainText status {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .mainText ul {
-    padding: 0;
-    margin: 0;
+  padding: 0;
+  margin: 0;
 }
 
 .mainText li {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .mainText li div {
-    font-size: 10px;
-    line-height: 14px;
-    margin: 5px 0 15px 0;
+  font-size: 10px;
+  line-height: 14px;
+  margin: 5px 0 15px 0;
 }
 
 .mainText li h6 {
-    display: inline-block;
+  display: inline-block;
 }
 
 .timeline-h4 .ant-image-img {
-    width: 35px;
-    height: 35px;
-    border-radius: 3px;
+  width: 35px;
+  height: 35px;
+  border-radius: 3px;
 }
 
 .mainText img {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
 }
 
 .mainText span {
-    color: #7d7d7d;
+  color: #7d7d7d;
 }
 
 .mainText div {
-    color: #7d7d7d;
-    cursor: pointer;
-    padding-left: 29px;
+  color: #7d7d7d;
+  cursor: pointer;
+  padding-left: 29px;
 }
 
 .mainText .detail {
-    display: none;
-    margin: 5px 10px;
+  display: none;
+  margin: 5px 10px;
 }
 
-.equip-card .ant-space {
+.equip-card {
+  .ant-tag {
+    line-height: 15px;
+    padding: 0 5px;
+  }
+
+  .ant-space {
     width: 100%;
     margin-bottom: 8px;
+  }
+
+  .ant-card-body {
+    padding: 15px 15px 5px 15px;
+    position: relative;
+
+    .ant-tag {
+      position: absolute;
+      top: 33px;
+      left: 55px;
+    }
+  }
+
+  .ant-card-meta-avatar {
+    padding-right: 10px;
+  }
+
+  .ant-card-meta-title {
+    color: #3a3a3a;
+    font-size: 14px;
+    line-height: 14px;
+    display: inline-block;
+  }
+}
+
+.ant-tooltip .ant-tooltip-inner {
+  font-size: 12px;
+  min-height: 25px;
+  padding: 3px 8px;
 }
 
 .wrap {
+  .platform-switch {
+    margin-bottom: 7px;
+    //padding: 2px 33px
 
-    .ant-descriptions-header{
-        margin-bottom:0;
+    .cond-drawer{
+      font-size: 12px;
+      float: right;
     }
+  }
+
+  .ant-descriptions-header {
+    margin-bottom: 0;
+  }
+
+  .ant-descriptions-header, .ant-descriptions-view {
+    display: inline-block;
+    line-height: inherit;
+  }
+  .ant-descriptions-header .ant-descriptions-title{
+    display: inline-block;
+    line-height: 1.5;
+  }
+  .ant-descriptions .ant-descriptions-view{
+    width: 90%;
+    line-height: inherit;
+  }
+
+  .ant-descriptions-item {
+    padding: 0;
+  }
+
+  .ant-descriptions-title {
+    font-size: 13px;
+    margin-right: 5px;
+    color: #3a3a3a;
+  }
+
+  .ant-form label {
+    font-size: 12px;
+  }
+
+  .ant-checkbox + span {
+    padding-left: 5px;
+  }
+
+  .ant-descriptions-row > td {
+    padding: 0;
+  }
+
+  .ant-card .ant-card-meta-detail > div:not(:last-child) {
+    margin-bottom: 2px;
+  }
+
+  .ant-card .ant-card-meta-description {
+    font-size: 12px;
+    padding-left: 70px;
+  }
+
+  .ant-card-body .ant-tag.platform-tag {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    left: auto;
+    margin: 0;
+    border-radius: 0 4px 0 4px;
+    //border-top: none;
+    //border-right: none;
+  }
+
+  .card-desc {
+    padding: 5px 0;
+    color: rgba(0, 0, 0, 0.85);
+    font-size: 13px;
+    line-height: 1.8;
+
+    mainText {
+      color: rgba(0, 0, 0, 0.85);
+      font-size: 13px;
+      line-height: 1.8;
+
+      buffedStat, attention, passive, status, scalemana, scaleap {
+        font-weight: bold;
+      }
+    }
+  }
 }
