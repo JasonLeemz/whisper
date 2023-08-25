@@ -33,6 +33,8 @@ func main() {
 		page.Static("assets", "web/template/whisper/dist/assets/")
 		page.StaticFile("favicon.ico", "web/static/favicon.ico")
 		page.GET("/", context.Handle(controller.SearchBox))
+		page.GET("/equip", context.Handle(controller.SearchBox))
+
 		page.GET("/version", context.Handle(controller.QueryVersion))
 		page.GET("/equip/types", context.Handle(controller.QueryEquipTypes))
 	}
