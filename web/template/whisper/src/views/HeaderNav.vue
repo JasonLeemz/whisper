@@ -1,12 +1,12 @@
-<script setup lang="ts">
+<script setup>
 import { RouterLink, RouterView } from 'vue-router'
 
-import { h, ref } from 'vue';
-import { SearchOutlined, ClusterOutlined, SettingOutlined,ShareAltOutlined } from '@ant-design/icons-vue';
+import { ref } from 'vue';
+import { SearchOutlined, ShareAltOutlined } from '@ant-design/icons-vue';
 const current = ref(['SearchBox']);
 </script>
 
-<script lang="ts">
+<script>
 import axios from 'axios';
 
 export default {
