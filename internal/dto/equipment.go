@@ -90,3 +90,25 @@ type SubCate struct {
 	KeywordsSlice []string `json:"keywordsSlice"`
 	KeywordsStr   string   `json:"keywordsStr"`
 }
+
+// --------------------------------------------------------
+
+type RespRoadmap struct {
+	Current      Roadmap   `json:"current"`
+	From         []Roadmap `json:"from"`
+	Into         []Roadmap `json:"into"`
+	GapPriceFrom int       `json:"gapPriceFrom"`
+}
+
+type Roadmap struct {
+	ID        int    `json:"ID"`
+	Name      string `json:"name"`
+	Icon      string `json:"icon"`
+	Maps      string `json:"maps"`
+	Level     string `json:"level"`
+	Plaintext string `json:"plaintext"`
+	Desc      string `json:"desc"`
+	Price     int    `json:"price"`
+	Sell      int    `json:"sell"`
+	Version   string `json:"version"`
+}

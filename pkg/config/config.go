@@ -15,9 +15,8 @@ var (
 )
 
 type EquipConfig struct {
-	Keywords  []string    `yaml:"keywords"`
-	Stopwords []string    `yaml:"stopwords"`
-	Extract   ExtractList `yaml:"extract"`
+	Exclude []string    `yaml:"exclude"`
+	Extract ExtractList `yaml:"extract"`
 }
 
 type ExtractList struct {

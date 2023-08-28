@@ -148,7 +148,7 @@
     margin-bottom: 7px;
     //padding: 2px 33px
 
-    .cond-drawer{
+    .cond-drawer {
       font-size: 12px;
       float: right;
     }
@@ -162,11 +162,13 @@
     display: inline-block;
     line-height: inherit;
   }
-  .ant-descriptions-header .ant-descriptions-title{
+
+  .ant-descriptions-header .ant-descriptions-title {
     display: inline-block;
     line-height: 1.5;
   }
-  .ant-descriptions .ant-descriptions-view{
+
+  .ant-descriptions .ant-descriptions-view {
     width: 90%;
     line-height: inherit;
   }
@@ -227,6 +229,52 @@
       buffedStat, attention, passive, status, scalemana, scaleap {
         font-weight: bold;
       }
+    }
+  }
+}
+.ant-divider-horizontal.ant-divider-with-text {
+  margin: 6px 0;
+}
+.ant-popover{
+  max-width: 265px;
+
+  .ant-tag{
+    float: right;
+    margin-top: -25px;
+  }
+}
+.ant-drawer-body {
+  .ant-divider-inner-text {
+    img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+  }
+
+  .equip-roadmap {
+    text-align: center;
+    img {
+      width: 50px;
+      height: 50px;
+      margin: 1px 2px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+  }
+
+  table.roadmap-detail{
+    line-height: 20px;
+    margin-top: 20px;
+    font-size: 12px;
+    img{
+      display: inline-block;
+      line-height: 20px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      margin: 2px 5px;
     }
   }
 }

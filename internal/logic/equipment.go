@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"encoding/json"
 	errors2 "errors"
 	"fmt"
 	"github.com/spf13/cast"
@@ -113,8 +114,8 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 			Version:     equip.Version,
 			FileTime:    equip.FileTime,
 
-			//From:       item.From,
-			//Into:       item.Into,
+			From: convRoadmapData4LOL(item.From),
+			Into: convRoadmapData4LOL(item.Into),
 		}
 
 		for _, m := range item.Maps {
@@ -206,15 +207,20 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 	// 入库更新
 	equips := make([]*model.LOLMEquipment, 0, len(equip.EquipList))
 
+	into := make(map[string][]string)
+
 	for _, item := range equip.EquipList {
+		fs, fa := convRoadmapData4LOLM(item.From)
+		for _, fid := range fa {
+			into[fid] = append(into[fid], item.EquipId)
+		}
 
 		namePY, nameF := pinyin.Trans(item.Name)
 		searchKey := namePY + "," + nameF + "," + item.Type + "," + item.Level
 		tmp := model.LOLMEquipment{
-			EquipId:  item.EquipId,
-			Name:     item.Name,
-			IconPath: item.IconPath,
-			//From:            item.From,
+			EquipId:         item.EquipId,
+			Name:            item.Name,
+			IconPath:        item.IconPath,
 			Type:            item.Type,
 			Level:           item.Level,
 			Price:           item.Price,
@@ -250,6 +256,8 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 
 			Description: strings.Join(item.Description, ""),
 			//Description: strings.Join(item.Description, "<br>"),
+
+			From: fs,
 		}
 
 		equips = append(equips, &tmp)
@@ -259,6 +267,9 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
 	}
+
+	updatesInto, err := equipDao.UpdatesInto(equip.FileTime, equip.Version, into)
+	log.Logger.Info(ctx, fmt.Sprintf("Update LOLM equipment into. Rows:%d,err:%v", updatesInto, err))
 
 	log.Logger.Info(ctx, fmt.Sprintf("finish record LOLM equipment data. Since:%fs", time.Since(startT).Seconds()))
 }
@@ -324,6 +335,7 @@ func extractEquipKeywords(ctx *context.Context, platform int) map[string]model.E
 				Price:     cast.ToFloat64(equip.Total),
 				Maps:      equip.Maps,
 				Platform:  common.PlatformForLOL,
+				Version:   equip.Version,
 				Keywords:  words,
 			}
 		}
@@ -351,6 +363,7 @@ func extractEquipKeywords(ctx *context.Context, platform int) map[string]model.E
 				Price:     cast.ToFloat64(equip.Price),
 				Maps:      "召唤师峡谷",
 				Platform:  common.PlatformForLOLM,
+				Version:   equip.Version,
 				Keywords:  words,
 			}
 		}
@@ -448,4 +461,146 @@ func FilterKeyWords(ctx *context.Context, keywords []string, platform int) ([]*m
 
 	result, err := md.Find(ctx, filter)
 	return result, err
+}
+
+func convRoadmapData4LOL(data any) string {
+	var t []string
+	b, _ := json.Marshal(data)
+	err := json.Unmarshal(b, &t)
+	if err != nil {
+		return ""
+	}
+
+	return strings.Join(t, ",")
+}
+
+func convRoadmapData4LOLM(data any) (string, []string) {
+	var t []string
+	b, _ := json.Marshal(data)
+	err := json.Unmarshal(b, &t)
+	if err != nil {
+		return "", nil
+	}
+
+	return strings.Join(t, ","), t
+}
+
+func GetRoadmap(ctx *context.Context, version string, platform int, equipID string) (*dto.RespRoadmap, error) {
+	resp := dto.RespRoadmap{}
+	if platform == common.PlatformForLOL {
+		ed := dao.NewLOLEquipmentDAO()
+		roadmap, err := ed.GetRoadmap(version, equipID)
+		if err != nil {
+			return nil, err
+		}
+		if len(roadmap["current"]) == 0 {
+			return nil, errors.New("current equip can not find data")
+		}
+		resp.Current = dto.Roadmap{
+			ID:        cast.ToInt(roadmap["current"][0].ItemId),
+			Name:      roadmap["current"][0].Name,
+			Icon:      roadmap["current"][0].IconPath,
+			Maps:      roadmap["current"][0].Maps,
+			Level:     "",
+			Plaintext: roadmap["current"][0].Plaintext,
+			Desc:      roadmap["current"][0].Description,
+			Price:     cast.ToInt(roadmap["current"][0].Total),
+			Sell:      cast.ToInt(roadmap["current"][0].Sell),
+			Version:   roadmap["current"][0].Version,
+		}
+
+		for _, equip := range roadmap["into"] {
+			resp.Into = append(resp.Into, dto.Roadmap{
+				ID:        cast.ToInt(equip.ItemId),
+				Name:      equip.Name,
+				Icon:      equip.IconPath,
+				Maps:      equip.Maps,
+				Level:     "",
+				Plaintext: equip.Plaintext,
+				Desc:      equip.Description,
+				Price:     cast.ToInt(equip.Total),
+				Sell:      cast.ToInt(equip.Sell),
+				Version:   equip.Version,
+			})
+		}
+
+		fromPrice := 0
+		for _, equip := range roadmap["from"] {
+			price := cast.ToInt(equip.Total)
+			resp.From = append(resp.Into, dto.Roadmap{
+				ID:        cast.ToInt(equip.ItemId),
+				Name:      equip.Name,
+				Icon:      equip.IconPath,
+				Maps:      equip.Maps,
+				Level:     "",
+				Plaintext: equip.Plaintext,
+				Desc:      equip.Description,
+				Price:     price,
+				Sell:      cast.ToInt(equip.Sell),
+				Version:   equip.Version,
+			})
+
+			fromPrice += price
+		}
+
+		resp.GapPriceFrom = resp.Current.Price - fromPrice
+	} else {
+		ed := dao.NewLOLMEquipmentDAO()
+		roadmap, err := ed.GetRoadmap(version, equipID)
+		if err != nil {
+			return nil, err
+		}
+		if len(roadmap["current"]) == 0 {
+			return nil, errors.New("current equip can not find data")
+		}
+		resp.Current = dto.Roadmap{
+			ID:        cast.ToInt(roadmap["current"][0].EquipId),
+			Name:      roadmap["current"][0].Name,
+			Icon:      roadmap["current"][0].IconPath,
+			Maps:      "",
+			Level:     roadmap["current"][0].Level,
+			Plaintext: "",
+			Desc:      roadmap["current"][0].Description,
+			Price:     cast.ToInt(&roadmap["current"][0].Price),
+			Sell:      0,
+			Version:   roadmap["current"][0].Version,
+		}
+
+		for _, equip := range roadmap["into"] {
+			resp.Into = append(resp.Into, dto.Roadmap{
+				ID:        cast.ToInt(equip.EquipId),
+				Name:      equip.Name,
+				Icon:      equip.IconPath,
+				Maps:      "",
+				Level:     "",
+				Plaintext: "",
+				Desc:      equip.Description,
+				Price:     cast.ToInt(equip.Price),
+				Sell:      0,
+				Version:   equip.Version,
+			})
+		}
+
+		fromPrice := 0
+		for _, equip := range roadmap["from"] {
+			price := cast.ToInt(equip.Price)
+			resp.From = append(resp.Into, dto.Roadmap{
+				ID:        cast.ToInt(equip.EquipId),
+				Name:      equip.Name,
+				Icon:      equip.IconPath,
+				Maps:      "",
+				Level:     "",
+				Plaintext: "",
+				Desc:      equip.Description,
+				Price:     price,
+				Sell:      0,
+				Version:   equip.Version,
+			})
+			fromPrice += price
+		}
+
+		resp.GapPriceFrom = resp.Current.Price - fromPrice
+	}
+
+	return &resp, nil
 }

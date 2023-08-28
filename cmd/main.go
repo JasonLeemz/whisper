@@ -37,6 +37,7 @@ func main() {
 
 		page.GET("/version", context.Handle(controller.QueryVersion))
 		page.GET("/equip/types", context.Handle(controller.QueryEquipTypes))
+		page.POST("/equip/roadmap", context.Handle(controller.GetRoadmap))
 	}
 
 	lol := router.Group("/lol")

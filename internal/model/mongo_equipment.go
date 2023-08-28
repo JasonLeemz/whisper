@@ -9,6 +9,7 @@ type EquipIntro struct {
 	Price     float64  `json:"price"`
 	Maps      string   `json:"maps"`
 	Platform  uint8    `json:"platform"`
+	Version   string   `json:"version"`
 	Keywords  []string `json:"keywords"`
 }
 
