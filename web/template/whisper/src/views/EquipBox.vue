@@ -131,8 +131,8 @@ export default {
             placement="right"
         >
           <div class="equip-roadmap equip-into">
-            <template v-for="(equip ,index) in sideDrawerData['into']" :key="index">
-              <a-popover :title="equip.name" placement="bottom" arrow-point-at-center>
+            <template v-for="(equip ,index) in sideDrawerData['into']" :key="index" >
+              <a-popover :title="equip.name" placement="bottom" arrow-point-at-center >
                 <template #content>
                   <a-tag>
                     <span>

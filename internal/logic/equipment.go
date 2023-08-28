@@ -527,7 +527,7 @@ func GetRoadmap(ctx *context.Context, version string, platform int, equipID stri
 		fromPrice := 0
 		for _, equip := range roadmap["from"] {
 			price := cast.ToInt(equip.Total)
-			resp.From = append(resp.Into, dto.Roadmap{
+			resp.From = append(resp.From, dto.Roadmap{
 				ID:        cast.ToInt(equip.ItemId),
 				Name:      equip.Name,
 				Icon:      equip.IconPath,
@@ -584,7 +584,7 @@ func GetRoadmap(ctx *context.Context, version string, platform int, equipID stri
 		fromPrice := 0
 		for _, equip := range roadmap["from"] {
 			price := cast.ToInt(equip.Price)
-			resp.From = append(resp.Into, dto.Roadmap{
+			resp.From = append(resp.From, dto.Roadmap{
 				ID:        cast.ToInt(equip.EquipId),
 				Name:      equip.Name,
 				Icon:      equip.IconPath,
