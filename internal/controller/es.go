@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"whisper/internal/dto"
 	"whisper/internal/logic"
+	"whisper/internal/service/mq"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
 	"whisper/pkg/log"
@@ -44,6 +45,10 @@ func Query(ctx *context.Context) {
 	if err := ctx.Bind(req); err != nil {
 		return
 	}
+
+	defer func() {
+		mq.ProduceMessage(mq.Exchange, mq.RoutingKeySearchKey, []byte(req.KeyWords))
+	}()
 
 	way := make([]string, 0, 4)
 	for _, w := range req.Way {

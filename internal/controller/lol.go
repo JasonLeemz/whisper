@@ -3,6 +3,7 @@ package controller
 import (
 	"strconv"
 	"whisper/internal/logic"
+	"whisper/internal/service/mq"
 	"whisper/pkg/errors"
 
 	"whisper/pkg/context"
@@ -133,6 +134,12 @@ func EquipFilter(ctx *context.Context) {
 	if err := ctx.Bind(req); err != nil {
 		return
 	}
+
+	defer func() {
+		for _, kws := range req.Keywords {
+			mq.ProduceMessage(mq.Exchange, mq.RoutingKeyEquipBox, []byte(kws))
+		}
+	}()
 
 	platform, err := strconv.Atoi(req.Platform)
 	if err != nil {
