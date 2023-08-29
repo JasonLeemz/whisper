@@ -131,14 +131,19 @@ export default {
             placement="right"
         >
           <div class="equip-roadmap equip-into">
-            <template v-for="(equip ,index) in sideDrawerData['into']" :key="index" >
-              <a-popover :title="equip.name" placement="bottom" arrow-point-at-center >
+            <template v-for="(equip ,index) in sideDrawerData['into']" :key="index">
+              <a-popover placement="bottom" arrow-point-at-center>
                 <template #content>
-                  <a-tag>
-                    <span>
+                  <div class="roadmap-item">
+                    <span class="roadmap-item-title">
+                      {{ equip.name }}
+                    </span>
+                    <a-tag>
+                    <span class="roadmap-item-price">
                       价格:{{ equip.price }}
                     </span>
-                  </a-tag>
+                    </a-tag>
+                  </div>
                   <span v-html="equip.desc"></span>
                 </template>
                 <img :src="equip.icon">
@@ -146,13 +151,18 @@ export default {
             </template>
           </div>
           <a-divider>
-            <a-popover :title="sideDrawerData['current'].name" placement="bottom" arrow-point-at-center>
+            <a-popover placement="bottom" arrow-point-at-center>
               <template #content>
-                <a-tag>
-                    <span>
+                <div class="roadmap-item">
+                    <span class="roadmap-item-title">
+                      {{ sideDrawerData['current'].name }}
+                    </span>
+                  <a-tag>
+                    <span class="roadmap-item-price">
                       价格:{{ sideDrawerData['current'].price }}
                     </span>
-                </a-tag>
+                  </a-tag>
+                </div>
                 <span v-html="sideDrawerData['current'].desc"></span>
               </template>
               <img class="equip-roadmap equip-current" :src="sideDrawerData['current'].icon" alt="">
@@ -161,13 +171,18 @@ export default {
           </a-divider>
           <div class="equip-roadmap equip-from">
             <template v-for="(equip ,index) in sideDrawerData['from']" :key="index">
-              <a-popover :title="equip.name" placement="bottom" arrow-point-at-center>
+              <a-popover placement="bottom" arrow-point-at-center>
                 <template #content>
-                  <a-tag>
-                    <span>
+                  <div class="roadmap-item">
+                    <span class="roadmap-item-title">
+                      {{ equip.name }}
+                    </span>
+                    <a-tag>
+                    <span class="roadmap-item-price">
                       价格:{{ equip.price }}
                     </span>
-                  </a-tag>
+                    </a-tag>
+                  </div>
                   <span v-html="equip.desc"></span>
                 </template>
                 <img :src="equip.icon">
@@ -180,12 +195,12 @@ export default {
               <td>
                 <img :src="equip.icon" alt="">
                 <span>{{ equip.name }}</span>
-                <span>, 价格:{{ equip.price }}</span>
+                <span>, 价格: <em>{{ equip.price }}</em> </span>
               </td>
             </tr>
             <tr>
               <td>
-                总价: {{sideDrawerData['current'].price}}, 补差价: {{ sideDrawerData.gapPriceFrom }}
+                总价: <em>{{ sideDrawerData['current'].price }}</em> , 补差价: <em>{{ sideDrawerData.gapPriceFrom }}</em>
               </td>
             </tr>
           </table>

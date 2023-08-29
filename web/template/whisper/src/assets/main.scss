@@ -36,14 +36,32 @@
   font-weight: 700;
 }
 
-.ant-timeline-item em {
-  font-style: inherit;
-  color: #ff5722;
+.ant-timeline-item {
+  .ant-timeline-item-content {
+  }
+
+  .ant-timeline-item-content:hover {
+
+  }
+
+  em {
+    font-style: inherit;
+    color: #ff5722;
+  }
 }
 
 .timeline-h4 span {
   margin-left: 5px;
+  cursor: pointer;
 }
+//.timeline-h4 span:hover:after{
+//  content: "合成路线";
+//  font-style: normal;
+//  font-weight: normal;
+//  font-size: 12px;
+//  color: #0000FF;
+//  margin-left: 10px;
+//}
 
 .mainText {
   color: rgba(0, 0, 0, .85);
@@ -76,10 +94,13 @@
   display: inline-block;
 }
 
-.timeline-h4 .ant-image-img {
-  width: 35px;
-  height: 35px;
-  border-radius: 3px;
+.timeline-h4 {
+  cursor: pointer;
+  .ant-image-img,img {
+    width: 35px;
+    height: 35px;
+    border-radius: 3px;
+  }
 }
 
 .mainText img {
@@ -232,17 +253,41 @@
     }
   }
 }
+
 .ant-divider-horizontal.ant-divider-with-text {
   margin: 6px 0;
 }
-.ant-popover{
+
+.ant-popover {
   max-width: 265px;
 
-  .ant-tag{
-    float: right;
-    margin-top: -25px;
+  .roadmap-item {
+    line-height: 35px;
+
+    .roadmap-item-title {
+      font-weight: 700;
+      margin: 0 5px 0 0;
+    }
+
+    .ant-tag {
+      line-height: 15px;
+      padding: 0 5px;
+      font-size: 12px;
+    }
+
+    .roadmap-item-price {
+      //line-height: 15px;
+      //padding: 0 5px;
+      //font-size: 12px;
+    }
   }
+
+  //float: right;
+  ////margin-top: -25px;
+  //top:0;
+  //right: 0;
 }
+
 .ant-drawer-body {
   .ant-divider-inner-text {
     img {
@@ -255,6 +300,7 @@
 
   .equip-roadmap {
     text-align: center;
+
     img {
       width: 50px;
       height: 50px;
@@ -264,11 +310,17 @@
     }
   }
 
-  table.roadmap-detail{
+  table.roadmap-detail {
     line-height: 20px;
     margin-top: 20px;
     font-size: 12px;
-    img{
+
+    em {
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    img {
       display: inline-block;
       line-height: 20px;
       width: 20px;

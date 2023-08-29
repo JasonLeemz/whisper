@@ -2,7 +2,7 @@ package model
 
 type ESEquipment struct {
 	ID           string `json:"id"`
-	EquipId      string `json:"itemId,omitempty"`
+	ItemId       string `json:"itemId,omitempty"`
 	Name         string `json:"name,omitempty"`
 	IconPath     string `json:"iconPath,omitempty"`
 	Price        string `json:"price,omitempty"`

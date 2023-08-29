@@ -3,7 +3,14 @@ import { RouterLink, RouterView } from 'vue-router'
 
 import { ref } from 'vue';
 import { SearchOutlined, ShareAltOutlined } from '@ant-design/icons-vue';
-const current = ref(['SearchBox']);
+let current = ref(['SearchBox']);
+
+if(window.location.pathname === "/equip"){
+   current = ref(['EquipBox']);
+}else if(window.location.pathname === "/"){
+   current = ref(['SearchBox']);
+}
+
 </script>
 
 <script>
@@ -51,20 +58,5 @@ export default {
     </a-col>
   </a-row>
   <div class="blank"></div>
-<!--  <a-space direction="vertical" :style="{ width: '100%' }" >-->
-<!--    <a-layout>-->
-<!--      <a-menu v-model:selectedKeys="current" mode="horizontal" :items="items" />-->
-<!--      Tips: 当前端游版本为 {{ lol_version }}，手游版本为 {{ lolm_version }}-->
-<!--&lt;!&ndash;      <a-layout-header>&ndash;&gt;-->
-<!--&lt;!&ndash;          <a-breadcrumb>&ndash;&gt;-->
-<!--&lt;!&ndash;            <a-space>&ndash;&gt;-->
-<!--&lt;!&ndash;              <RouterLink to="/">检索</RouterLink>&ndash;&gt;-->
-<!--&lt;!&ndash;              <RouterLink to="/about">|</RouterLink>&ndash;&gt;-->
-<!--&lt;!&ndash;              <RouterLink to="/equip">装备</RouterLink>&ndash;&gt;-->
-<!--&lt;!&ndash;            </a-space>&ndash;&gt;-->
-<!--&lt;!&ndash;          </a-breadcrumb>&ndash;&gt;-->
-<!--&lt;!&ndash;      </a-layout-header>&ndash;&gt;-->
-<!--    </a-layout>-->
-<!--  </a-space>-->
   <RouterView />
 </template>

@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/spf13/cast"
 	"strconv"
 	"whisper/internal/dto"
 	"whisper/internal/logic"
@@ -31,6 +32,10 @@ type list struct {
 	Tags        []string    `json:"tags"`
 	Description string      `json:"description"`
 	Plaintext   string      `json:"plaintext"`
+	Version     string      `json:"version"`
+	Platform    int         `json:"platform"`
+	ItemId      string      `json:"itemId"`
+	Maps        string      `json:"maps"`
 }
 
 func Query(ctx *context.Context) {
@@ -84,11 +89,15 @@ func Query(ctx *context.Context) {
 		//}
 		t := list{
 			ID:          hit.Id,
+			ItemId:      hit.Source.ItemId,
 			Name:        hit.Source.Name,
 			IconPath:    hit.Source.IconPath,
 			Description: prettyHeroDesc(ctx, hit.Source.Description, req.Platform, req.Category),
 			Plaintext:   hit.Source.Plaintext,
 			Tags:        hit.Source.Tags,
+			Version:     hit.Source.Version,
+			Platform:    cast.ToInt(hit.Source.Platform),
+			Maps:        hit.Source.Maps,
 		}
 
 		resp.Lists = append(resp.Lists, &t)

@@ -103,6 +103,10 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 			resp.Hits[i].Source.Description = hitData.Description
 			resp.Hits[i].Source.Plaintext = hitData.Plaintext
 			resp.Hits[i].Source.Version = hitData.Version
+			resp.Hits[i].Source.ItemId = hitData.ItemId
+			resp.Hits[i].Source.Platform = hitData.Platform
+			resp.Hits[i].Source.Maps = hitData.Maps
+
 			if hitData.Plaintext != "" && !strings.EqualFold(hitData.Plaintext, hitData.Description) {
 				resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("%s", hitData.Plaintext))
 			}
@@ -125,6 +129,8 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 			resp.Hits[i].Source.Description = hitData.Description
 			resp.Hits[i].Source.Plaintext = hitData.Plaintext
 			resp.Hits[i].Source.Version = hitData.Version
+			//resp.Hits[i].Source.ItemId = hitData.ItemId
+			resp.Hits[i].Source.Platform = hitData.Platform
 
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, strings.Split(hitData.Roles, ",")...)
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
@@ -142,6 +148,8 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 			resp.Hits[i].Source.Description = strings.Replace(hitData.Description, "<hr>", "", -1)
 			resp.Hits[i].Source.Plaintext = hitData.Plaintext
 			resp.Hits[i].Source.Version = hitData.Version
+			resp.Hits[i].Source.Platform = hitData.Platform
+
 			//resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Type:%s", hitData.StyleName))
 			if hitData.Tooltip != "" && len(hitData.Tooltip) <= 10 {
 				tooltip := html.UnescapeString(hitData.Tooltip)
@@ -166,6 +174,8 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 			resp.Hits[i].Source.Description = hitData.Description
 			resp.Hits[i].Source.Plaintext = hitData.Plaintext
 			resp.Hits[i].Source.Version = hitData.Version
+			resp.Hits[i].Source.Platform = hitData.Platform
+
 			if hitData.CoolDown != "" {
 				resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("冷却:%s", hitData.CoolDown))
 			}
@@ -527,7 +537,7 @@ func buildEquipIndex(ctx *context.Context) error {
 				tmp := row
 				esEquip = append(esEquip, &model.ESEquipment{
 					ID:          tmp.ItemId + "_" + tmp.Maps,
-					EquipId:     tmp.ItemId,
+					ItemId:      tmp.ItemId,
 					Name:        tmp.Name,
 					IconPath:    tmp.IconPath,
 					Price:       tmp.Price,
@@ -610,7 +620,7 @@ func buildMEquipIndex(ctx *context.Context) error {
 
 				esEquip = append(esEquip, &model.ESEquipment{
 					ID:          tmp.EquipId + "召唤师峡谷",
-					EquipId:     tmp.EquipId,
+					ItemId:      tmp.EquipId,
 					Name:        tmp.Name,
 					IconPath:    tmp.IconPath,
 					Price:       tmp.Price,
