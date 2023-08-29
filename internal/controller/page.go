@@ -46,3 +46,8 @@ func GetRoadmap(ctx *context.Context) {
 
 	ctx.Reply(roadmap, errors.New(err))
 }
+
+func GetHotKey(ctx *context.Context) {
+	keys := logic.GetHotKey(ctx)
+	ctx.Reply(keys, nil)
+}

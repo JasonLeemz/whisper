@@ -38,6 +38,7 @@ func main() {
 		page.GET("/version", context.Handle(controller.QueryVersion))
 		page.GET("/equip/types", context.Handle(controller.QueryEquipTypes))
 		page.POST("/equip/roadmap", context.Handle(controller.GetRoadmap))
+		page.GET("/hotkey", context.Handle(controller.GetHotKey))
 	}
 
 	lol := router.Group("/lol")
