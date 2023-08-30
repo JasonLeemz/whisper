@@ -34,11 +34,13 @@ type CronCfg struct {
 	ReBuild bool   `yaml:"rebuild"`
 }
 type LolCfg struct {
-	Equipment string `yaml:"equipment"`
-	Heroes    string `yaml:"heroes"`
-	Hero      string `yaml:"hero"`
-	Rune      string `yaml:"rune"`
-	Skill     string `yaml:"skill"`
+	Equipment   string `yaml:"equipment"`
+	Heroes      string `yaml:"heroes"`
+	Hero        string `yaml:"hero"`
+	Rune        string `yaml:"rune"`
+	Skill       string `yaml:"skill"`
+	SuitEquip   string `yaml:"suitEquip"`
+	ChampDetail string `yaml:"champDetail"`
 }
 type LolmCfg struct {
 	Equipment       string `yaml:"equipment"`

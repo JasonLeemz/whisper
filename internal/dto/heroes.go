@@ -170,3 +170,128 @@ type HeroDescription struct {
 	Detail          string `json:"detail"`
 	Version         string `json:"version"`
 }
+
+// --------------------------------------------------------
+
+type HeroSuitEquip struct {
+	Ret   int    `json:"ret,omitempty"`
+	Msg   string `json:"msg,omitempty"`
+	IRet  int    `json:"iRet,omitempty"`
+	SMsg  string `json:"sMsg,omitempty"`
+	JData JData  `json:"jData,omitempty"`
+}
+
+type JDataData struct {
+	Result string `json:"result,omitempty"`
+}
+
+type JData struct {
+	Code      int       `json:"code,omitempty"`
+	Msg       string    `json:"msg,omitempty"`
+	Data      JDataData `json:"data,omitempty"`
+	AmsSerial string    `json:"ams_serial,omitempty"`
+}
+
+type JDataDataResult struct {
+	Timesectionwinrate    string `json:"timesectionwinrate,omitempty"`
+	Styledetails          string `json:"styledetails,omitempty"`
+	Spellid               string `json:"spellid,omitempty"`
+	Itemover              string `json:"itemover,omitempty"`
+	Itemout               string `json:"itemout,omitempty"`
+	Itemcore              string `json:"itemcore,omitempty"`
+	Itemshoes             string `json:"itemshoes,omitempty"`
+	Doublechampiondetails string `json:"doublechampiondetails,omitempty"`
+	Skilllist             string `json:"skilllist,omitempty"`
+}
+
+// --------------------------------------------------------
+
+type ChampionFightData struct {
+	Status  string `json:"status"`
+	GameVer string `json:"gameVer"`
+	Date    string `json:"date"`
+
+	List FightDataList `json:"list"`
+}
+
+type FightDataList struct {
+	ChampionLane map[string]ChampionLaneItem `json:"championLane"`
+	//ChampionTrend interface{}            `json:"championTrend"`
+	ChampionFight map[string]interface{} `json:"championFight"`
+}
+
+type Itemjson struct {
+	Itemid   string `json:"itemid,omitempty"`
+	Igamecnt int    `json:"igamecnt,omitempty"`
+	Wincnt   int    `json:"wincnt,omitempty"`
+	Winrate  int    `json:"winrate,omitempty"`
+	Allcnt   int    `json:"allcnt,omitempty"`
+	Showrate int    `json:"showrate,omitempty"`
+}
+
+type FightDataDetail struct {
+	Itemout   map[string]Itemjson `json:"Itemout"`
+	Core3item map[string]Itemjson `json:"Core3item"`
+	Shoes     map[string]Itemjson `json:"Shoes"`
+	Suits     []Itemjson          `json:"Suits"`
+}
+type ChampionLaneItem struct {
+
+	//Itemoutjson   map[string]Itemjson `json:"itemoutjson,omitempty"`
+	//Core3itemjson map[string]Itemjson `json:"core3itemjson,omitempty"`
+	//Shoesjson     map[string]Itemjson `json:"shoesjson,omitempty"`
+	//Hold3         []Itemjson          `json:"hold3,omitempty"`
+	Itemout   map[string]Itemjson `json:"Itemout"`
+	Core3item map[string]Itemjson `json:"Core3item"`
+	Shoes     map[string]Itemjson `json:"Shoes"`
+	Suits     []Itemjson          `json:"Suits"`
+
+	Itemoutjson   string `json:"itemoutjson,omitempty"`
+	Core3itemjson string `json:"core3itemjson,omitempty"`
+	Shoesjson     string `json:"shoesjson,omitempty"`
+	Hold3         string `json:"hold3,omitempty"`
+
+	//Dtstatdate          string `json:"dtstatdate,omitempty"`
+	//Championid          string `json:"championid,omitempty"`
+	//Gameversion         string `json:"gameversion,omitempty"`
+	//Lane                string `json:"lane,omitempty"`
+	//Wincnt              string `json:"wincnt,omitempty"`
+	//Igamecnt            string `json:"igamecnt,omitempty"`
+	//Lanrate             string `json:"lanrate,omitempty"`
+	//Lanewinrate         string `json:"lanewinrate,omitempty"`
+	//Lanshowrate         string `json:"lanshowrate,omitempty"`
+	//Champlanorder       string `json:"champlanorder,omitempty"`
+	//Mainviceperk        string `json:"mainviceperk,omitempty"`
+	//Perkdetail          string `json:"perkdetail,omitempty"`
+	//Spellidjson         string `json:"spellidjson,omitempty"`
+	//Skilljson           string `json:"skilljson,omitempty"`
+	//WinrateFlowPlaytime string `json:"winrate_flow_playtime,omitempty"`
+	//Deaths              string `json:"deaths,omitempty"`
+	//Kills               string `json:"kills,omitempty"`
+	//Assists             string `json:"assists,omitempty"`
+	//Kda                 string `json:"kda,omitempty"`
+	//Timeplayed          string `json:"timeplayed,omitempty"`
+	//Goldearned          string `json:"goldearned,omitempty"`
+	//Goldearnedpergame   string `json:"goldearnedpergame,omitempty"`
+	//Minionskilled       string `json:"minionskilled,omitempty"`
+	//Damagerate          string `json:"damagerate,omitempty"`
+	//Damagetochamprate   string `json:"damagetochamprate,omitempty"`
+	//Killsrate           string `json:"killsrate,omitempty"`
+	//Hold1               string `json:"hold1,omitempty"`
+	//Hold2               string `json:"hold2,omitempty"`
+	//Hold4               string `json:"hold4,omitempty"`
+	//Hold5               string `json:"hold5,omitempty"`
+	//Hold6               string `json:"hold6,omitempty"`
+	//Hold7               string `json:"hold7,omitempty"`
+	//Hold8               string `json:"hold8,omitempty"`
+	//Hold9               string `json:"hold9,omitempty"`
+	//Hold10              string `json:"hold10,omitempty"`
+	//EtlStamp            string `json:"etl_stamp,omitempty"`
+}
+type ChampionFight struct {
+	Bottom  interface{} `json:"bottom"`
+	Mid     interface{} `json:"mid"`
+	Support interface{} `json:"support"`
+	Top     interface{} `json:"top"`
+	Jungle  interface{} `json:"jungle"`
+}

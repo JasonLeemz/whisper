@@ -513,3 +513,57 @@ func recordHeroSpell(ctx *context.Context, data *dto.HeroAttribute, platform int
 	log.Logger.Info(ctx, "add hero spell success:", add)
 	return nil
 }
+
+func QuerySuitEquip(ctx *context.Context, platform int, heroId string) (any, error) {
+	if platform == common.PlatformForLOL {
+		fightData, err := service.ChampionFightData(ctx, heroId)
+		if err != nil {
+			return nil, err
+		}
+		//return fightData, nil
+		for pos, posData := range fightData.List.ChampionLane {
+			equipData := map[string]dto.Itemjson{}
+			suits := make([]dto.Itemjson, 0)
+			tmp := dto.ChampionLaneItem{}
+
+			var err error
+			err = json.Unmarshal([]byte(posData.Itemoutjson), &equipData)
+			if err != nil {
+				log.Logger.Error(ctx, err)
+				continue
+			} else {
+				tmp.Itemout = equipData
+			}
+
+			err = json.Unmarshal([]byte(posData.Core3itemjson), &equipData)
+			if err != nil {
+				log.Logger.Error(ctx, err)
+				continue
+			} else {
+				tmp.Core3item = equipData
+			}
+
+			err = json.Unmarshal([]byte(posData.Shoesjson), &equipData)
+			if err != nil {
+				log.Logger.Error(ctx, err)
+				continue
+			} else {
+				tmp.Shoes = equipData
+			}
+
+			err = json.Unmarshal([]byte(posData.Hold3), &suits)
+			if err != nil {
+				log.Logger.Error(ctx, err)
+				continue
+			} else {
+				tmp.Suits = suits
+			}
+
+			fightData.List.ChampionLane[pos] = tmp
+		}
+
+		return fightData, nil
+	}
+
+	return nil, nil
+}

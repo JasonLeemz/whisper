@@ -42,7 +42,7 @@ func ConsumeSearchKeyMsg() error {
 	go func() {
 		for d := range msgs {
 			log.Logger.Infof("Received a message: %s", d.Body)
-			TopNZIncrBy(ctx, "SearchKey", d.Body)
+			TopNZIncrBy(ctx, redis.KeyHotSearchSearchBox, d.Body)
 		}
 	}()
 
@@ -78,7 +78,7 @@ func ConsumeEquipBoxMsg() error {
 	go func() {
 		for d := range msgs {
 			log.Logger.Infof("Received a message: %s", d.Body)
-			TopNZIncrBy(ctx, "EquipBox", d.Body)
+			TopNZIncrBy(ctx, redis.KeyHotSearchEquipBox, d.Body)
 		}
 	}()
 

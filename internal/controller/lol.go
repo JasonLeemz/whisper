@@ -149,3 +149,17 @@ func EquipFilter(ctx *context.Context) {
 
 	ctx.Reply(equips, errors.New(err))
 }
+
+type ReqSuitEquip struct {
+	Platform int    `form:"platform" json:"platform" binding:"-"`
+	HeroId   string `json:"hero_id"`
+}
+
+func SuitEquip(ctx *context.Context) {
+	req := &ReqSuitEquip{}
+	if err := ctx.Bind(req); err != nil {
+		return
+	}
+	equips, err := logic.QuerySuitEquip(ctx, req.Platform, req.HeroId)
+	ctx.Reply(equips, errors.New(err))
+}

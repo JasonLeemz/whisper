@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"time"
 	"whisper/internal/dto"
 	"whisper/pkg/config"
@@ -198,4 +199,66 @@ func QueryRuneTypeForLOLM(ctx *context.Context) (*dto.LOLMRuneType, error) {
 
 	err = json.Unmarshal(body, &runeType)
 	return &runeType, err
+}
+
+func QuerySuitEquipForLOL(ctx *context.Context, heroId string) (*dto.JDataDataResult, error) {
+	dtstatdate := time.Now().AddDate(0, 0, -1).Format("20060102")
+	url := fmt.Sprintf(config.LOLConfig.Lol.SuitEquip, dtstatdate, heroId)
+	log.Logger.Info(ctx, "url="+url)
+
+	// 发送 GetForm 请求
+	suitEquip := dto.HeroSuitEquip{}
+
+	header := http.Header{
+		Key:   "Referer",
+		Value: "https://101.qq.com/",
+	}
+	body, err := http.GetForm(ctx, url, header)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &suitEquip)
+	if err != nil {
+		return nil, err
+	}
+
+	result := dto.JDataDataResult{}
+	err = json.Unmarshal([]byte(suitEquip.JData.Data.Result), &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, err
+}
+
+// ChampionFightData 英雄对战数据详情
+func ChampionFightData(ctx *context.Context, heroID string) (*dto.ChampionFightData, error) {
+	//jsonpResponse := `var CHAMPION_DETAIL_17={"gameVer":"13.16","date":"2023-08-30 16:15:26"};/*  |xGv00|b214aa8b2b62d14489dce9170b96cdee */`
+	champDetailUrl := fmt.Sprintf(config.LOLConfig.Lol.ChampDetail, heroID)
+	url := fmt.Sprintf("%s?ts=%d", champDetailUrl, time.Now().Unix()/600)
+	log.Logger.Info(ctx, "url="+url)
+
+	// 发送 GetForm 请求
+	championFightData := dto.ChampionFightData{}
+
+	header := http.Header{
+		Key:   "Referer",
+		Value: "https://101.qq.com/",
+	}
+	body, err := http.GetForm(ctx, url, header)
+	if err != nil {
+		return nil, err
+	}
+
+	// 使用正则表达式提取 JSON 数据部分
+	re := regexp.MustCompile(`{.*}`)
+	match := re.FindString(string(body))
+
+	err = json.Unmarshal([]byte(match), &championFightData)
+	if err != nil {
+		return nil, err
+	}
+
+	return &championFightData, nil
 }
