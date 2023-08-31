@@ -163,3 +163,28 @@ func SuitEquip(ctx *context.Context) {
 	equips, err := logic.QuerySuitEquip(ctx, req.Platform, req.HeroId)
 	ctx.Reply(equips, errors.New(err))
 }
+
+func BatchUpdateSuitEquip(ctx *context.Context) {
+	err := logic.BatchUpdateSuitEquip(ctx)
+	ctx.Reply(nil, errors.New(err))
+}
+
+func SuitData2Redis(ctx *context.Context) {
+	err := logic.SuitData2Redis(ctx)
+	ctx.Reply(nil, errors.New(err))
+}
+
+type ReqGetHeroSuit struct {
+	Platform int    `form:"platform" json:"platform" binding:"-"`
+	HeroId   string `json:"hero_id"`
+}
+
+func GetHeroSuit(ctx *context.Context) {
+	req := &ReqGetHeroSuit{}
+	if err := ctx.Bind(req); err != nil {
+		return
+	}
+
+	suit, err := logic.GetHeroSuit(ctx, req.HeroId)
+	ctx.Reply(suit, errors.New(err))
+}

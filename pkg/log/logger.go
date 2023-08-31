@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 	errors2 "whisper/pkg/errors"
 	"whisper/pkg/trace"
@@ -20,7 +21,7 @@ import (
 var Logger *WhisperLogger
 var GLogger *GormLogger
 var ELogger *ESLogger
-var MongoLogger *MongoSLogger
+var MLogger *MongoLogger
 
 type WhisperLogger struct {
 	*zap.SugaredLogger
@@ -36,8 +37,17 @@ type GormLogger struct {
 	ParameterizedQueries      bool
 }
 
-type MongoSLogger struct {
+type MongoLogger struct {
 	logger *zap.SugaredLogger
+	mu     sync.Mutex
+}
+
+func (log *MongoLogger) Info(level int, message string, keysAndValues ...interface{}) {
+	log.logger.Infof("level=%d msg=%s keysAndValues:%v", level, message, keysAndValues)
+}
+
+func (log *MongoLogger) Error(err error, message string, keysAndValues ...interface{}) {
+	log.logger.Errorf("err=%d msg=%s keysAndValues:%v", err, message, keysAndValues)
 }
 
 type ESLogger struct {
@@ -67,12 +77,9 @@ func newGormLogger() {
 	encoder := getEncoder()
 	core := zapcore.NewCore(encoder, writeSyncer, zapcore.Level(config.GlobalConfig.Log.LogLevel))
 	zapLogger := zap.New(core, zap.AddCaller())
-	gormLogger := &WhisperLogger{
-		zapLogger.Sugar(),
-	}
 
 	GLogger = &GormLogger{
-		logger:   gormLogger.SugaredLogger,
+		logger:   zapLogger.Sugar(),
 		LogLevel: logger.Info,
 
 		SlowThreshold:             0,
@@ -90,12 +97,24 @@ func newESLogger() {
 	encoder := getEncoder()
 	core := zapcore.NewCore(encoder, writeSyncer, zapcore.Level(config.GlobalConfig.Log.LogLevel))
 	zapLogger := zap.New(core, zap.AddCaller())
-	esLogger := &WhisperLogger{
-		zapLogger.Sugar(),
-	}
 
 	ELogger = &ESLogger{
-		logger: esLogger.SugaredLogger,
+		logger: zapLogger.Sugar(),
+	}
+
+}
+
+// newMongoLogger MongoLogger 初始化
+func newMongoLogger() {
+	// 希望es的log单独打印日志，这里不复用Logger.SugaredLogger
+	writeSyncer := getLogWriter(config.GlobalConfig.Log.MongoLog)
+	encoder := getEncoder()
+	core := zapcore.NewCore(encoder, writeSyncer, zapcore.Level(config.GlobalConfig.Log.LogLevel))
+	zapLogger := zap.New(core, zap.AddCaller())
+
+	MLogger = &MongoLogger{
+		logger: zapLogger.Sugar(),
+		mu:     sync.Mutex{},
 	}
 
 }
@@ -202,6 +221,8 @@ func Init() {
 	newGormLogger()
 	// es logger
 	newESLogger()
+	// mongo logger
+	newMongoLogger()
 }
 
 // 日志记录地址

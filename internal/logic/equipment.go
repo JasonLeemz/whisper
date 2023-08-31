@@ -93,8 +93,6 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 	startT := time.Now()
 	// 入库更新
 	equips := make([]*model.LOLEquipment, 0, len(equip.Items)+int(math.Floor(float64(len(equip.Items)/3))))
-	heroesSuit := make([]*model.HeroesSuit, 0)
-	equipType := make([]*model.EquipType, 0)
 
 	for _, item := range equip.Items {
 		namePY, nameF := pinyin.Trans(item.Name)
@@ -124,29 +122,6 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 
 			equips = append(equips, &eqModel)
 		}
-
-		// 记录英雄适配装备表
-		switch item.SuitHeroId.(type) {
-		case []interface{}:
-			for _, heroID := range item.SuitHeroId.([]interface{}) {
-				id := cast.ToString(heroID)
-				hsTmp := &model.HeroesSuit{
-					HeroId: id,
-					ItemId: item.ItemId,
-				}
-				heroesSuit = append(heroesSuit, hsTmp)
-			}
-		}
-
-		// 记录装备所属类型表
-		for _, t := range item.Types {
-			etTmp := model.EquipType{
-				Types:  t,
-				ItemId: item.ItemId,
-			}
-			equipType = append(equipType, &etTmp)
-		}
-
 	}
 
 	// 记录装备信息

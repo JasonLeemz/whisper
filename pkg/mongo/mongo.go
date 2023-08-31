@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"time"
+	"whisper/pkg/log"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -22,7 +23,8 @@ func Init() {
 		SetLoggerOptions(
 			options.Logger().SetComponentLevel(
 				1,
-				options.LogLevel(2)),
+				options.LogLevel(2)).
+				SetSink(log.MLogger),
 		).
 		ApplyURI(uri).
 		SetMaxPoolSize(100)
@@ -44,6 +46,4 @@ func Init() {
 
 	// 选择数据库和集合
 	Database = Client.Database("whisper")
-	//.Collection("mycollection")
-
 }

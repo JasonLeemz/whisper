@@ -99,6 +99,7 @@ type LogCfg struct {
 	Path     string `yaml:"path"`
 	SqlLog   string `yaml:"sqlLog"`
 	EsLog    string `yaml:"esLog"`
+	MongoLog string `yaml:"mongoLog"`
 }
 
 func Init() {

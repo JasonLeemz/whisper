@@ -222,11 +222,11 @@ type FightDataList struct {
 
 type Itemjson struct {
 	Itemid   string `json:"itemid,omitempty"`
-	Igamecnt int    `json:"igamecnt,omitempty"`
-	Wincnt   int    `json:"wincnt,omitempty"`
-	Winrate  int    `json:"winrate,omitempty"`
-	Allcnt   int    `json:"allcnt,omitempty"`
-	Showrate int    `json:"showrate,omitempty"`
+	Igamecnt int32  `json:"igamecnt,omitempty"`
+	Wincnt   int32  `json:"wincnt,omitempty"`
+	Winrate  int32  `json:"winrate,omitempty"`
+	Allcnt   int32  `json:"allcnt,omitempty"`
+	Showrate int32  `json:"showrate,omitempty"`
 }
 
 type FightDataDetail struct {

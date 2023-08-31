@@ -40,6 +40,9 @@ func main() {
 		page.POST("/equip/roadmap", context.Handle(controller.GetRoadmap))
 		page.GET("/hotkey", context.Handle(controller.GetHotKey))
 		page.POST("/equip/suit", context.Handle(controller.SuitEquip))
+		page.POST("/equip/suit/batch", context.Handle(controller.BatchUpdateSuitEquip))
+		page.POST("/equip/suit/cache", context.Handle(controller.SuitData2Redis))
+		page.POST("/hero/suit", context.Handle(controller.GetHeroSuit))
 	}
 
 	lol := router.Group("/lol")

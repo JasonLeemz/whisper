@@ -16,8 +16,8 @@ func Init() {
 	ESClient, err = elastic.NewClient(
 		elastic.SetURL(fmt.Sprintf("http://%s:%s", config.GlobalConfig.ES.Host, config.GlobalConfig.ES.Port)),
 		elastic.SetTraceLog(log.ELogger),
-		//elastic.SetInfoLog(log.ELogger),
-		//elastic.SetErrorLog(log.ELogger),
+		elastic.SetInfoLog(log.ELogger),
+		elastic.SetErrorLog(log.ELogger),
 		elastic.SetSniff(false),
 	)
 
