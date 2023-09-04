@@ -104,6 +104,9 @@ func Query(ctx *context.Context) {
 			Platform:    cast.ToInt(hit.Source.Platform),
 			Maps:        hit.Source.Maps,
 		}
+		if req.Category == "lol_equipment" {
+			t.ID = t.ItemId
+		}
 
 		resp.Lists = append(resp.Lists, &t)
 	}

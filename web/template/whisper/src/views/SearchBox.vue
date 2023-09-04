@@ -15,8 +15,12 @@ const mapOptions = [
 <script>
 import axios from 'axios';
 import {message} from 'ant-design-vue';
+import DrawerEquip from "@/components/DrawerEquip.vue";
 
 export default {
+  components: {
+    DrawerEquip
+  },
   data() {
     return {
       formData: {
@@ -25,16 +29,21 @@ export default {
         category: 'lol_equipment',
         way: ['name', 'description'],
         map: ['召唤师峡谷'],
+        more_cond_show: true,
       },
-      tips: '',
-      lists: [],
-      show: true,
-      sideDrawer: false,
-      sideDrawerData: {
-        "current": {},
-        "from": [],
-        "into": [],
-        "gapPriceFrom": 0,
+      query:{
+        tips: '',
+        lists: [],
+      },
+      sideDrawer: {
+        show: false,
+        title: '合成路线',
+        data: {
+          "current": {},
+          "from": [],
+          "into": [],
+          "gapPriceFrom": 0,
+        },
       },
     }
   },
@@ -55,8 +64,8 @@ export default {
           .then(response => {
             // 将服务器返回的数据更新到组件的 serverData 字段
             if (response.data.data != null) {
-              this.tips = response.data.data.tips;
-              this.lists = response.data.data.lists;
+              this.query.tips = response.data.data.tips;
+              this.query.lists = response.data.data.lists;
             }
           })
           .catch(error => {
@@ -67,16 +76,34 @@ export default {
       if (id === "") {
         return
       }
-      axios.post('/equip/roadmap', {
-        'platform': platform,
-        'version': version,
-        'id': id,
-      }).then(response => {
-        this.sideDrawer = true
-        this.sideDrawerData = response.data.data
-      }).catch(error => {
-        console.error('Error fetching server data:', error);
-      });
+      if (this.formData.category === "lol_equipment") {
+        axios.post('/equip/roadmap', {
+          'platform': platform,
+          'version': version,
+          'id': id,
+        }).then(response => {
+          this.sideDrawer.show = true
+          this.sideDrawer.data = response.data.data
+        }).catch(error => {
+          console.error('Error fetching server data:', error);
+        });
+      } else if (this.formData.category === "lol_heroes") {
+        axios.post('/hero/suit', {
+          'platform': platform,
+          'hero_id': id,
+        }).then(response => {
+          this.sideDrawer.show = true
+          console.log(response.data.data)
+          // this.sideDrawerData = response.data.data
+        }).catch(error => {
+          console.error('Error fetching server data:', error);
+        });
+      } else if (this.formData.category === "lol_rune") {
+        // ...
+      } else if (this.formData.category === "lol_skill") {
+        // ...
+      }
+
     }
   },
   created() {
@@ -88,6 +115,10 @@ export default {
 
 
 <template>
+  <DrawerEquip
+      :side-drawer="sideDrawer"
+  />
+
   <a-space direction="vertical" :style="{ width: '100%' }" class="wrap">
     <a-layout>
       <a-layout-content>
@@ -124,13 +155,13 @@ export default {
           </a-radio-group>
           <div class="blank"></div>
           <div class="blank"></div>
-          <a-space @click="show = !show" direction="vertical">
+          <a-space @click="formData.more_cond_show = !formData.more_cond_show" direction="vertical">
             <a-typography-text>更多条件
-              <RightOutlined :rotate="show ? 90 : 0"/>
+              <RightOutlined :rotate="formData.more_cond_show ? 90 : 0"/>
             </a-typography-text>
           </a-space>
           <Transition name="fade">
-            <div v-if="show">
+            <div v-show="formData.more_cond_show" >
               <div>
                 <a-checkbox-group v-model:value="formData.way" name="way" :options="wayOptions"/>
               </div>
@@ -143,14 +174,14 @@ export default {
         </a-form>
 
         <a-descriptions>
-          <a-descriptions-item>{{ tips }}</a-descriptions-item>
+          <a-descriptions-item>{{ query.tips }}</a-descriptions-item>
         </a-descriptions>
         <a-timeline>
-          <a-timeline-item v-for="item in lists" :key="item.id" class="ant-card-hoverable">
+          <a-timeline-item v-for="item in query.lists" :key="item.id" class="ant-card-hoverable">
             <template #dot>
               <InfoCircleOutlined :style="{fontSize: '16px'}"/>
             </template>
-            <h4 class="timeline-h4" @click="showDrawer(item.platform,item.version,item.itemId)">
+            <h4 class="timeline-h4" @click="showDrawer(item.platform,item.version,item.id)">
               <img v-bind:src="item.iconPath"/>
               <span v-html="item.name"></span>
             </h4>
@@ -168,104 +199,7 @@ export default {
       </a-layout-content>
     </a-layout>
   </a-space>
-
-  <a-drawer
-      v-model:open="sideDrawer"
-      class="custom-class"
-      root-class-name="root-class-name"
-      title="合成路线"
-      placement="right"
-  >
-    <div class="equip-roadmap equip-into">
-      <template v-for="(equip ,index) in sideDrawerData['into']" :key="index">
-        <a-popover placement="bottom" arrow-point-at-center>
-          <template #content>
-            <div class="roadmap-item">
-                    <span class="roadmap-item-title">
-                      {{ equip.name }}
-                    </span>
-              <a-tag>
-                    <span class="roadmap-item-price">
-                      价格:{{ equip.price }}
-                    </span>
-              </a-tag>
-            </div>
-            <span v-html="equip.desc"></span>
-          </template>
-          <img :src="equip.icon">
-        </a-popover>
-      </template>
-    </div>
-    <a-divider>
-      <a-popover placement="bottom" arrow-point-at-center>
-        <template #content>
-          <div class="roadmap-item">
-                    <span class="roadmap-item-title">
-                      {{ sideDrawerData['current'].name }}
-                    </span>
-            <a-tag>
-                    <span class="roadmap-item-price">
-                      价格:{{ sideDrawerData['current'].price }}
-                    </span>
-            </a-tag>
-          </div>
-          <span v-html="sideDrawerData['current'].desc"></span>
-        </template>
-        <img class="equip-roadmap equip-current" :src="sideDrawerData['current'].icon" alt="">
-      </a-popover>
-
-    </a-divider>
-    <div class="equip-roadmap equip-from">
-      <template v-for="(equip ,index) in sideDrawerData['from']" :key="index">
-        <a-popover placement="bottom" arrow-point-at-center>
-          <template #content>
-            <div class="roadmap-item">
-                    <span class="roadmap-item-title">
-                      {{ equip.name }}
-                    </span>
-              <a-tag>
-                    <span class="roadmap-item-price">
-                      价格:{{ equip.price }}
-                    </span>
-              </a-tag>
-            </div>
-            <span v-html="equip.desc"></span>
-          </template>
-          <img :src="equip.icon">
-        </a-popover>
-      </template>
-    </div>
-
-    <table class="roadmap-detail">
-      <tr v-for="(equip ,index) in sideDrawerData['from']" :key="index">
-        <td>
-          <img :src="equip.icon" alt="">
-          <span>{{ equip.name }}</span>
-          <span>, 价格: <em>{{ equip.price }}</em> </span>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          总价: <em>{{ sideDrawerData['current'].price }}</em> , 补差价: <em>{{ sideDrawerData.gapPriceFrom }}</em>
-        </td>
-      </tr>
-    </table>
-  </a-drawer>
 </template>
 
 <style scoped>
-.ant-typography {
-  cursor: pointer;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
 </style>
