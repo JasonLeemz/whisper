@@ -209,7 +209,7 @@
 }
 
 .ant-popover {
-  max-width: 265px;
+  max-width: 280px;
 
   .roadmap-item {
     line-height: 35px;
@@ -273,17 +273,18 @@
     }
   }
 
+  .ant-collapse>.ant-collapse-item >.ant-collapse-header{
+    padding: 7px 16px;
+  }
+
   .hero-drawer-panel {
-    background: #f7f7f7;
-    border-radius: 4px;
-    margin-bottom: 24px;
-    border: 0;
+    margin-bottom: 5px;
     overflow: hidden;
 
     sub{
       color: #0000FF;
       float: right;
-      margin-top: -30px;
+      margin-top: -37px;
 
       em{
         display: inline-block;

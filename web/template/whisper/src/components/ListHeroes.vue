@@ -15,6 +15,13 @@ export default {
         title: '推荐出装',
         activeKey: ref(['out', 'shoe', 'core','other']),
         data: {},
+        mapPos:{
+          'top':'上单',
+          'mid':'中路',
+          'bottom':'AD',
+          'support':'辅助',
+          'jungle':'打野',
+        }
       },
     }
   },
@@ -82,10 +89,8 @@ export default {
   >
 
     <template v-for="(equips,pos) in sideDrawer.data" :key="pos">
-      <h4>{{ pos }}</h4>
+      <h4>{{ sideDrawer.mapPos[pos] }}</h4>
       <a-collapse
-          :bordered="false"
-          style="background: rgb(255, 255, 255)"
           v-model:activeKey="sideDrawer.activeKey"
       >
         <template #expandIcon="{ isActive }">
@@ -164,6 +169,11 @@ export default {
                           </span>
                     <a-tag>
                           <span class="roadmap-item-price">
+                            胜率:{{equip.winrate/100}}%
+                          </span>
+                    </a-tag>
+                    <a-tag>
+                          <span class="roadmap-item-price">
                             价格:{{ equip.price }}
                           </span>
                     </a-tag>
@@ -185,6 +195,11 @@ export default {
                           <span class="roadmap-item-title">
                             {{ equip.name }}
                           </span>
+                    <a-tag>
+                          <span class="roadmap-item-price">
+                            胜率:{{equip.winrate/100}}%
+                          </span>
+                    </a-tag>
                     <a-tag>
                           <span class="roadmap-item-price">
                             价格:{{ equip.price }}
