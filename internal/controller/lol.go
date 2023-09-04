@@ -1,7 +1,10 @@
 package controller
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
+	"whisper/internal/dto"
 	"whisper/internal/logic"
 	"whisper/internal/service/mq"
 	"whisper/pkg/errors"
@@ -147,7 +150,38 @@ func EquipFilter(ctx *context.Context) {
 	}
 	equips, err := logic.FilterKeyWords(ctx, req.Keywords, platform)
 
-	ctx.Reply(equips, errors.New(err))
+	resp := dto.SearchResult{}
+	total := len(equips)
+	resp.Tips = fmt.Sprintf("为您找到相关结果约%d个", total)
+
+	for _, equip := range equips {
+		tag := make([]string, 0)
+		if equip.Plaintext != "" && !strings.EqualFold(equip.Plaintext, equip.Desc) {
+			tag = append(tag, fmt.Sprintf("%s", equip.Plaintext))
+		}
+		price := int(equip.Price)
+		tag = append(tag, fmt.Sprintf("价格:%d", price))
+		tag = append(tag, fmt.Sprintf("Version:%s", equip.Version))
+		tag = append(tag, fmt.Sprintf("%s", equip.Maps))
+
+		t := dto.SearchResultList{
+			Tags:      tag,
+			Id:        equip.ID,
+			Name:      equip.Name,
+			Icon:      equip.Icon,
+			Desc:      equip.Desc,
+			Plaintext: equip.Plaintext,
+			Price:     price,
+			Maps:      equip.Maps,
+			Platform:  int(equip.Platform),
+			Version:   equip.Version,
+			Keywords:  equip.Keywords,
+		}
+
+		resp.List = append(resp.List, &t)
+	}
+
+	ctx.Reply(resp, errors.New(err))
 }
 
 type ReqSuitEquip struct {

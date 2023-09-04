@@ -84,10 +84,11 @@ func reloadRuneForLOL(ctx *context.Context, r *dto.LOLRune) {
 	// 入库更新
 	rs := make([]*model.LOLRune, 0, len(r.Rune))
 
-	for _, rr := range r.Rune {
+	for runeID, rr := range r.Rune {
 		namePY, nameF := pinyin.Trans(rr.Name)
 		searchKey := rr.Key + "," + rr.StyleName + "," + namePY + "," + nameF
 		tmp := model.LOLRune{
+			RuneID:    runeID,
 			Name:      rr.Name,
 			Icon:      rr.Icon,
 			Key:       rr.Key,

@@ -98,6 +98,7 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 			if err != nil {
 				return nil, err
 			}
+			resp.Hits[i].Source.ID = hitData.ID
 			resp.Hits[i].Source.Name = hitData.Name
 			resp.Hits[i].Source.IconPath = hitData.IconPath
 			resp.Hits[i].Source.Description = hitData.Description
@@ -124,12 +125,12 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 			if err != nil {
 				return nil, err
 			}
+			resp.Hits[i].Source.ID = hitData.ID
 			resp.Hits[i].Source.Name = hitData.Name
 			resp.Hits[i].Source.IconPath = hitData.IconPath
 			resp.Hits[i].Source.Description = hitData.Description
 			resp.Hits[i].Source.Plaintext = hitData.Plaintext
 			resp.Hits[i].Source.Version = hitData.Version
-			//resp.Hits[i].Source.ItemId = hitData.ItemId
 			resp.Hits[i].Source.Platform = hitData.Platform
 
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, strings.Split(hitData.Roles, ",")...)
@@ -143,6 +144,7 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 			if err != nil {
 				return nil, err
 			}
+			resp.Hits[i].Source.ID = hitData.ID
 			resp.Hits[i].Source.Name = hitData.Name + "(" + hitData.StyleName + ")"
 			resp.Hits[i].Source.IconPath = hitData.IconPath
 			resp.Hits[i].Source.Description = strings.Replace(hitData.Description, "<hr>", "", -1)
@@ -169,6 +171,7 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 			if err != nil {
 				return nil, err
 			}
+			resp.Hits[i].Source.ID = hitData.ID
 			resp.Hits[i].Source.Name = hitData.Name
 			resp.Hits[i].Source.IconPath = hitData.IconPath
 			resp.Hits[i].Source.Description = hitData.Description
@@ -536,7 +539,7 @@ func buildEquipIndex(ctx *context.Context) error {
 				var esEquip []*model.ESEquipment
 				tmp := row
 				esEquip = append(esEquip, &model.ESEquipment{
-					ID:          tmp.ItemId + "_" + tmp.Maps,
+					ID:          tmp.ItemId,
 					ItemId:      tmp.ItemId,
 					Name:        tmp.Name,
 					IconPath:    tmp.IconPath,
@@ -619,7 +622,7 @@ func buildMEquipIndex(ctx *context.Context) error {
 				tmp := row
 
 				esEquip = append(esEquip, &model.ESEquipment{
-					ID:          tmp.EquipId + "召唤师峡谷",
+					ID:          tmp.EquipId,
 					ItemId:      tmp.EquipId,
 					Name:        tmp.Name,
 					IconPath:    tmp.IconPath,
@@ -701,7 +704,7 @@ func buildRuneIndex(ctx *context.Context) error {
 				var esData []*model.ESRune
 				tmp := row
 				esData = append(esData, &model.ESRune{
-					ID:          tmp.Name + "_" + tmp.Version,
+					ID:          tmp.RuneID,
 					Name:        tmp.Name,
 					IconPath:    tmp.Icon,
 					Tooltip:     tmp.Tooltip,
@@ -774,7 +777,7 @@ func buildMRuneIndex(ctx *context.Context) error {
 				tmp := row
 
 				esData = append(esData, &model.ESRune{
-					ID:          tmp.RuneId + "_" + tmp.Name + "_" + tmp.Version,
+					ID:          tmp.RuneId,
 					Name:        tmp.Name,
 					IconPath:    tmp.IconPath,
 					Tooltip:     tmp.AttrName,
@@ -852,7 +855,7 @@ func buildSkillIndex(ctx *context.Context) error {
 				var esData []*model.ESSkill
 				tmp := row
 				esData = append(esData, &model.ESSkill{
-					ID:          tmp.Name + "_" + "LOL" + "_" + tmp.Version,
+					ID:          tmp.SkillID,
 					Name:        tmp.Name,
 					IconPath:    tmp.Icon,
 					Description: tmp.Description,
@@ -924,7 +927,7 @@ func buildMSkillIndex(ctx *context.Context) error {
 				var esData []*model.ESSkill
 				tmp := row
 				esData = append(esData, &model.ESSkill{
-					ID:          tmp.Name + "_" + "LOLM" + "_" + tmp.Version,
+					ID:          tmp.SkillID,
 					Name:        tmp.Name,
 					IconPath:    tmp.IconPath,
 					Description: tmp.FuncDesc,

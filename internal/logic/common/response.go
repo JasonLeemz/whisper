@@ -22,6 +22,7 @@ type Hits struct {
 }
 
 type Source struct {
+	ID          string   `json:"id"`
 	Name        string   `json:"name"`
 	IconPath    string   `json:"iconPath"`
 	ItemId      string   `json:"itemId"`

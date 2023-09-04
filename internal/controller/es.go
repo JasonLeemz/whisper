@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/spf13/cast"
 	"strconv"
+	"strings"
 	"whisper/internal/dto"
 	"whisper/internal/logic"
 	"whisper/internal/service/mq"
@@ -74,7 +75,7 @@ func Query(ctx *context.Context) {
 		ctx.Reply(nil, errors.New(err))
 	}
 
-	resp := RespQuery{}
+	resp := dto.SearchResult{}
 	total := result.Total.Value
 	display := len(result.Hits)
 	resp.Tips = fmt.Sprintf("为您找到相关结果约%d个", total)
@@ -82,33 +83,21 @@ func Query(ctx *context.Context) {
 		resp.Tips += fmt.Sprintf(",篇幅有限只展示%d条", display)
 	}
 	for _, hit := range result.Hits {
-		if name, ok := hit.Highlight["name"]; ok {
-			if len(name) > 0 {
-				hit.Source.Name = name[0]
-			}
-		}
-		//if desc, ok := hit.Highlight["description"]; ok {
-		//	if len(desc) > 0 {
-		//		hit.Source.Description = desc[0]
-		//	}
-		//}
-		t := list{
-			ID:          hit.Id,
-			ItemId:      hit.Source.ItemId,
-			Name:        hit.Source.Name,
-			IconPath:    hit.Source.IconPath,
-			Description: prettyHeroDesc(ctx, hit.Source.Description, req.Platform, req.Category),
-			Plaintext:   hit.Source.Plaintext,
-			Tags:        hit.Source.Tags,
-			Version:     hit.Source.Version,
-			Platform:    cast.ToInt(hit.Source.Platform),
-			Maps:        hit.Source.Maps,
-		}
-		if req.Category == "lol_equipment" {
-			t.ID = t.ItemId
+
+		t := dto.SearchResultList{
+			Id:        hit.Source.ID,
+			Name:      hit.Source.Name,
+			Icon:      hit.Source.IconPath,
+			Desc:      hit.Source.Description,
+			Plaintext: hit.Source.Plaintext,
+			Tags:      hit.Source.Tags,
+			Version:   hit.Source.Version,
+			Platform:  cast.ToInt(hit.Source.Platform),
+			Maps:      hit.Source.Maps,
+			Spell:     prettyHeroDesc(ctx, hit.Source.Description, req.Platform, req.Category),
 		}
 
-		resp.Lists = append(resp.Lists, &t)
+		resp.List = append(resp.List, &t)
 	}
 	ctx.Reply(resp, nil)
 }
@@ -130,89 +119,61 @@ func Build(ctx *context.Context) {
 	ctx.Reply(nil, errors.New(err))
 }
 
-func prettyHeroDesc(ctx *context.Context, desc, platform, category string) string {
-	if desc == "" {
-		return ""
-	}
-
-	if platform != "0" && platform != "1" {
-		return desc
-	}
-
-	if category != "lol_heroes" {
-		return desc
+func prettyHeroDesc(ctx *context.Context, desc, platform, category string) []*dto.HeroSpell {
+	if desc == "" || category != "lol_heroes" {
+		return nil
 	}
 
 	//pretty := ""
 	heroDesc := make([]*dto.HeroDescription, 0, 5)
 	err := json.Unmarshal([]byte(desc), &heroDesc)
 	if err != nil {
-		return desc
+		log.Logger.Error(ctx, err)
+		return nil
 	}
 
 	mDesc := make(map[int]*dto.HeroDescription)
 	for _, d := range heroDesc {
 		mDesc[d.Sort] = d
 	}
-	sDesc := ""
 
-	for i := 0; i < 5; i++ {
+	l := len(mDesc)
+	sDesc := make([]*dto.HeroSpell, 0, l)
+
+	for i := 0; i < l; i++ {
 		if _, ok := mDesc[i]; !ok {
 			log.Logger.Warn(ctx, "hero desc error", mDesc)
-			return desc
+			return nil
 		}
 		sk := mDesc[i].SpellKey
 		if i > 0 {
+			// 第0项全部都是passive,从第1项往后:手游是1,2,3,4 端游是q,w,e,r
 			if platform == "0" {
-				sk = mDesc[i].SpellKey
+				sk = mDesc[i].SpellKey // q,w,e,r
 			} else if platform == "1" {
-				sk = strconv.Itoa(i)
-			}
-
-		}
-
-		sDetail := ""
-		if mDesc[i].Detail != "" {
-			list := make([]string, 0, 4)
-			err := json.Unmarshal([]byte(mDesc[i].Detail), &list)
-			if err != nil {
-				log.Logger.Error(ctx, "Unmarshal mDesc[i].Detail fail:", err)
-			}
-
-			for _, row := range list {
-				sDetail += fmt.Sprintf(detailTPL, row)
+				sk = strconv.Itoa(i) // 1,2,3,4
 			}
 		}
 
-		sDesc += fmt.Sprintf(descTPL,
-			mDesc[i].AbilityIconPath,
-			mDesc[i].Name,
-			sk,
-			sDetail,
-			mDesc[i].Description,
-		)
+		spell := make([]string, 0, 4)
+		err := json.Unmarshal([]byte(mDesc[i].Detail), &spell)
+		if err != nil {
+			log.Logger.Error(ctx, "Unmarshal mDesc[i].Detail fail:", err)
+		}
+
+		sp := ""
+		if len(spell) > 0 {
+			sp = "<p>" + strings.Join(spell, "<p></p>") + "</p>"
+		}
+
+		sDesc = append(sDesc, &dto.HeroSpell{
+			Icon:       mDesc[i].AbilityIconPath,
+			Name:       mDesc[i].Name,
+			Sort:       sk,
+			Desc:       mDesc[i].Description,
+			LevelSpell: sp,
+		})
 	}
 
 	return sDesc
 }
-
-const descTPL = `
-<ul>
-	<li>
-		<img src="%s" />
-		<h6>%s</h6>
-		<span>%s</span>
-<component>
-<a-space>
-		<a-tooltip placement="topLeft" title="%s">
-		<div>%s</div>
-		</a-tooltip>
-</a-space>
-</component>
-
-	</li>
-</ul>
-`
-const detailTPL = `
-%s
-`

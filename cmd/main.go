@@ -32,46 +32,37 @@ func main() {
 	{
 		page.Static("assets", "web/template/whisper/dist/assets/")
 		page.StaticFile("favicon.ico", "web/static/favicon.ico")
+
 		page.GET("/", context.Handle(controller.SearchBox))
 		page.GET("/equip", context.Handle(controller.SearchBox))
+		page.POST("/query", context.Handle(controller.Query))
+		page.POST("/equip/filter", context.Handle(controller.EquipFilter))
 
 		page.GET("/version", context.Handle(controller.QueryVersion))
 		page.GET("/equip/types", context.Handle(controller.QueryEquipTypes))
-		page.POST("/equip/roadmap", context.Handle(controller.GetRoadmap))
 		page.GET("/hotkey", context.Handle(controller.GetHotKey))
+
+		page.POST("/equip/roadmap", context.Handle(controller.GetRoadmap))
 		page.POST("/equip/suit", context.Handle(controller.SuitEquip))
 		page.POST("/equip/suit/batch", context.Handle(controller.BatchUpdateSuitEquip))
 		page.POST("/equip/suit/cache", context.Handle(controller.SuitData2Redis))
 		page.POST("/hero/suit", context.Handle(controller.GetHeroSuit))
-	}
 
-	lol := router.Group("/lol")
-	{
-		lol.POST("/equipment", context.Handle(controller.Equipment))
-		lol.POST("/heroes", context.Handle(controller.Heroes))
-		lol.POST("/heroes/attr", context.Handle(controller.HeroesAttribute))
-		lol.POST("/rune", context.Handle(controller.Rune))
-		lol.POST("/rune/type", context.Handle(controller.RuneType))
-		lol.POST("/skill", context.Handle(controller.Skill))
-	}
-
-	es := router.Group("/")
-	{
-		es.POST("/query", context.Handle(controller.Query))
-		es.POST("/index/build", context.Handle(controller.Build))
-	}
-
-	db := router.Group("/")
-	{
-		db.POST("/alias/heroes", context.Handle(controller.AliasHeroes))
-		db.POST("/alias/equip", context.Handle(controller.AliasEquip))
 	}
 
 	inner := router.Group("/")
 	{
 		inner.POST("/cron", context.Handle(controller.Cron))
 		inner.POST("/equip/extract", context.Handle(controller.EquipExtract))
-		inner.POST("/equip/filter", context.Handle(controller.EquipFilter))
+		inner.POST("/equipment", context.Handle(controller.Equipment))
+		inner.POST("/heroes", context.Handle(controller.Heroes))
+		inner.POST("/heroes/attr", context.Handle(controller.HeroesAttribute))
+		inner.POST("/rune", context.Handle(controller.Rune))
+		inner.POST("/rune/type", context.Handle(controller.RuneType))
+		inner.POST("/skill", context.Handle(controller.Skill))
+		inner.POST("/index/build", context.Handle(controller.Build))
+		inner.POST("/alias/heroes", context.Handle(controller.AliasHeroes))
+		inner.POST("/alias/equip", context.Handle(controller.AliasEquip))
 	}
 	run.Init()
 

@@ -1,5 +1,5 @@
 <script setup>
-import {InfoCircleOutlined, RightOutlined, SearchOutlined} from '@ant-design/icons-vue';
+import {RightOutlined, SearchOutlined} from '@ant-design/icons-vue';
 
 const wayOptions = [
   {label: '按名字', value: 'name'},
@@ -15,11 +15,12 @@ const mapOptions = [
 <script>
 import axios from 'axios';
 import {message} from 'ant-design-vue';
-import DrawerEquip from "@/components/DrawerEquip.vue";
+import ListEquip from "@/components/ListEquip.vue";
+import ListHeroes from "@/components/ListHeroes.vue";
 
 export default {
   components: {
-    DrawerEquip
+    ListEquip, ListHeroes
   },
   data() {
     return {
@@ -31,20 +32,21 @@ export default {
         map: ['召唤师峡谷'],
         more_cond_show: true,
       },
-      query:{
+      query: {
         tips: '',
-        lists: [],
-      },
-      sideDrawer: {
-        show: false,
-        title: '合成路线',
-        data: {
-          "current": {},
-          "from": [],
-          "into": [],
-          "gapPriceFrom": 0,
+        equip: {
+          data: {},
         },
-      },
+        hero: {
+          data: {},
+        },
+        rune: {
+          data: {},
+        },
+        skill: {
+          data: {},
+        },
+      }
     }
   },
   methods: {
@@ -64,46 +66,21 @@ export default {
           .then(response => {
             // 将服务器返回的数据更新到组件的 serverData 字段
             if (response.data.data != null) {
-              this.query.tips = response.data.data.tips;
-              this.query.lists = response.data.data.lists;
+              if (this.formData.category === 'lol_equipment') {
+                this.query.equip.data = response.data.data
+              } else if (this.formData.category === 'lol_heroes') {
+                this.query.hero.data = response.data.data
+              } else if (this.formData.category === 'lol_rune') {
+                this.query.rune.data = response.data.data
+              } else if (this.formData.category === 'lol_skill') {
+                this.query.skill.data = response.data.data
+              }
+              this.query.tips = response.data.data.tips
             }
           })
           .catch(error => {
             console.error('Error fetching server data:', error);
           });
-    },
-    showDrawer(platform, version, id) {
-      if (id === "") {
-        return
-      }
-      if (this.formData.category === "lol_equipment") {
-        axios.post('/equip/roadmap', {
-          'platform': platform,
-          'version': version,
-          'id': id,
-        }).then(response => {
-          this.sideDrawer.show = true
-          this.sideDrawer.data = response.data.data
-        }).catch(error => {
-          console.error('Error fetching server data:', error);
-        });
-      } else if (this.formData.category === "lol_heroes") {
-        axios.post('/hero/suit', {
-          'platform': platform,
-          'hero_id': id,
-        }).then(response => {
-          this.sideDrawer.show = true
-          console.log(response.data.data)
-          // this.sideDrawerData = response.data.data
-        }).catch(error => {
-          console.error('Error fetching server data:', error);
-        });
-      } else if (this.formData.category === "lol_rune") {
-        // ...
-      } else if (this.formData.category === "lol_skill") {
-        // ...
-      }
-
     }
   },
   created() {
@@ -115,10 +92,6 @@ export default {
 
 
 <template>
-  <DrawerEquip
-      :side-drawer="sideDrawer"
-  />
-
   <a-space direction="vertical" :style="{ width: '100%' }" class="wrap">
     <a-layout>
       <a-layout-content>
@@ -160,8 +133,8 @@ export default {
               <RightOutlined :rotate="formData.more_cond_show ? 90 : 0"/>
             </a-typography-text>
           </a-space>
-          <Transition name="fade">
-            <div v-show="formData.more_cond_show" >
+          <Transition>
+            <div v-show="formData.more_cond_show">
               <div>
                 <a-checkbox-group v-model:value="formData.way" name="way" :options="wayOptions"/>
               </div>
@@ -176,24 +149,17 @@ export default {
         <a-descriptions>
           <a-descriptions-item>{{ query.tips }}</a-descriptions-item>
         </a-descriptions>
-        <a-timeline>
-          <a-timeline-item v-for="item in query.lists" :key="item.id" class="ant-card-hoverable">
-            <template #dot>
-              <InfoCircleOutlined :style="{fontSize: '16px'}"/>
-            </template>
-            <h4 class="timeline-h4" @click="showDrawer(item.platform,item.version,item.id)">
-              <img v-bind:src="item.iconPath"/>
-              <span v-html="item.name"></span>
-            </h4>
 
-            <div>
-              <a-tag v-for="tag in item.tags" :key="tag.id" color="blue">{{ tag }}</a-tag>
-            </div>
-            <a-divider/>
+        <ListEquip
+            v-if="formData.category==='lol_equipment'"
+            :query-result="query.equip.data"
+        />
 
-            <div class="mainText" v-html="item.description"></div>
-          </a-timeline-item>
-        </a-timeline>
+        <ListHeroes
+            v-if="formData.category==='lol_heroes'"
+            :query-result="query.hero.data"
+        />
+
 
         <a-back-top/>
       </a-layout-content>

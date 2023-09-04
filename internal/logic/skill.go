@@ -86,7 +86,7 @@ func reloadSkillForLOL(ctx *context.Context, s *dto.LOLSkill) {
 	// 入库更新
 	sss := make([]*model.LOLSkill, 0, len(s.SummonerSkill))
 
-	for _, ss := range s.SummonerSkill {
+	for skillID, ss := range s.SummonerSkill {
 		if ss.Name == "" {
 			continue
 		}
@@ -94,6 +94,7 @@ func reloadSkillForLOL(ctx *context.Context, s *dto.LOLSkill) {
 		namePY, nameF := pinyin.Trans(ss.Name)
 		searchKey := namePY + "," + nameF
 		tmp := model.LOLSkill{
+			SkillID:       skillID,
 			Name:          ss.Name,
 			Description:   ss.Description,
 			Keywords:      searchKey,
@@ -168,7 +169,7 @@ func reloadSkillForLOLM(ctx *context.Context, s *dto.LOLMSkill) {
 		searchKey := namePY + "," + nameF
 
 		tmp := model.LOLMSkill{
-			SkillId:   ss.SkillId,
+			SkillID:   ss.SkillId,
 			Name:      ss.Name,
 			IconPath:  ss.IconPath,
 			FuncDesc:  ss.FuncDesc,

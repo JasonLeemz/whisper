@@ -5,7 +5,6 @@
   padding: 2px 5px;
   line-height: 25px;
   background-color: #141414;
-
 }
 
 .wrap {
@@ -13,161 +12,9 @@
   position: relative;
   margin: 0 auto;
   padding: 0 15px;
-}
 
-.ant-layout-content {
-  background: #fff;
-}
-
-.blank {
-  height: 5px;
-  clear: both;
-}
-
-.ant-divider {
-  margin: 10px 0;
-}
-
-.timeline-h4 {
-  color: #3a3a3a !important;
-  position: relative;
-  margin-bottom: 10px;
-  line-height: 22px;
-  font-weight: 700;
-}
-
-.ant-timeline-item {
-  .ant-timeline-item-content {
-  }
-
-  .ant-timeline-item-content:hover {
-
-  }
-
-  em {
-    font-style: inherit;
-    color: #ff5722;
-  }
-}
-
-.timeline-h4 span {
-  margin-left: 5px;
-  cursor: pointer;
-}
-//.timeline-h4 span:hover:after{
-//  content: "合成路线";
-//  font-style: normal;
-//  font-weight: normal;
-//  font-size: 12px;
-//  color: #0000FF;
-//  margin-left: 10px;
-//}
-
-.mainText {
-  color: rgba(0, 0, 0, .85);
-  font-size: 13px;
-  line-height: 1.8;
-}
-
-.mainText buffedStat, .mainText attention, .mainText passive, .mainText status {
-  font-weight: bold;
-}
-
-.mainText ul {
-  padding: 0;
-  margin: 0;
-}
-
-.mainText li {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.mainText li div {
-  font-size: 10px;
-  line-height: 14px;
-  margin: 5px 0 15px 0;
-}
-
-.mainText li h6 {
-  display: inline-block;
-}
-
-.timeline-h4 {
-  cursor: pointer;
-  .ant-image-img,img {
-    width: 35px;
-    height: 35px;
-    border-radius: 3px;
-  }
-}
-
-.mainText img {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-}
-
-.mainText span {
-  color: #7d7d7d;
-}
-
-.mainText div {
-  color: #7d7d7d;
-  cursor: pointer;
-  padding-left: 29px;
-}
-
-.mainText .detail {
-  display: none;
-  margin: 5px 10px;
-}
-
-.equip-card {
-  .ant-tag {
-    line-height: 15px;
-    padding: 0 5px;
-  }
-
-  .ant-space {
-    width: 100%;
-    margin-bottom: 8px;
-  }
-
-  .ant-card-body {
-    padding: 15px 15px 5px 15px;
-    position: relative;
-
-    .ant-tag {
-      position: absolute;
-      top: 33px;
-      left: 55px;
-    }
-  }
-
-  .ant-card-meta-avatar {
-    padding-right: 10px;
-  }
-
-  .ant-card-meta-title {
-    color: #3a3a3a;
-    font-size: 14px;
-    line-height: 14px;
-    display: inline-block;
-  }
-}
-
-.ant-tooltip .ant-tooltip-inner {
-  font-size: 12px;
-  min-height: 25px;
-  padding: 3px 8px;
-}
-
-.wrap {
   .platform-switch {
     margin-bottom: 7px;
-    //padding: 2px 33px
 
     .cond-drawer {
       font-size: 12px;
@@ -232,26 +79,129 @@
     left: auto;
     margin: 0;
     border-radius: 0 4px 0 4px;
-    //border-top: none;
-    //border-right: none;
   }
 
-  .card-desc {
-    padding: 5px 0;
-    color: rgba(0, 0, 0, 0.85);
-    font-size: 13px;
-    line-height: 1.8;
+  .result-card {
+    .ant-tag {
+      line-height: 15px;
+      padding: 0 5px;
+    }
 
-    mainText {
+    .ant-space {
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    .ant-card-body {
+      padding: 15px 15px 5px 15px;
+      position: relative;
+
+      .ant-tag-wrap {
+        margin-top: -10px;
+        padding-left: 42px;
+
+        span {
+          max-width: 150px;
+          overflow: hidden;
+        }
+      }
+    }
+
+    .ant-card-meta-avatar {
+      padding-right: 10px;
+    }
+
+    .ant-card-meta-title {
+      color: #3a3a3a;
+      font-size: 14px;
+      line-height: 14px;
+      display: inline-block;
+    }
+
+    .hero-icon {
+      width: 35px;
+      height: 35px;
+      border-radius: 3px;
+    }
+
+    .hero-desc {
+      padding: 5px 0;
       color: rgba(0, 0, 0, 0.85);
-      font-size: 13px;
-      line-height: 1.8;
 
-      buffedStat, attention, passive, status, scalemana, scaleap {
-        font-weight: bold;
+      .spell-icon {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
       }
     }
   }
+
+
+}
+
+.ant-layout-content {
+  background: #fff;
+}
+
+.blank {
+  height: 5px;
+  clear: both;
+}
+
+.ant-divider {
+  margin: 10px 0;
+}
+
+.mainText {
+  font-size: 13px;
+  line-height: 1.8;
+
+  buffedStat, attention, passive, status {
+    font-weight: bold;
+  }
+
+  ul {
+    padding: 0;
+    margin: 0;
+  }
+
+  li {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    h6 {
+      display: inline-block;
+      margin: 0 5px;
+      color: #000000d9;
+    }
+
+    img {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+    }
+
+    span {
+      color: #7d7d7d;
+    }
+
+    .spell-desc {
+      font-size: 10px;
+      line-height: 14px;
+      margin: 0 0 10px 0;
+      color: #7d7d7d;
+      cursor: pointer;
+      padding-left: 29px;
+    }
+  }
+}
+
+
+.ant-tooltip .ant-tooltip-inner {
+  font-size: 12px;
+  min-height: 25px;
+  padding: 3px 8px;
 }
 
 .ant-divider-horizontal.ant-divider-with-text {
@@ -276,16 +226,9 @@
     }
 
     .roadmap-item-price {
-      //line-height: 15px;
-      //padding: 0 5px;
-      //font-size: 12px;
+
     }
   }
-
-  //float: right;
-  ////margin-top: -25px;
-  //top:0;
-  //right: 0;
 }
 
 .ant-drawer-body {
@@ -327,6 +270,62 @@
       height: 20px;
       border-radius: 50%;
       margin: 2px 5px;
+    }
+  }
+
+  .hero-drawer-panel {
+    background: #f7f7f7;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    border: 0;
+    overflow: hidden;
+
+    sub{
+      color: #0000FF;
+      float: right;
+      margin-top: -30px;
+
+      em{
+        display: inline-block;
+        width: 50px;
+        text-align: right;
+        font-weight: 500;
+        margin-left: 8px;
+        font-size: 14px;
+        color: #5e625a;
+        font-style: normal;
+      }
+    }
+
+    .equip-row{
+      margin-bottom: 2px;
+      .equip-item{
+        display: inline-block;
+        margin-right: 2px;
+        border: 1px solid #fff;
+        .equip-icon{
+          width: 35px;
+          height: 35px;
+          border-radius: 3px;
+        }
+      }
+
+      .data-statistics{
+        float: right;
+
+        em{
+          display: inline-block;
+          width: 50px;
+          text-align: right;
+          font-weight: 500;
+          margin-left: 8px;
+          font-size: 13px;
+          color: #9c8250;
+        }
+        em:first-child{
+          color: #1dbaa9;
+        }
+      }
     }
   }
 }

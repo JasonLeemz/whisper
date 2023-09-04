@@ -3,11 +3,11 @@
 </script>
 <script>
 import axios from 'axios';
-import DrawerEquip from "@/components/DrawerEquip.vue";
+import ListEquip from "@/components/ListEquip.vue";
 
 export default {
   components: {
-    DrawerEquip
+    ListEquip
   },
   data() {
     return {
@@ -27,7 +27,7 @@ export default {
         drawer: true,
       },
       query:{
-        data: [],
+        data: {},
       }
     }
   },
@@ -98,7 +98,7 @@ export default {
           </a-checkbox-group>
         </a-form>
 
-        <DrawerEquip
+        <ListEquip
             :query-result="query.data"
         />
 

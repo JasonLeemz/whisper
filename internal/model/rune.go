@@ -6,6 +6,7 @@ import (
 
 type LOLRune struct {
 	Id        uint64    `gorm:"column:id;primary_key;AUTO_INCREMENT;NOT NULL"`
+	RuneID    string    `gorm:"column:rune_id;default:;NOT NULL"`
 	Name      string    `gorm:"column:name;default:;NOT NULL"`
 	Icon      string    `gorm:"column:icon;default:;NOT NULL"`
 	Key       string    `gorm:"column:key;default:;NOT NULL"`
