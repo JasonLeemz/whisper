@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"sync"
 	"time"
 	"whisper/internal/dto"
 	"whisper/pkg/config"
@@ -263,7 +264,7 @@ func ChampionFightData(ctx *context.Context, heroID string) (*dto.ChampionFightD
 	return &championFightData, nil
 }
 
-// HeroRankList 手游个位置英雄胜率
+// HeroRankList 手游各位置英雄胜率
 func HeroRankList(ctx *context.Context) (*dto.HeroRankList, error) {
 	url := config.LOLConfig.LolM.HeroWinRate
 	log.Logger.Info(ctx, "url="+url)
@@ -289,15 +290,12 @@ func HeroRankList(ctx *context.Context) (*dto.HeroRankList, error) {
 }
 
 // HeroSuit 手游英雄推荐出装
-func HeroSuit(ctx *context.Context, heroID string) (*dto.HeroTech, *dto.EquipTech, error) {
+func HeroSuit(ctx *context.Context, heroID string) (*dto.HeroTech, map[string]*dto.EquipTech, error) {
 	heroTechUrl := fmt.Sprintf(config.LOLConfig.LolM.HeroSuit, heroID)
-	equipTechUrl := fmt.Sprintf(config.LOLConfig.LolM.HeroEquip, heroID)
-	log.Logger.Info(ctx, "heroTechUrl="+heroTechUrl, "equipTechUrl="+equipTechUrl)
+	log.Logger.Info(ctx, "heroTechUrl="+heroTechUrl)
 
 	// 发送 GetForm 请求
 	heroTech := dto.HeroTech{}
-	equipTech := dto.EquipTech{}
-
 	header := http.Header{
 		Key:   "Referer",
 		Value: "https://101.qq.com/",
@@ -314,15 +312,40 @@ func HeroSuit(ctx *context.Context, heroID string) (*dto.HeroTech, *dto.EquipTec
 	}
 
 	// -----------------------------
-	body, err = http.GetForm(ctx, equipTechUrl, header)
-	if err != nil {
-		return nil, nil, err
-	}
+	wg := sync.WaitGroup{}
 
-	err = json.Unmarshal(body, &equipTech)
-	if err != nil {
-		return nil, nil, err
-	}
+	syncMap := sync.Map{}
+	for _, eqs := range heroTech.Data.AnchorRecommend.List {
+		wg.Add(1)
+		go func(eqs dto.AnchorRecommendList) {
+			defer wg.Done()
 
-	return &heroTech, &equipTech, nil
+			equipTechUrl := fmt.Sprintf(config.LOLConfig.LolM.HeroEquip, eqs.Head.Id)
+			log.Logger.Info(ctx, "equipTechUrl="+equipTechUrl)
+			body, err = http.GetForm(ctx, equipTechUrl, header)
+			if err != nil {
+				log.Logger.Error(ctx, err)
+				return
+			}
+
+			et := dto.EquipTech{}
+			err = json.Unmarshal(body, &et)
+			if err != nil {
+				log.Logger.Error(ctx, err)
+				return
+			}
+
+			syncMap.Store(eqs.Head.Id, &et)
+		}(eqs)
+	}
+	wg.Wait()
+
+	met := make(map[string]*dto.EquipTech)
+	syncMap.Range(func(key, value interface{}) bool {
+		fmt.Println(key, value)
+		met[key.(string)] = value.(*dto.EquipTech)
+		return true
+	})
+
+	return &heroTech, met, nil
 }

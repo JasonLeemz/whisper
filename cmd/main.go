@@ -44,8 +44,6 @@ func main() {
 
 		page.POST("/equip/roadmap", context.Handle(controller.GetRoadmap))
 		page.POST("/equip/suit", context.Handle(controller.SuitEquip))
-		page.POST("/equip/suit/batch", context.Handle(controller.BatchUpdateSuitEquip))
-		page.POST("/equip/suit/cache", context.Handle(controller.SuitData2Redis))
 		page.POST("/hero/suit", context.Handle(controller.GetHeroSuit))
 
 	}
@@ -64,6 +62,9 @@ func main() {
 		inner.POST("/index/build", context.Handle(controller.Build))
 		inner.POST("/alias/heroes", context.Handle(controller.AliasHeroes))
 		inner.POST("/alias/equip", context.Handle(controller.AliasEquip))
+
+		inner.POST("/equip/suit/batch", context.Handle(controller.BatchUpdateSuitEquip))
+		inner.POST("/equip/suit/cache", context.Handle(controller.SuitData2Redis))
 	}
 	run.Init()
 

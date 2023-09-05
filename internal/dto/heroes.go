@@ -329,9 +329,9 @@ type HeroTech struct {
 }
 
 type HeroTechData struct {
-	HeroStrength    HeroStrength    `json:"hero_strength"`
+	HeroStrength    HeroStrength    `json:"hero_strength"`   // 胜率 出场率 ban
+	SkillIntroduce  SkillIntroduce  `json:"skill_introduce"` // 技能介绍
 	AnchorRecommend AnchorRecommend `json:"anchor_recommend"`
-	SkillIntroduce  SkillIntroduce  `json:"skill_introduce"`
 	NewsUrl         string          `json:"news_url"`
 }
 

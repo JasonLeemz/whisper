@@ -25,13 +25,11 @@ var smu = &sync.Mutex{}
 
 func BatchUpdateSuitEquip(ctx *context.Context) error {
 
-	// 获取所有数据
-	hd := dao.NewLOLHeroesDAO()
-	version, err := hd.GetLOLHeroesMaxVersion()
-	if err != nil {
-		return err
-	}
-	heroes, err := hd.GetLOLHeroes(version.Version)
+	// 获取所有英雄ID
+	ha := dao.NewHeroAttributeDAO()
+	heroes, err := ha.Find([]string{
+		"DISTINCT(heroId)", "name", "title", "platform",
+	}, nil)
 	if err != nil {
 		return err
 	}
@@ -44,9 +42,8 @@ func BatchUpdateSuitEquip(ctx *context.Context) error {
 		taskSucc = int32(0)
 		taskFail = int32(0)
 		taskDone = int32(0)
-		//mu       *sync.Mutex
-		wg = &sync.WaitGroup{}
-		ch = make(chan struct{}, 100)
+		wg       = &sync.WaitGroup{}
+		ch       = make(chan struct{}, 100)
 	)
 
 	for i, hero := range heroes {
@@ -58,14 +55,14 @@ func BatchUpdateSuitEquip(ctx *context.Context) error {
 			ch <- struct{}{}
 			wg.Add(1)
 
-			go func(hero *model.LOLHeroes) {
+			go func(hero *model.HeroAttribute) {
 				defer func() {
 					<-ch
 					wg.Done()
 					atomic.AddInt32(&taskDone, 1)
 				}()
 
-				_, err2 := QuerySuitEquip(ctx, common.PlatformForLOL, hero.HeroId)
+				_, err2 := QuerySuitEquip(ctx, hero.Platform, hero.HeroId)
 				// 任务执行失败，这个地方可以使用锁，也可以使用原子操作，优先原子操作
 				if err2 != nil {
 					atomic.AddInt32(&taskFail, 1)
@@ -89,121 +86,92 @@ func BatchUpdateSuitEquip(ctx *context.Context) error {
 
 	return nil
 }
-func QuerySuitEquip(ctx *context.Context, platform int, heroId string) (*dto.ChampionFightData, error) {
+func QuerySuitEquip(ctx *context.Context, platform int, heroId string) (any, error) {
 	smu.Lock()
 	defer smu.Unlock()
 
-	fightData, err := getFightData(ctx, platform, heroId)
-	if err != nil {
-		return nil, errors.New("getFightData:" + err.Error())
-	}
-
-	// reload heroes_position 表
-	err = updateHeroesPosition(ctx, platform, heroId, fightData)
-	if err != nil {
-		return nil, errors.New("updateHeroesPosition:" + err.Error())
-	}
-
-	// reload heroes_suit 表
-	err = updateHeroesSuit(ctx, platform, heroId, fightData)
-	if err != nil {
-		return nil, errors.New("updateHeroesSuit:" + err.Error())
-	}
-	return fightData, nil
-}
-
-func getFightData(ctx *context.Context, platform int, heroId string) (*dto.ChampionFightData, error) {
 	if platform == common.PlatformForLOL {
-		fightData, err := service.ChampionFightData(ctx, heroId)
+		fightData, err := getFightData(ctx, heroId)
 		if err != nil {
-			return nil, err
-		}
-		for pos, posData := range fightData.List.ChampionLane {
-			equipData := map[string]dto.Itemjson{}
-			tmp := dto.ChampionLaneItem{}
-
-			var err error
-			err = json.Unmarshal([]byte(posData.Itemoutjson), &equipData)
-			if err != nil {
-				log.Logger.Warn(ctx, err, "heroid:", heroId)
-			} else {
-				tmp.Itemout = equipData
-			}
-
-			equipData = *new(map[string]dto.Itemjson)
-			err = json.Unmarshal([]byte(posData.Core3itemjson), &equipData)
-			if err != nil {
-				log.Logger.Warn(ctx, err, "heroid:", heroId)
-			} else {
-				tmp.Core3item = equipData
-			}
-
-			equipData = *new(map[string]dto.Itemjson)
-			err = json.Unmarshal([]byte(posData.Shoesjson), &equipData)
-			if err != nil {
-				log.Logger.Warn(ctx, err, "heroid:", heroId)
-			} else {
-				tmp.Shoes = equipData
-			}
-
-			var suits []dto.Itemjson
-			err = json.Unmarshal([]byte(posData.Hold3), &suits)
-			if err != nil {
-				log.Logger.Warn(ctx, err, "heroid:", heroId)
-			} else {
-				tmp.Suits = suits
-			}
-
-			fightData.List.ChampionLane[pos] = tmp
+			return nil, errors.New("getFightData:" + err.Error())
 		}
 
+		// reload heroes_position 表
+		err = updateHeroesPosition(ctx, platform, heroId, fightData)
+		if err != nil {
+			return nil, errors.New("updateHeroesPosition:" + err.Error())
+		}
+
+		// reload heroes_suit 表
+		err = updateLOLHeroesSuit(ctx, heroId, fightData)
+		if err != nil {
+			return nil, errors.New("updateHeroesSuit:" + err.Error())
+		}
 		return fightData, nil
 	} else {
-		fightData, err := service.ChampionFightData(ctx, heroId)
+		// common.PlatformForLOLM
+		heroTech, equipTechs, err := service.HeroSuit(ctx, heroId)
 		if err != nil {
-			return nil, err
+			return nil, errors.New("service.HeroSuit:" + err.Error())
 		}
-		for pos, posData := range fightData.List.ChampionLane {
-			equipData := map[string]dto.Itemjson{}
-			tmp := dto.ChampionLaneItem{}
-
-			var err error
-			err = json.Unmarshal([]byte(posData.Itemoutjson), &equipData)
-			if err != nil {
-				log.Logger.Warn(ctx, err, "heroid:", heroId)
-			} else {
-				tmp.Itemout = equipData
-			}
-
-			equipData = *new(map[string]dto.Itemjson)
-			err = json.Unmarshal([]byte(posData.Core3itemjson), &equipData)
-			if err != nil {
-				log.Logger.Warn(ctx, err, "heroid:", heroId)
-			} else {
-				tmp.Core3item = equipData
-			}
-
-			equipData = *new(map[string]dto.Itemjson)
-			err = json.Unmarshal([]byte(posData.Shoesjson), &equipData)
-			if err != nil {
-				log.Logger.Warn(ctx, err, "heroid:", heroId)
-			} else {
-				tmp.Shoes = equipData
-			}
-
-			var suits []dto.Itemjson
-			err = json.Unmarshal([]byte(posData.Hold3), &suits)
-			if err != nil {
-				log.Logger.Warn(ctx, err, "heroid:", heroId)
-			} else {
-				tmp.Suits = suits
-			}
-
-			fightData.List.ChampionLane[pos] = tmp
+		// reload heroes_suit 表
+		err = updateLOLMHeroesSuit(ctx, heroId, heroTech, equipTechs)
+		if err != nil {
+			return nil, errors.New("updateLOLMHeroesSuit:" + err.Error())
 		}
 
-		return fightData, nil
+		return []any{
+			heroTech, equipTechs,
+		}, nil
 	}
+}
+
+// LOL英雄的rank数据
+func getFightData(ctx *context.Context, heroId string) (*dto.ChampionFightData, error) {
+	fightData, err := service.ChampionFightData(ctx, heroId)
+	if err != nil {
+		return nil, err
+	}
+	for pos, posData := range fightData.List.ChampionLane {
+		equipData := map[string]dto.Itemjson{}
+		tmp := dto.ChampionLaneItem{}
+
+		var err error
+		err = json.Unmarshal([]byte(posData.Itemoutjson), &equipData)
+		if err != nil {
+			log.Logger.Warn(ctx, err, "heroid:", heroId)
+		} else {
+			tmp.Itemout = equipData
+		}
+
+		equipData = *new(map[string]dto.Itemjson)
+		err = json.Unmarshal([]byte(posData.Core3itemjson), &equipData)
+		if err != nil {
+			log.Logger.Warn(ctx, err, "heroid:", heroId)
+		} else {
+			tmp.Core3item = equipData
+		}
+
+		equipData = *new(map[string]dto.Itemjson)
+		err = json.Unmarshal([]byte(posData.Shoesjson), &equipData)
+		if err != nil {
+			log.Logger.Warn(ctx, err, "heroid:", heroId)
+		} else {
+			tmp.Shoes = equipData
+		}
+
+		var suits []dto.Itemjson
+		err = json.Unmarshal([]byte(posData.Hold3), &suits)
+		if err != nil {
+			log.Logger.Warn(ctx, err, "heroid:", heroId)
+		} else {
+			tmp.Suits = suits
+		}
+
+		fightData.List.ChampionLane[pos] = tmp
+	}
+
+	return fightData, nil
 }
 func updateHeroesPosition(ctx *context.Context, platform int, heroId string, fightData *dto.ChampionFightData) error {
 	hpd := dao.NewHeroesPositionDAO()
@@ -237,15 +205,16 @@ func updateHeroesPosition(ctx *context.Context, platform int, heroId string, fig
 
 	return nil
 }
-func updateHeroesSuit(ctx *context.Context, platform int, heroId string, fightData *dto.ChampionFightData) error {
+func updateLOLHeroesSuit(ctx *context.Context, heroId string, fightData *dto.ChampionFightData) error {
+	platform := common.PlatformForLOL
 	hpd := dao.NewHeroesSuitDAO()
 	rows, err := hpd.Delete(map[string]interface{}{
 		"heroId": heroId,
 	})
 	if err != nil {
-		return errors.New("Delete HeroesSuit " + err.Error())
+		return errors.New("updateLOLHeroesSuit: Delete HeroesSuit " + err.Error())
 	}
-	log.Logger.Info(ctx, "delete HeroesSuit rows:", rows, "heroId:", heroId)
+	log.Logger.Info(ctx, "updateLOLHeroesSuit: delete HeroesSuit rows:", rows, "heroId:", heroId)
 
 	posData := make([]*model.HeroesSuit, 0)
 	var m model.HeroesSuit
@@ -339,7 +308,138 @@ func updateHeroesSuit(ctx *context.Context, platform int, heroId string, fightDa
 
 	return nil
 }
+func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.HeroTech, equipTech map[string]*dto.EquipTech) error {
+	platform := common.PlatformForLOLM
+	now := time.Now().Format("2006-01-02 15:04:05")
+	hpd := dao.NewHeroesSuitDAO()
+	rows, err := hpd.Delete(map[string]interface{}{
+		"heroId": heroId,
+	})
+	if err != nil {
+		return errors.New("updateLOLMHeroesSuit: Delete HeroesSuit " + err.Error())
+	}
+	log.Logger.Info(ctx, "updateLOLMHeroesSuit: delete HeroesSuit rows:", rows, "heroId:", heroId)
+	var m model.HeroesSuit
 
+	// 构建入库数据
+	hsdata := make([]*model.HeroesSuit, 0)
+	for _, eqs := range heroTech.Data.AnchorRecommend.List {
+		et := equipTech[eqs.Head.Id]
+		desc := make([]string, 0)
+		desc = append(desc, eqs.Body.Desc.Content)
+		desc = append(desc, et.Data.ThinkingInfo.Title)
+		for _, item := range et.Data.ThinkingInfo.List {
+			desc = append(desc, item.Name)
+			desc = append(desc, item.Content)
+		}
+
+		skillids := make([]string, 0)
+		for _, item := range et.Data.SkillInfo.List {
+			skillids = append(skillids, item.Id)
+		}
+		runeids := make([]string, 0)
+		for _, nl := range et.Data.RuneInfo.NewList {
+			for _, item := range nl.Items {
+				runeids = append(runeids, item.Id)
+			}
+		}
+
+		// 备战推荐 => 认作是LOL中的Other
+		itemids := make([]string, 0)
+		for _, equip := range et.Data.EquipInfo.List {
+			itemids = append(itemids, equip.Id)
+		}
+		// 还有几个可选装备，也放到这里（和备战推荐可能有重复，需要去重）
+		for _, l := range et.Data.EquipList {
+			if strings.Contains(l.Title, "可选装备") {
+				for _, eq := range l.List {
+					if !inArray(eq.Id, itemids) {
+						itemids = append(itemids, eq.Id)
+					}
+				}
+			}
+		}
+		hsdata = append(hsdata, &model.HeroesSuit{
+			HeroId:      eqs.Head.HeroId,
+			Title:       et.Data.TopInfo.Title,
+			RecommendId: eqs.Head.Id,
+			Runeids:     strings.Join(runeids, ","),
+			Skillids:    strings.Join(skillids, ","),
+			Desc:        strings.Join(desc, "<br>"),
+			Author:      et.Data.TopInfo.Author,
+			AuthorIcon:  et.Data.TopInfo.AuthorIcon,
+			Pos:         common.PositionNameEN[0],
+			Itemids:     strings.Join(itemids, ","),
+			Type:        m.TypeOther(), // 契合装备
+			Platform:    platform,
+			Version:     now,
+			FileTime:    now,
+		})
+
+		for _, l := range et.Data.EquipList {
+			itemids = itemids[:0]
+			if strings.Contains(l.Title, "鞋子推荐") || strings.Contains(l.Title, "附魔推荐") {
+				// 鞋子+附魔 => 认作是LOL中的shoe
+				for _, eq := range l.List {
+					itemids = append(itemids, eq.Id)
+				}
+
+				hsdata = append(hsdata, &model.HeroesSuit{
+					HeroId:      eqs.Head.HeroId,
+					Title:       et.Data.TopInfo.Title,
+					RecommendId: eqs.Head.Id,
+					Runeids:     strings.Join(runeids, ","),
+					Skillids:    strings.Join(skillids, ","),
+					Desc:        strings.Join(desc, "<br>"),
+					Author:      et.Data.TopInfo.Author,
+					AuthorIcon:  et.Data.TopInfo.AuthorIcon,
+					Pos:         common.PositionNameEN[0],
+					Itemids:     strings.Join(itemids, ","),
+					Type:        m.TypeShoes(), // 鞋子装备
+					Platform:    platform,
+					Version:     now,
+					FileTime:    now,
+				})
+			}
+
+			if strings.Contains(l.Title, "核心出装") {
+				// 核心出装[1|2|3...] => 认作是LOL中的core
+				for _, eq := range l.List {
+					itemids = append(itemids, eq.Id)
+				}
+
+				hsdata = append(hsdata, &model.HeroesSuit{
+					HeroId:      eqs.Head.HeroId,
+					Title:       et.Data.TopInfo.Title,
+					RecommendId: eqs.Head.Id,
+					Runeids:     strings.Join(runeids, ","),
+					Skillids:    strings.Join(skillids, ","),
+					Desc:        strings.Join(desc, "<br>"),
+					Author:      et.Data.TopInfo.Author,
+					AuthorIcon:  et.Data.TopInfo.AuthorIcon,
+					Pos:         common.PositionNameEN[0],
+					Itemids:     strings.Join(itemids, ","),
+					Type:        m.TypeCore(), // 核心装备
+					Platform:    platform,
+					Version:     now,
+					FileTime:    now,
+				})
+			}
+		}
+	}
+
+	if len(hsdata) == 0 {
+		log.Logger.Warn(ctx, "hsdata is nil", "heroId:", heroId)
+		return nil
+	}
+	rows, err = hpd.Add(hsdata)
+	if err != nil {
+		return errors.New("Add HeroesSuit " + err.Error() + ",heroId:" + heroId)
+	}
+	log.Logger.Info(ctx, "Add HeroesSuit rows:", rows, "heroId:", heroId)
+
+	return nil
+}
 func SuitData2Redis(ctx *context.Context) error {
 	err := lolHeroes2Redis(ctx)
 	if err != nil {
@@ -613,4 +713,13 @@ func HeroesPosition(ctx *context.Context, platform int) (*dto.HeroRankList, erro
 	rows, err = hpd.Add(hp)
 	log.Logger.Info(ctx, "add rows:", rows, "err:", err)
 	return rankList, nil
+}
+
+func inArray(id string, ids []string) bool {
+	for _, i := range ids {
+		if i == id {
+			return true
+		}
+	}
+	return false
 }

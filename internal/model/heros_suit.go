@@ -33,18 +33,22 @@ func (h *HeroesSuit) TableName() string {
 	return "heroes_suit"
 }
 
+// TypeOther 契合单件装备
 func (h *HeroesSuit) TypeOther() int32 {
 	return 0
 }
 
+// TypeShoes 鞋子
 func (h *HeroesSuit) TypeShoes() int32 {
 	return 1
 }
 
+// TypeOut 出门装
 func (h *HeroesSuit) TypeOut() int32 {
 	return 2
 }
 
+// TypeCore 核心三件套
 func (h *HeroesSuit) TypeCore() int32 {
 	return 3
 }

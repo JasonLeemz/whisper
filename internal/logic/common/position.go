@@ -1,6 +1,7 @@
 package common
 
 var PositionNameEN = map[int]string{
+	0: "all",
 	1: "mid",
 	2: "top",
 	3: "bottom",
