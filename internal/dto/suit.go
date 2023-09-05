@@ -7,9 +7,9 @@ type HeroSuit struct {
 
 type RecommendSuitEquip struct {
 	Out   [][]*SuitData `json:"out"`
-	Shoe  []*SuitData   `json:"shoe"`
+	Shoe  [][]*SuitData `json:"shoe"`
 	Core  [][]*SuitData `json:"core"`
-	Other []*SuitData   `json:"other"`
+	Other [][]*SuitData `json:"other"`
 }
 
 type SuitData struct {
@@ -29,4 +29,9 @@ type SuitData struct {
 	Winrate  int32 `json:"winrate,omitempty"`
 	Allcnt   int32 `json:"allcnt,omitempty"`
 	Showrate int32 `json:"showrate,omitempty"`
+
+	Title       string `json:"title"`
+	Author      string `json:"author"`
+	AuthorIcon  string `json:"author_icon"`
+	RecommendID string `json:"recommend_id"`
 }

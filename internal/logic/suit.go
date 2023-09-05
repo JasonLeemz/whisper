@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/spf13/cast"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -173,14 +174,6 @@ func getFightData(ctx *context.Context, heroId string) (*dto.ChampionFightData, 
 }
 func updateHeroesPosition(ctx *context.Context, platform int, heroId string, fightData *dto.ChampionFightData) error {
 	hpd := dao.NewHeroesPositionDAO()
-	rows, err := hpd.Delete(map[string]interface{}{
-		"heroId": heroId,
-	})
-	if err != nil {
-		return errors.New("Delete HeroesPosition " + err.Error())
-	}
-	log.Logger.Info(ctx, "delete HeroesPosition rows:", rows, "heroId:", heroId)
-
 	posData := make([]*model.HeroesPosition, 0, 3)
 	for pos, _ := range fightData.List.ChampionFight {
 		posData = append(posData, &model.HeroesPosition{
@@ -195,24 +188,20 @@ func updateHeroesPosition(ctx *context.Context, platform int, heroId string, fig
 		log.Logger.Warn(ctx, "posData is nil", "heroId:", heroId)
 		return nil
 	}
-	rows, err = hpd.Add(posData)
+
+	err := hpd.DeleteAndInsert(map[string]interface{}{
+		"heroId": heroId,
+	}, posData)
 	if err != nil {
-		return errors.New("Add HeroesPosition " + err.Error() + ",heroId:" + heroId)
+		return errors.New("Add LOL HeroesPosition " + err.Error() + ",heroId:" + heroId)
 	}
-	log.Logger.Info(ctx, "Add HeroesPosition rows:", rows, "heroId:", heroId)
+	log.Logger.Info(ctx, "Add HeroesPosition heroId:", heroId)
 
 	return nil
 }
 func updateLOLHeroesSuit(ctx *context.Context, heroId string, fightData *dto.ChampionFightData) error {
 	platform := common.PlatformForLOL
 	hpd := dao.NewHeroesSuitDAO()
-	//rows, err := hpd.Delete(map[string]interface{}{
-	//	"heroId": heroId,
-	//})
-	//if err != nil {
-	//	return errors.New("updateLOLHeroesSuit: Delete HeroesSuit " + err.Error())
-	//}
-	//log.Logger.Info(ctx, "updateLOLHeroesSuit: delete HeroesSuit rows:", rows, "heroId:", heroId)
 
 	posData := make([]*model.HeroesSuit, 0)
 	var m model.HeroesSuit
@@ -298,33 +287,20 @@ func updateLOLHeroesSuit(ctx *context.Context, heroId string, fightData *dto.Cha
 		log.Logger.Warn(ctx, "posData is nil", "heroId:", heroId)
 		return nil
 	}
-	//rows, err = hpd.Add(posData)
-	//if err != nil {
-	//	return errors.New("Add HeroesSuit " + err.Error() + ",heroId:" + heroId)
-	//}
-	//log.Logger.Info(ctx, "Add HeroesSuit rows:", rows, "heroId:", heroId)
 
-	rows, err := hpd.DeleteAndInsert(map[string]interface{}{
+	err := hpd.DeleteAndInsert(map[string]interface{}{
 		"heroId": heroId,
 	}, posData)
 	if err != nil {
 		return errors.New("Add LOLM HeroesSuit " + err.Error() + ",heroId:" + heroId)
 	}
-	log.Logger.Info(ctx, "Add LOLM HeroesSuit rows:", rows, "heroId:", heroId)
+	log.Logger.Info(ctx, "Add LOLM HeroesSuit:", heroId)
 	return nil
 }
 func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.HeroTech, equipTech map[string]*dto.EquipTech) error {
 	platform := common.PlatformForLOLM
 	now := time.Now().Format("2006-01-02 15:04:05")
 	hpd := dao.NewHeroesSuitDAO()
-	//rows, err := hpd.Delete(map[string]interface{}{
-	//	"heroId": heroId,
-	//})
-
-	//if err != nil {
-	//	return errors.New("updateLOLMHeroesSuit: Delete HeroesSuit " + err.Error())
-	//}
-	//log.Logger.Info(ctx, "updateLOLMHeroesSuit: delete HeroesSuit rows:", rows, "heroId:", heroId)
 	var m model.HeroesSuit
 
 	// 构建入库数据
@@ -446,41 +422,35 @@ func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.Her
 		log.Logger.Warn(ctx, "hsdata is nil", "heroId:", heroId)
 		return nil
 	}
-	//rows, err = hpd.Add(hsdata)
-	//if err != nil {
-	//	return errors.New("Add HeroesSuit " + err.Error() + ",heroId:" + heroId)
-	//}
 
-	rows, err := hpd.DeleteAndInsert(map[string]interface{}{
+	err := hpd.DeleteAndInsert(map[string]interface{}{
 		"heroId": heroId,
 	}, hsdata)
 	if err != nil {
 		return errors.New("Add LOLM HeroesSuit " + err.Error() + ",heroId:" + heroId)
 	}
-	log.Logger.Info(ctx, "Add LOLM HeroesSuit rows:", rows, "heroId:", heroId)
+	log.Logger.Info(ctx, "Add LOLM HeroesSuit:", heroId)
 
 	return nil
 }
 func SuitData2Redis(ctx *context.Context) error {
-	err := lolHeroes2Redis(ctx)
+	err := heroesSuits2Redis(ctx)
 	if err != nil {
 		return err
 	}
 
 	return nil
 }
-func lolHeroes2Redis(ctx *context.Context) error {
-	hd := dao.NewLOLHeroesDAO()
-	version, err := hd.GetLOLHeroesMaxVersion()
-	if err != nil {
-		return err
-	}
-	heroes, err := hd.GetLOLHeroes(version.Version)
+func heroesSuits2Redis(ctx *context.Context) error {
+	hd := dao.NewHeroAttributeDAO()
+	heroes, err := hd.Find([]string{
+		"DISTINCT(heroId)", "name", "title", "platform",
+	}, nil)
 	if err != nil {
 		return err
 	}
 
-	// 获取全部装备
+	// 获取全部装备 LOL
 	ed := dao.NewLOLEquipmentDAO()
 	eVersion, err := ed.GetLOLEquipmentMaxVersion()
 	if err != nil {
@@ -493,9 +463,28 @@ func lolHeroes2Redis(ctx *context.Context) error {
 
 	mequip := make(map[string]*model.LOLEquipment)
 	for _, equip := range equips {
-		key := fmt.Sprintf(redis.KeyCacheEquip, equip.Maps, equip.ItemId)
+		key := fmt.Sprintf(redis.KeyCacheEquip, equip.Maps, strconv.Itoa(common.PlatformForLOL), equip.ItemId)
 		value, _ := json.Marshal(equip)
 		mequip[key] = equip
+		redis.RDB.Set(ctx, key, value, time.Hour*2)
+	}
+
+	// 获取全部装备 LOLM
+	med := dao.NewLOLMEquipmentDAO()
+	meVersion, err := med.GetLOLMEquipmentMaxVersion()
+	if err != nil {
+		return err
+	}
+	mequips, err := med.GetLOLMEquipment(meVersion.Version)
+	if err != nil {
+		return err
+	}
+
+	mmequip := make(map[string]*model.LOLMEquipment)
+	for _, equip := range mequips {
+		key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), equip.EquipId) // todo
+		value, _ := json.Marshal(equip)
+		mmequip[key] = equip
 		redis.RDB.Set(ctx, key, value, time.Hour*2)
 	}
 
@@ -523,14 +512,14 @@ func lolHeroes2Redis(ctx *context.Context) error {
 			ch <- struct{}{}
 			wg.Add(1)
 
-			go func(hero *model.LOLHeroes) {
+			go func(hero *model.HeroAttribute) {
 				defer func() {
 					<-ch
 					wg.Done()
 					atomic.AddInt32(&taskDone, 1)
 				}()
 
-				equipForHero, err2 := sd.GetSuitForHero(hero.HeroId)
+				equipForHero, err2 := sd.GetSuitForHero(hero.Platform, hero.HeroId)
 				if err2 != nil {
 					atomic.AddInt32(&taskFail, 1)
 					cancelFunc()
@@ -547,63 +536,116 @@ func lolHeroes2Redis(ctx *context.Context) error {
 					eqs := make(map[string]dto.RecommendSuitEquip)
 					for pos, posdata := range hsm {
 						out := make([][]*dto.SuitData, 0)
-						shoe := make([]*dto.SuitData, 0)
+						shoe := make([][]*dto.SuitData, 0)
 						core := make([][]*dto.SuitData, 0)
-						other := make([]*dto.SuitData, 0)
+						other := make([][]*dto.SuitData, 0)
 						for _, data := range posdata {
 							switch data.Type {
 							case mhs.TypeShoes():
-								key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", data.Itemids)
-								if edata, ok := mequip[key]; !ok {
-									continue
-								} else {
-									shoe = append(shoe, &dto.SuitData{
-										ID:        cast.ToInt(data.Itemids),
-										Name:      edata.Name,
-										Icon:      edata.IconPath,
-										Maps:      edata.Maps,
-										Plaintext: edata.Plaintext,
-										Desc:      edata.Description,
-										Price:     cast.ToInt(edata.Total),
-										Sell:      cast.ToInt(edata.Sell),
-										Version:   edata.Version,
+								ids := strings.Split(data.Itemids, ",")
+								shoe2 := make([]*dto.SuitData, 0)
+								for _, id := range ids {
+									key1 := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+									key2 := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+									if edata, ok := mequip[key1]; ok {
+										// 端游
+										shoe2 = append(shoe2, &dto.SuitData{
+											ID:        cast.ToInt(id),
+											Name:      edata.Name,
+											Icon:      edata.IconPath,
+											Maps:      edata.Maps,
+											Plaintext: edata.Plaintext,
+											Desc:      edata.Description,
+											Price:     cast.ToInt(edata.Total),
+											Sell:      cast.ToInt(edata.Sell),
+											Version:   edata.Version,
 
-										Igamecnt: data.Igamecnt,
-										Wincnt:   data.Wincnt,
-										Winrate:  data.Winrate,
-										Allcnt:   data.Allcnt,
-										Showrate: data.Showrate,
-									})
+											Igamecnt: data.Igamecnt,
+											Wincnt:   data.Wincnt,
+											Winrate:  data.Winrate,
+											Allcnt:   data.Allcnt,
+											Showrate: data.Showrate,
+										})
+									} else if edata2, ok2 := mmequip[key2]; ok2 {
+										// 手游
+										shoe2 = append(shoe2, &dto.SuitData{
+											ID:          cast.ToInt(id),
+											Name:        edata2.Name,
+											Icon:        edata2.IconPath,
+											Desc:        edata2.Description,
+											Price:       cast.ToInt(edata2.Price),
+											Version:     edata2.Version,
+											Igamecnt:    data.Igamecnt,
+											Wincnt:      data.Wincnt,
+											Winrate:     data.Winrate,
+											Allcnt:      data.Allcnt,
+											Showrate:    data.Showrate,
+											Title:       data.Title,
+											Author:      data.Author,
+											AuthorIcon:  data.AuthorIcon,
+											RecommendID: data.RecommendId,
+										})
+									} else {
+										continue
+									}
 								}
+								shoe = append(shoe, shoe2)
 							case mhs.TypeOther():
-								key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", data.Itemids)
-								if edata, ok := mequip[key]; !ok {
-									continue
-								} else {
-									other = append(other, &dto.SuitData{
-										ID:        cast.ToInt(data.Itemids),
-										Name:      edata.Name,
-										Icon:      edata.IconPath,
-										Maps:      edata.Maps,
-										Plaintext: edata.Plaintext,
-										Desc:      edata.Description,
-										Price:     cast.ToInt(edata.Total),
-										Sell:      cast.ToInt(edata.Sell),
-										Version:   edata.Version,
+								ids := strings.Split(data.Itemids, ",")
+								other2 := make([]*dto.SuitData, 0)
+								for _, id := range ids {
+									key1 := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+									key2 := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+									if edata, ok := mequip[key1]; ok {
+										other2 = append(other2, &dto.SuitData{
+											ID:        cast.ToInt(id),
+											Name:      edata.Name,
+											Icon:      edata.IconPath,
+											Maps:      edata.Maps,
+											Plaintext: edata.Plaintext,
+											Desc:      edata.Description,
+											Price:     cast.ToInt(edata.Total),
+											Sell:      cast.ToInt(edata.Sell),
+											Version:   edata.Version,
 
-										Igamecnt: data.Igamecnt,
-										Wincnt:   data.Wincnt,
-										Winrate:  data.Winrate,
-										Allcnt:   data.Allcnt,
-										Showrate: data.Showrate,
-									})
+											Igamecnt: data.Igamecnt,
+											Wincnt:   data.Wincnt,
+											Winrate:  data.Winrate,
+											Allcnt:   data.Allcnt,
+											Showrate: data.Showrate,
+										})
+									} else if edata2, ok2 := mmequip[key2]; ok2 {
+										other2 = append(other2, &dto.SuitData{
+											ID:      cast.ToInt(id),
+											Name:    edata2.Name,
+											Icon:    edata2.IconPath,
+											Desc:    edata2.Description,
+											Price:   cast.ToInt(edata2.Price),
+											Version: edata2.Version,
+
+											Igamecnt: data.Igamecnt,
+											Wincnt:   data.Wincnt,
+											Winrate:  data.Winrate,
+											Allcnt:   data.Allcnt,
+											Showrate: data.Showrate,
+
+											Title:       data.Title,
+											Author:      data.Author,
+											AuthorIcon:  data.AuthorIcon,
+											RecommendID: data.RecommendId,
+										})
+									} else {
+										continue
+									}
 								}
+								other = append(other, other2)
+
 							case mhs.TypeOut():
 								ids := strings.Split(data.Itemids, ",")
 								out2 := make([]*dto.SuitData, 0)
 								for _, id := range ids {
-									key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", id)
-									if edata, ok := mequip[key]; !ok {
+									key1 := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+									if edata, ok := mequip[key1]; !ok {
 										continue
 									} else {
 										out2 = append(out2, &dto.SuitData{
@@ -630,10 +672,9 @@ func lolHeroes2Redis(ctx *context.Context) error {
 								ids := strings.Split(data.Itemids, ",")
 								core2 := make([]*dto.SuitData, 0)
 								for _, id := range ids {
-									key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", id)
-									if edata, ok := mequip[key]; !ok {
-										continue
-									} else {
+									key1 := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+									key2 := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+									if edata, ok := mequip[key1]; ok {
 										core2 = append(core2, &dto.SuitData{
 											ID:        cast.ToInt(id),
 											Name:      edata.Name,
@@ -651,6 +692,28 @@ func lolHeroes2Redis(ctx *context.Context) error {
 											Allcnt:   data.Allcnt,
 											Showrate: data.Showrate,
 										})
+									} else if edata2, ok2 := mmequip[key2]; ok2 {
+										core2 = append(core2, &dto.SuitData{
+											ID:      cast.ToInt(id),
+											Name:    edata2.Name,
+											Icon:    edata2.IconPath,
+											Desc:    edata2.Description,
+											Price:   cast.ToInt(edata2.Price),
+											Version: edata2.Version,
+
+											Igamecnt: data.Igamecnt,
+											Wincnt:   data.Wincnt,
+											Winrate:  data.Winrate,
+											Allcnt:   data.Allcnt,
+											Showrate: data.Showrate,
+
+											Title:       data.Title,
+											Author:      data.Author,
+											AuthorIcon:  data.AuthorIcon,
+											RecommendID: data.RecommendId,
+										})
+									} else {
+										continue
 									}
 								}
 								core = append(core, core2)
@@ -704,12 +767,6 @@ func HeroesPosition(ctx *context.Context, platform int) (*dto.HeroRankList, erro
 	cond := map[string]interface{}{
 		"platform": common.PlatformForLOLM,
 	}
-	rows, err := hpd.Delete(cond)
-	if err != nil {
-		log.Logger.Error(ctx, err)
-		return nil, err
-	}
-	log.Logger.Info(ctx, "delete rows:", rows, "err:", err)
 
 	hp := make([]*model.HeroesPosition, 0)
 	// 只取钻石以上分段
@@ -731,8 +788,12 @@ func HeroesPosition(ctx *context.Context, platform int) (*dto.HeroRankList, erro
 		}
 	}
 
-	rows, err = hpd.Add(hp)
-	log.Logger.Info(ctx, "add rows:", rows, "err:", err)
+	err = hpd.DeleteAndInsert(cond, hp)
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return nil, err
+	}
+	log.Logger.Info(ctx, "add LOLM position success")
 	return rankList, nil
 }
 
