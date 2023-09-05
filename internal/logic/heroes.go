@@ -18,7 +18,7 @@ import (
 	"whisper/pkg/pinyin"
 )
 
-var mu = &sync.Mutex{}
+//var mu = &sync.Mutex{}
 
 // HeroAttribute
 // 根据传过来的id获取数据
@@ -365,10 +365,6 @@ func heroAttribute(ctx *context.Context, heroID string, platform int) (*dto.Hero
 }
 
 func recordHeroRoleAndSpell(ctx *context.Context, data *dto.HeroAttribute, platform int) error {
-
-	mu.Lock()
-	defer mu.Unlock()
-
 	// 记录HeroRole
 	if err := recordHeroRole(ctx, data, platform); err != nil {
 		return err
@@ -425,15 +421,15 @@ func recordHeroRoleAndSpell(ctx *context.Context, data *dto.HeroAttribute, platf
 		FileTime:            data.FileTime,
 	}
 	ha := dao.NewHeroAttributeDAO()
-	_, err2 := ha.Delete(map[string]interface{}{
+	err3 := ha.DeleteAndInsert(map[string]interface{}{
 		"heroId": data.Hero.HeroId,
-	})
-	if err2 != nil {
-		return err2
+	}, []*model.HeroAttribute{attr})
+	if err3 != nil {
+		return err3
 	}
-	affected, err := ha.Add([]*model.HeroAttribute{attr})
-	log.Logger.Info(ctx, "attr add record:", affected)
-	return err
+
+	log.Logger.Info(ctx, "attr add record success:", data.Hero.HeroId)
+	return nil
 }
 func recordHeroRole(ctx *context.Context, data *dto.HeroAttribute, platform int) error {
 	hrs := make([]*model.HeroRole, 0, len(data.Hero.Roles))
@@ -445,18 +441,14 @@ func recordHeroRole(ctx *context.Context, data *dto.HeroAttribute, platform int)
 		})
 	}
 	hrdao := dao.NewHeroRoleDAO()
-	_, err3 := hrdao.Delete(map[string]interface{}{
+	err := hrdao.DeleteAndInsert(map[string]interface{}{
 		"hero_id": data.Hero.HeroId,
-	})
-	if err3 != nil {
-		return err3
+	}, hrs)
+	if err != nil {
+		return err
 	}
 
-	add, err2 := hrdao.Add(hrs)
-	if err2 != nil {
-		return err2
-	}
-	log.Logger.Info(ctx, "add hero role success:", add)
+	log.Logger.Info(ctx, "add hero role success:", data.Hero.HeroId)
 	return nil
 }
 func recordHeroSpell(ctx *context.Context, data *dto.HeroAttribute, platform int) error {
@@ -498,18 +490,15 @@ func recordHeroSpell(ctx *context.Context, data *dto.HeroAttribute, platform int
 		}
 		hrs = append(hrs, hs)
 	}
+
 	hrdao := dao.NewHeroSpellDAO()
-	_, err3 := hrdao.Delete(map[string]interface{}{
+	err := hrdao.DeleteAndInsert(map[string]interface{}{
 		"heroId": data.Hero.HeroId,
-	})
-	if err3 != nil {
-		return err3
+	}, hrs)
+	if err != nil {
+		return err
 	}
 
-	add, err2 := hrdao.Add(hrs)
-	if err2 != nil {
-		return err2
-	}
-	log.Logger.Info(ctx, "add hero spell success:", add)
+	log.Logger.Info(ctx, "add hero spell success:", data.Hero.HeroId)
 	return nil
 }

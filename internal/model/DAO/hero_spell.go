@@ -26,6 +26,23 @@ func (dao *HeroSpellDAO) Delete(cond map[string]interface{}) (int64, error) {
 	return tx.RowsAffected, tx.Error
 }
 
+func (dao *HeroSpellDAO) DeleteAndInsert(delCond map[string]interface{}, addData []*model.HeroSpell) error {
+	tx := dao.db.Begin()
+	tx.Delete(&model.HeroSpell{}, delCond)
+	if tx.Error != nil {
+		tx.Rollback()
+		return tx.Error
+	}
+	tx.Create(addData)
+	if tx.Error != nil {
+		tx.Rollback()
+		return tx.Error
+	}
+	tx.Commit()
+
+	return nil
+}
+
 func NewHeroSpellDAO() *HeroSpellDAO {
 	return &HeroSpellDAO{
 		db: mysql.DB,
@@ -33,7 +50,8 @@ func NewHeroSpellDAO() *HeroSpellDAO {
 }
 
 type HeroSpell interface {
-	Add([]*model.HeroSpell) (int64, error)
-	Delete(map[string]interface{}) (int64, error)
-	GetSpells(heroID string) (*model.HeroSpell, error)
+	Add(hr []*model.HeroSpell) (int64, error)
+	Delete(cond map[string]interface{}) (int64, error)
+	DeleteAndInsert(delCond map[string]interface{}, addData []*model.HeroSpell) error
+	GetSpells(heroID string) ([]*model.HeroSpell, error)
 }

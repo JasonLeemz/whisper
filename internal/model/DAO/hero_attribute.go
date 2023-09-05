@@ -34,6 +34,23 @@ func (dao *HeroAttributeDAO) Delete(cond map[string]interface{}) (int64, error) 
 	return tx.RowsAffected, tx.Error
 }
 
+func (dao *HeroAttributeDAO) DeleteAndInsert(delCond map[string]interface{}, addData []*model.HeroAttribute) error {
+	tx := dao.db.Begin()
+	tx.Delete(&model.HeroAttribute{}, delCond)
+	if tx.Error != nil {
+		tx.Rollback()
+		return tx.Error
+	}
+	tx.Create(addData)
+	if tx.Error != nil {
+		tx.Rollback()
+		return tx.Error
+	}
+	tx.Commit()
+
+	return nil
+}
+
 func NewHeroAttributeDAO() *HeroAttributeDAO {
 	return &HeroAttributeDAO{
 		db: mysql.DB,
@@ -44,4 +61,5 @@ type HeroAttribute interface {
 	Find(query []string, cond map[string]interface{}) ([]*model.HeroAttribute, error)
 	Add([]*model.HeroAttribute) (int64, error)
 	Delete(cond map[string]interface{}) (int64, error)
+	DeleteAndInsert(delCond map[string]interface{}, addData []*model.HeroAttribute) error
 }

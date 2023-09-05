@@ -21,8 +21,6 @@ import (
 	"whisper/pkg/utils"
 )
 
-var smu = &sync.Mutex{}
-
 func BatchUpdateSuitEquip(ctx *context.Context) error {
 
 	// 获取所有英雄ID
