@@ -50,6 +50,9 @@ type LolmCfg struct {
 	RuneType        string `yaml:"runeType"`
 	Skill           string `yaml:"skill"`
 	RecommendHeroes string `yaml:"recommendHeroes"`
+	HeroWinRate     string `yaml:"heroWinRate"`
+	HeroSuit        string `yaml:"heroSuit"`
+	HeroEquip       string `yaml:"heroEquip"`
 }
 
 type Config struct {

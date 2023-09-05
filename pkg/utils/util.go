@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"github.com/spf13/cast"
 	"regexp"
 	"strconv"
 	"strings"
@@ -86,4 +87,21 @@ func RemoveRepeatedBRTag(text string) string {
 	text = re.ReplaceAllString(text, "<br>")
 
 	return text
+}
+
+// Str2Int 这个不是将小数转int！！！
+func Str2Int(text string) int {
+	// 0.001234
+
+	i := 0
+	for _, s := range text {
+		if s == '0' || s == '.' {
+			i++
+			continue
+		}
+		break
+	}
+
+	ns := text[i:]
+	return cast.ToInt(ns)
 }

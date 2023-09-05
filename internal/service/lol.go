@@ -232,7 +232,7 @@ func QuerySuitEquipForLOL(ctx *context.Context, heroId string) (*dto.JDataDataRe
 	return &result, err
 }
 
-// ChampionFightData 英雄对战数据详情
+// ChampionFightData 英雄对战数据详情 LOL
 func ChampionFightData(ctx *context.Context, heroID string) (*dto.ChampionFightData, error) {
 	//jsonpResponse := `var CHAMPION_DETAIL_17={"gameVer":"13.16","date":"2023-08-30 16:15:26"};/*  |xGv00|b214aa8b2b62d14489dce9170b96cdee */`
 	champDetailUrl := fmt.Sprintf(config.LOLConfig.Lol.ChampDetail, heroID)
@@ -261,4 +261,68 @@ func ChampionFightData(ctx *context.Context, heroID string) (*dto.ChampionFightD
 	}
 
 	return &championFightData, nil
+}
+
+// HeroRankList 手游个位置英雄胜率
+func HeroRankList(ctx *context.Context) (*dto.HeroRankList, error) {
+	url := config.LOLConfig.LolM.HeroWinRate
+	log.Logger.Info(ctx, "url="+url)
+
+	// 发送 GetForm 请求
+	championFightData := dto.HeroRankList{}
+
+	header := http.Header{
+		Key:   "Referer",
+		Value: "https://lolm.qq.com/",
+	}
+	body, err := http.GetForm(ctx, url, header)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &championFightData)
+	if err != nil {
+		return nil, err
+	}
+
+	return &championFightData, nil
+}
+
+// HeroSuit 手游英雄推荐出装
+func HeroSuit(ctx *context.Context, heroID string) (*dto.HeroTech, *dto.EquipTech, error) {
+	heroTechUrl := fmt.Sprintf(config.LOLConfig.LolM.HeroSuit, heroID)
+	equipTechUrl := fmt.Sprintf(config.LOLConfig.LolM.HeroEquip, heroID)
+	log.Logger.Info(ctx, "heroTechUrl="+heroTechUrl, "equipTechUrl="+equipTechUrl)
+
+	// 发送 GetForm 请求
+	heroTech := dto.HeroTech{}
+	equipTech := dto.EquipTech{}
+
+	header := http.Header{
+		Key:   "Referer",
+		Value: "https://101.qq.com/",
+	}
+	// -----------------------------
+	body, err := http.GetForm(ctx, heroTechUrl, header)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = json.Unmarshal(body, &heroTech)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// -----------------------------
+	body, err = http.GetForm(ctx, equipTechUrl, header)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = json.Unmarshal(body, &equipTech)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &heroTech, &equipTech, nil
 }

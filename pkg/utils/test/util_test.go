@@ -12,3 +12,10 @@ func TestCompareVersion(t *testing.T) {
 	fmt.Println("result:", res)
 
 }
+
+func TestStr2Int(t *testing.T) {
+	text := "123456"
+	i := utils.Str2Int(text)
+	fmt.Println(i)
+
+}

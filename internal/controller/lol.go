@@ -222,3 +222,17 @@ func GetHeroSuit(ctx *context.Context) {
 	suit, err := logic.GetHeroSuit(ctx, req.HeroId)
 	ctx.Reply(suit, errors.New(err))
 }
+
+type ReqHeroesPosition struct {
+	Platform int `form:"platform" json:"platform" binding:"-"`
+}
+
+func HeroesPosition(ctx *context.Context) {
+	req := &ReqHeroesPosition{}
+	if err := ctx.Bind(req); err != nil {
+		return
+	}
+
+	data, err := logic.HeroesPosition(ctx, req.Platform)
+	ctx.Reply(data, errors.New(err))
+}

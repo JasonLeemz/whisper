@@ -18,6 +18,7 @@ import (
 	"whisper/pkg/context"
 	"whisper/pkg/log"
 	"whisper/pkg/redis"
+	"whisper/pkg/utils"
 )
 
 var smu = &sync.Mutex{}
@@ -157,9 +158,52 @@ func getFightData(ctx *context.Context, platform int, heroId string) (*dto.Champ
 		}
 
 		return fightData, nil
-	}
+	} else {
+		fightData, err := service.ChampionFightData(ctx, heroId)
+		if err != nil {
+			return nil, err
+		}
+		for pos, posData := range fightData.List.ChampionLane {
+			equipData := map[string]dto.Itemjson{}
+			tmp := dto.ChampionLaneItem{}
 
-	return nil, nil
+			var err error
+			err = json.Unmarshal([]byte(posData.Itemoutjson), &equipData)
+			if err != nil {
+				log.Logger.Warn(ctx, err, "heroid:", heroId)
+			} else {
+				tmp.Itemout = equipData
+			}
+
+			equipData = *new(map[string]dto.Itemjson)
+			err = json.Unmarshal([]byte(posData.Core3itemjson), &equipData)
+			if err != nil {
+				log.Logger.Warn(ctx, err, "heroid:", heroId)
+			} else {
+				tmp.Core3item = equipData
+			}
+
+			equipData = *new(map[string]dto.Itemjson)
+			err = json.Unmarshal([]byte(posData.Shoesjson), &equipData)
+			if err != nil {
+				log.Logger.Warn(ctx, err, "heroid:", heroId)
+			} else {
+				tmp.Shoes = equipData
+			}
+
+			var suits []dto.Itemjson
+			err = json.Unmarshal([]byte(posData.Hold3), &suits)
+			if err != nil {
+				log.Logger.Warn(ctx, err, "heroid:", heroId)
+			} else {
+				tmp.Suits = suits
+			}
+
+			fightData.List.ChampionLane[pos] = tmp
+		}
+
+		return fightData, nil
+	}
 }
 func updateHeroesPosition(ctx *context.Context, platform int, heroId string, fightData *dto.ChampionFightData) error {
 	hpd := dao.NewHeroesPositionDAO()
@@ -525,4 +569,48 @@ func GetHeroSuit(ctx *context.Context, heroID string) (map[string]dto.RecommendS
 	err := json.Unmarshal([]byte(d.Val()), &rs)
 
 	return rs, err
+}
+
+func HeroesPosition(ctx *context.Context, platform int) (*dto.HeroRankList, error) {
+	rankList, err := service.HeroRankList(ctx)
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return nil, err
+	}
+
+	hpd := dao.NewHeroesPositionDAO()
+	// 删除旧数据
+	cond := map[string]interface{}{
+		"platform": common.PlatformForLOLM,
+	}
+	rows, err := hpd.Delete(cond)
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return nil, err
+	}
+	log.Logger.Info(ctx, "delete rows:", rows, "err:", err)
+
+	hp := make([]*model.HeroesPosition, 0)
+	// 只取钻石以上分段
+	if levData, ok := rankList.Data[common.LevelDiamond]; ok {
+		for pos, heroes := range levData {
+			posName := common.PositionNameEN[pos]
+			for _, data := range heroes {
+
+				hp = append(hp, &model.HeroesPosition{
+					HeroId:   data.HeroId,
+					Pos:      posName,
+					ShowRate: utils.Str2Int(data.AppearRate),
+					WinRate:  utils.Str2Int(data.WinRate),
+					Platform: common.PlatformForLOLM,
+					Version:  data.Dtstatdate,
+					FileTime: data.Dtstatdate,
+				})
+			}
+		}
+	}
+
+	rows, err = hpd.Add(hp)
+	log.Logger.Info(ctx, "add rows:", rows, "err:", err)
+	return rankList, nil
 }

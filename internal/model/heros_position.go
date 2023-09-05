@@ -8,6 +8,8 @@ type HeroesPosition struct {
 	Id       uint64    `gorm:"column:id;primary_key;AUTO_INCREMENT;NOT NULL"`
 	HeroId   string    `gorm:"column:heroId;default:;NOT NULL"`
 	Pos      string    `gorm:"column:pos;default:;NOT NULL"`
+	ShowRate int       `gorm:"column:show_rate;default:0;NOT NULL"`
+	WinRate  int       `gorm:"column:win_rate;default:0;NOT NULL"`
 	Platform int       `gorm:"column:platform;default:0;NOT NULL"`
 	Version  string    `gorm:"column:version;default:;NOT NULL"`
 	FileTime string    `gorm:"column:fileTime;default:;NOT NULL"`

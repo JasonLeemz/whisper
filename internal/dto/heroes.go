@@ -295,3 +295,186 @@ type ChampionFight struct {
 	Top     interface{} `json:"top"`
 	Jungle  interface{} `json:"jungle"`
 }
+
+// --------------------------------------------------------
+
+type HeroRankList struct {
+	Result int                            `json:"result"`
+	Data   map[int]map[int][]HeroRankInfo `json:"data"`
+}
+
+type HeroRankInfo struct {
+	Id            int    `json:"id"`
+	Position      string `json:"position"`
+	HeroId        string `json:"hero_id"`
+	Strength      string `json:"strength"`
+	Weight        string `json:"weight"`
+	AppearRate    string `json:"appear_rate"`
+	AppearBzc     string `json:"appear_bzc"`
+	ForbidRate    string `json:"forbid_rate"`
+	ForbidBzc     string `json:"forbid_bzc"`
+	WinRate       string `json:"win_rate"`
+	WinBzc        string `json:"win_bzc"`
+	Dtstatdate    string `json:"dtstatdate"`
+	StrengthLevel string `json:"strength_level"`
+}
+
+// --------------------------------------------------------
+
+type HeroTech struct {
+	Result int          `json:"result"`
+	Msg    string       `json:"msg"`
+	ErrMsg string       `json:"err_msg"`
+	Data   HeroTechData `json:"data"`
+}
+
+type HeroTechData struct {
+	HeroStrength    HeroStrength    `json:"hero_strength"`
+	AnchorRecommend AnchorRecommend `json:"anchor_recommend"`
+	SkillIntroduce  SkillIntroduce  `json:"skill_introduce"`
+	NewsUrl         string          `json:"news_url"`
+}
+
+type HeroStrength struct {
+	Title      string      `json:"title"`
+	Update     string      `json:"update"`
+	Tips       string      `json:"tips"`
+	List       interface{} `json:"list"`
+	FilterList interface{} `json:"filter_list"`
+}
+
+type SkillIntroduce struct {
+	Title      string      `json:"title"`
+	IconList   interface{} `json:"icon_list"`
+	ContentMap interface{} `json:"content_map"`
+}
+
+type AnchorRecommend struct {
+	Title  string                `json:"title"`
+	Intent interface{}           `json:"intent"`
+	List   []AnchorRecommendList `json:"list"`
+}
+
+type AnchorRecommendList struct {
+	Head AnchorRecommendListHead `json:"head"`
+	Body AnchorRecommendListBody `json:"body"`
+}
+
+type AnchorRecommendListHead struct {
+	Id         string `json:"id"`
+	HeroId     string `json:"hero_id"`
+	HeroIcon   string `json:"hero_icon"`
+	Title      string `json:"title"`
+	Author     string `json:"author"`
+	AuthorIcon string `json:"author_icon"`
+}
+
+type AnchorRecommendListBody struct {
+	Intent string `json:"intent"`
+
+	Desc  AnchorRecommendListBodyDesc  `json:"desc"`
+	Equip AnchorRecommendListBodyEquip `json:"equip"`
+	Rune  AnchorRecommendListBodyRune  `json:"rune"`
+	Skill AnchorRecommendListBodySkill `json:"skill"`
+}
+
+type AnchorRecommendListBodyDesc struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}
+
+type AnchorRecommendListBodyEquip struct {
+	Title string                        `json:"title"`
+	List  []AnchorRecommendListItemData `json:"list"`
+}
+
+type AnchorRecommendListBodyRune struct {
+	Title string                        `json:"title"`
+	List  []AnchorRecommendListItemData `json:"list"`
+}
+
+type AnchorRecommendListBodySkill struct {
+	Title string                        `json:"title"`
+	List  []AnchorRecommendListItemData `json:"list"`
+}
+
+type AnchorRecommendListItemData struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+	Icon string `json:"icon"`
+}
+
+// --------------------------------------------------------
+
+type EquipTech struct {
+	Result int           `json:"result"`
+	Msg    string        `json:"msg"`
+	ErrMsg string        `json:"err_msg"`
+	Data   EquipTechData `json:"data"`
+}
+
+type EquipTechData struct {
+	TopInfo      EquipTechTopInfo      `json:"top_info"`
+	EquipInfo    EquipTechEquipInfo    `json:"equip_info"`
+	EquipList    []EquipTechEquipList  `json:"equip_list"`
+	ThinkingInfo EquipTechThinkingInfo `json:"thinking_info"`
+	SkillInfo    EquipTechSkillInfo    `json:"skill_info"`
+	RuneInfo     EquipTechRuneInfo     `json:"rune_info"`
+	Favor        any                   `json:"favor"`
+}
+
+type EquipTechTopInfo struct {
+	Title      string `json:"title"`
+	Author     string `json:"author"`
+	AuthorIcon string `json:"author_icon"`
+}
+
+type EquipTechEquipInfo struct {
+	Title string                  `json:"title"`
+	List  []EquipTechListItemData `json:"list"`
+}
+
+type EquipTechListItemData struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+	Icon string `json:"icon"`
+}
+
+type EquipTechEquipList struct {
+	Title string                  `json:"title"`
+	List  []EquipTechListItemData `json:"list"`
+}
+
+type EquipTechThinkingInfo struct {
+	Title string                      `json:"title"`
+	List  []EquipTechThinkingInfoList `json:"list"`
+}
+
+type EquipTechThinkingInfoList struct {
+	Name    string `json:"name"`
+	Content string `json:"content"`
+}
+
+type EquipTechSkillInfo struct {
+	Title string                  `json:"title"`
+	List  []EquipTechListItemData `json:"list"`
+}
+
+type EquipTechRuneInfo struct {
+	Title   string                     `json:"title"`
+	TopList any                        `json:"top_list"`
+	List    any                        `json:"list"`
+	NewList []EquipTechRuneInfoNewList `json:"new_list"`
+}
+
+type EquipTechRuneInfoNewList struct {
+	Title string                          `json:"title"`
+	Items []EquipTechRuneInfoNewListItems `json:"items"`
+}
+
+type EquipTechRuneInfoNewListItems struct {
+	Id     string `json:"id"`
+	Name   string `json:"name"`
+	Icon   string `json:"icon"`
+	Active int    `json:"active"`
+}

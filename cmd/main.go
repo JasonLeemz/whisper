@@ -57,6 +57,7 @@ func main() {
 		inner.POST("/equipment", context.Handle(controller.Equipment))
 		inner.POST("/heroes", context.Handle(controller.Heroes))
 		inner.POST("/heroes/attr", context.Handle(controller.HeroesAttribute))
+		inner.POST("/heroes/position", context.Handle(controller.HeroesPosition))
 		inner.POST("/rune", context.Handle(controller.Rune))
 		inner.POST("/rune/type", context.Handle(controller.RuneType))
 		inner.POST("/skill", context.Handle(controller.Skill))
