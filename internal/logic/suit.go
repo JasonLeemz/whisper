@@ -43,7 +43,7 @@ func BatchUpdateSuitEquip(ctx *context.Context) error {
 		taskFail = int32(0)
 		taskDone = int32(0)
 		wg       = &sync.WaitGroup{}
-		ch       = make(chan struct{}, 100)
+		ch       = make(chan struct{}, 20)
 	)
 
 	for i, hero := range heroes {
@@ -87,8 +87,8 @@ func BatchUpdateSuitEquip(ctx *context.Context) error {
 	return nil
 }
 func QuerySuitEquip(ctx *context.Context, platform int, heroId string) (any, error) {
-	smu.Lock()
-	defer smu.Unlock()
+	//smu.Lock()
+	//defer smu.Unlock()
 
 	if platform == common.PlatformForLOL {
 		fightData, err := getFightData(ctx, heroId)
@@ -208,13 +208,13 @@ func updateHeroesPosition(ctx *context.Context, platform int, heroId string, fig
 func updateLOLHeroesSuit(ctx *context.Context, heroId string, fightData *dto.ChampionFightData) error {
 	platform := common.PlatformForLOL
 	hpd := dao.NewHeroesSuitDAO()
-	rows, err := hpd.Delete(map[string]interface{}{
-		"heroId": heroId,
-	})
-	if err != nil {
-		return errors.New("updateLOLHeroesSuit: Delete HeroesSuit " + err.Error())
-	}
-	log.Logger.Info(ctx, "updateLOLHeroesSuit: delete HeroesSuit rows:", rows, "heroId:", heroId)
+	//rows, err := hpd.Delete(map[string]interface{}{
+	//	"heroId": heroId,
+	//})
+	//if err != nil {
+	//	return errors.New("updateLOLHeroesSuit: Delete HeroesSuit " + err.Error())
+	//}
+	//log.Logger.Info(ctx, "updateLOLHeroesSuit: delete HeroesSuit rows:", rows, "heroId:", heroId)
 
 	posData := make([]*model.HeroesSuit, 0)
 	var m model.HeroesSuit
@@ -300,25 +300,33 @@ func updateLOLHeroesSuit(ctx *context.Context, heroId string, fightData *dto.Cha
 		log.Logger.Warn(ctx, "posData is nil", "heroId:", heroId)
 		return nil
 	}
-	rows, err = hpd.Add(posData)
-	if err != nil {
-		return errors.New("Add HeroesSuit " + err.Error() + ",heroId:" + heroId)
-	}
-	log.Logger.Info(ctx, "Add HeroesSuit rows:", rows, "heroId:", heroId)
+	//rows, err = hpd.Add(posData)
+	//if err != nil {
+	//	return errors.New("Add HeroesSuit " + err.Error() + ",heroId:" + heroId)
+	//}
+	//log.Logger.Info(ctx, "Add HeroesSuit rows:", rows, "heroId:", heroId)
 
+	rows, err := hpd.DeleteAndInsert(map[string]interface{}{
+		"heroId": heroId,
+	}, posData)
+	if err != nil {
+		return errors.New("Add LOLM HeroesSuit " + err.Error() + ",heroId:" + heroId)
+	}
+	log.Logger.Info(ctx, "Add LOLM HeroesSuit rows:", rows, "heroId:", heroId)
 	return nil
 }
 func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.HeroTech, equipTech map[string]*dto.EquipTech) error {
 	platform := common.PlatformForLOLM
 	now := time.Now().Format("2006-01-02 15:04:05")
 	hpd := dao.NewHeroesSuitDAO()
-	rows, err := hpd.Delete(map[string]interface{}{
-		"heroId": heroId,
-	})
-	if err != nil {
-		return errors.New("updateLOLMHeroesSuit: Delete HeroesSuit " + err.Error())
-	}
-	log.Logger.Info(ctx, "updateLOLMHeroesSuit: delete HeroesSuit rows:", rows, "heroId:", heroId)
+	//rows, err := hpd.Delete(map[string]interface{}{
+	//	"heroId": heroId,
+	//})
+
+	//if err != nil {
+	//	return errors.New("updateLOLMHeroesSuit: Delete HeroesSuit " + err.Error())
+	//}
+	//log.Logger.Info(ctx, "updateLOLMHeroesSuit: delete HeroesSuit rows:", rows, "heroId:", heroId)
 	var m model.HeroesSuit
 
 	// 构建入库数据
@@ -401,14 +409,19 @@ func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.Her
 					FileTime:    now,
 				})
 			}
+		}
 
+		// 核心出装中有概率出现重复的，会导致唯一索引报错,这里用map去重
+		itemidsMap := make(map[string]*model.HeroesSuit)
+		for _, l := range et.Data.EquipList {
+			itemids = itemids[:0]
 			if strings.Contains(l.Title, "核心出装") {
 				// 核心出装[1|2|3...] => 认作是LOL中的core
 				for _, eq := range l.List {
 					itemids = append(itemids, eq.Id)
 				}
-
-				hsdata = append(hsdata, &model.HeroesSuit{
+				key := strings.Join(itemids, ",")
+				itemidsMap[key] = &model.HeroesSuit{
 					HeroId:      eqs.Head.HeroId,
 					Title:       et.Data.TopInfo.Title,
 					RecommendId: eqs.Head.Id,
@@ -423,8 +436,11 @@ func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.Her
 					Platform:    platform,
 					Version:     now,
 					FileTime:    now,
-				})
+				}
 			}
+		}
+		for _, equip := range itemidsMap {
+			hsdata = append(hsdata, equip)
 		}
 	}
 
@@ -432,11 +448,18 @@ func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.Her
 		log.Logger.Warn(ctx, "hsdata is nil", "heroId:", heroId)
 		return nil
 	}
-	rows, err = hpd.Add(hsdata)
+	//rows, err = hpd.Add(hsdata)
+	//if err != nil {
+	//	return errors.New("Add HeroesSuit " + err.Error() + ",heroId:" + heroId)
+	//}
+
+	rows, err := hpd.DeleteAndInsert(map[string]interface{}{
+		"heroId": heroId,
+	}, hsdata)
 	if err != nil {
-		return errors.New("Add HeroesSuit " + err.Error() + ",heroId:" + heroId)
+		return errors.New("Add LOLM HeroesSuit " + err.Error() + ",heroId:" + heroId)
 	}
-	log.Logger.Info(ctx, "Add HeroesSuit rows:", rows, "heroId:", heroId)
+	log.Logger.Info(ctx, "Add LOLM HeroesSuit rows:", rows, "heroId:", heroId)
 
 	return nil
 }

@@ -55,7 +55,6 @@ func main() {
 		inner.POST("/equipment", context.Handle(controller.Equipment))
 		inner.POST("/heroes", context.Handle(controller.Heroes))
 		inner.POST("/heroes/attr", context.Handle(controller.HeroesAttribute))
-		inner.POST("/heroes/position", context.Handle(controller.HeroesPosition))
 		inner.POST("/rune", context.Handle(controller.Rune))
 		inner.POST("/rune/type", context.Handle(controller.RuneType))
 		inner.POST("/skill", context.Handle(controller.Skill))
@@ -63,7 +62,14 @@ func main() {
 		inner.POST("/alias/heroes", context.Handle(controller.AliasHeroes))
 		inner.POST("/alias/equip", context.Handle(controller.AliasEquip))
 
+		// LOLM将英雄适合的位置写入heroes_position（批量执行）
+		inner.POST("/heroes/position", context.Handle(controller.HeroesPosition))
+		// 1. LOL将英雄适合的位置写入heroes_position
+		// 2. LOL将英雄适合的装备写入heroes_suit
+		// 3. LOLM将英雄适合的装备写入heroes_suit
 		inner.POST("/equip/suit/batch", context.Handle(controller.BatchUpdateSuitEquip))
+		// 页面查询英雄合适的装备是从redis中获取的,要提前执行这个才能拿到数据
+		// 这个接口依赖/equip/suit/batch，需要先执行/equip/suit/batch
 		inner.POST("/equip/suit/cache", context.Handle(controller.SuitData2Redis))
 	}
 	run.Init()

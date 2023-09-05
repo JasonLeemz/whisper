@@ -11,6 +11,22 @@ type HeroesSuitDAO struct {
 	db *gorm.DB
 }
 
+func (dao *HeroesSuitDAO) DeleteAndInsert(delCond map[string]interface{}, addData []*model.HeroesSuit) (int64, error) {
+	tx := dao.db.Begin()
+	tx.Delete(&model.HeroesSuit{}, delCond)
+	if tx.Error != nil {
+		tx.Rollback()
+		return 0, tx.Error
+	}
+	tx.Create(addData)
+	if tx.Error != nil {
+		tx.Rollback()
+		return 0, tx.Error
+	}
+	tx.Commit()
+
+	return tx.RowsAffected, nil
+}
 func (dao *HeroesSuitDAO) Add(hs []*model.HeroesSuit) (int64, error) {
 	result := dao.db.Create(hs)
 	return result.RowsAffected, result.Error
@@ -57,5 +73,6 @@ func NewHeroesSuitDAO() *HeroesSuitDAO {
 type HeroesSuit interface {
 	Add([]*model.HeroesSuit) (int64, error)
 	Delete(cond map[string]interface{}) (int64, error)
+	DeleteAndInsert(delCond map[string]interface{}, addData []*model.HeroesSuit) (int64, error)
 	GetSuitForHero(heroID string) ([]*model.HeroesSuit, error)
 }
