@@ -262,7 +262,7 @@ func (dao *LOLMEquipmentDAO) GetRoadmap(version string, id string) (map[string][
 	if err != nil {
 		return nil, err
 	}
-	if current == nil {
+	if len(current) == 0 {
 		return nil, errors.New("can not find id " + id)
 	}
 	result["current"] = current

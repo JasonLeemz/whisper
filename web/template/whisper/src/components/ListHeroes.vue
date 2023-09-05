@@ -14,6 +14,12 @@ export default {
         show: false,
         title: '推荐出装',
         activeKey: ref(['out', 'shoe', 'core','other']),
+        panel:{
+          foldAll: false,
+          foldBtn :{
+            top: ref(50)
+          },
+        },
         data: {},
         mapPos:{
           'top':'上单',
@@ -42,7 +48,15 @@ export default {
         console.error('Error fetching server data:', error);
       });
     },
-
+    panelSwitcher(){
+      if (this.sideDrawer.panel.foldAll){
+        this.sideDrawer.panel.foldAll = false
+        this.sideDrawer.activeKey = ref(['out', 'shoe', 'core','other'])
+      }else{
+        this.sideDrawer.panel.foldAll = true
+        this.sideDrawer.activeKey = ref([])
+      }
+    },
   }
 }
 </script>
@@ -87,6 +101,8 @@ export default {
       :title="sideDrawer.title"
       placement="right"
   >
+
+    <a-button size="small" @click="panelSwitcher" class="foldall-btn">{{sideDrawer.panel.foldAll?'展开所有':'收起全部'}}</a-button>
 
     <template v-for="(equips,pos) in sideDrawer.data" :key="pos">
       <h4>{{ sideDrawer.mapPos[pos] }}</h4>

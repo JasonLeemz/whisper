@@ -232,6 +232,13 @@
 }
 
 .ant-drawer-body {
+  .foldall-btn{
+    position: absolute;
+    left: 135px;
+    top: 17px;
+    font-size: 12px;
+    line-height: 12px;
+  }
   .ant-divider-inner-text {
     img {
       width: 50px;
