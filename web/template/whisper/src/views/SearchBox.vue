@@ -17,10 +17,12 @@ import axios from 'axios';
 import {message} from 'ant-design-vue';
 import ListEquip from "@/components/ListEquip.vue";
 import ListHeroes from "@/components/ListHeroes.vue";
+import ListRune from "@/components/ListRune.vue";
+import ListSkill from "@/components/ListSkill.vue";
 
 export default {
   components: {
-    ListEquip, ListHeroes
+    ListEquip, ListHeroes,ListRune,ListSkill
   },
   data() {
     return {
@@ -102,6 +104,7 @@ export default {
           <div>
             <a-space-compact block>
               <a-input
+                  name="search-input"
                   v-model:value="formData.key_words"
                   placeholder="搜索…"
                   allowClear
@@ -143,12 +146,7 @@ export default {
               </div>
             </div>
           </Transition>
-
         </a-form>
-
-        <a-descriptions>
-          <a-descriptions-item>{{ query.tips }}</a-descriptions-item>
-        </a-descriptions>
 
         <ListEquip
             v-if="formData.category==='lol_equipment'"
@@ -158,6 +156,16 @@ export default {
         <ListHeroes
             v-if="formData.category==='lol_heroes'"
             :query-result="query.hero.data"
+        />
+
+        <ListRune
+            v-if="formData.category==='lol_rune'"
+            :query-result="query.rune.data"
+        />
+
+        <ListSkill
+            v-if="formData.category==='lol_skill'"
+            :query-result="query.skill.data"
         />
 
 

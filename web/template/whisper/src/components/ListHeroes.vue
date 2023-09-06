@@ -19,8 +19,8 @@ export default {
           foldBtn: {
             top: ref(50)
           },
-          panelKeys:[],
-          mapEquipType:{
+          panelKeys: [],
+          mapEquipType: {
             'out': '出门装',
             'shoe': '鞋子',
             'core': '核心套件',
@@ -40,10 +40,10 @@ export default {
     }
   },
   watch: {
-    'sideDrawer.data'(data){
+    'sideDrawer.data'(data) {
       for (let postypes in data.equips) {
         for (let type in data.equips[postypes]) {
-          this.sideDrawer.panel.panelKeys.push(type+'-'+postypes)
+          this.sideDrawer.panel.panelKeys.push(type + '-' + postypes)
         }
       }
     }
@@ -74,13 +74,16 @@ export default {
       }
     },
   },
-  mounted(){
+  mounted() {
     this.panelSwitcher()
   },
 }
 </script>
 
 <template>
+  <a-descriptions>
+    <a-descriptions-item>{{ queryResult.tips }}</a-descriptions-item>
+  </a-descriptions>
   <div class="result-card" v-for="(item,i) in queryResult.list" :key="i">
     <a-space direction="vertical">
       <a-card :hoverable="true" @click="showDrawer(item.platform,item.version,item.id)">
@@ -121,18 +124,25 @@ export default {
       placement="right"
   >
 
-    <a-button type="primary" size="small" @click="panelSwitcher" class="foldall-btn">
+    <a-button v-if="Object.keys(sideDrawer.data.equips).length !== 0"
+              type="primary" size="small"
+              @click="panelSwitcher"
+              class="foldall-btn">
       {{ sideDrawer.panel.foldAll ? '展开所有' : '收起全部' }}
     </a-button>
 
+    <a-empty
+        v-if="Object.keys(sideDrawer.data.equips).length === 0"
+        description="当前版本该英雄缺乏足够的样本数据"/>
+
     <template v-for="(equips,pos) in sideDrawer.data.equips" :key="pos">
       <!-- 端游-->
-      <h4 v-if="sideDrawer.data.platform===0">{{ sideDrawer.mapPos[pos]?sideDrawer.mapPos[pos]:pos }}</h4>
+      <h4 v-if="sideDrawer.data.platform===0">{{ sideDrawer.mapPos[pos] ? sideDrawer.mapPos[pos] : pos }}</h4>
 
       <!-- 手游-->
       <a-popover placement="topLeft">
         <template #content>
-          <h4 class="hero-suit popover-title">{{pos}}</h4>
+          <h4 class="hero-suit popover-title">{{ pos }}</h4>
           <span class="hero-suit popover-content" v-html="sideDrawer.data.ext_info.recommend_reason[pos]"></span>
         </template>
         <h4 v-if="sideDrawer.data.platform===1" class="pos-title">
@@ -160,7 +170,7 @@ export default {
           </sub>
           <div v-for="(equips,equipsidx) in row" :key="equipsidx" class="equip-row">
             <div :class="sideDrawer.data.platform===0?'equip-item-wrap':'equip-item-wrap equip-item-wrap-lolm'">
-              <span  v-for="(equip,equipidx) in equips" :key="equipidx"  class="equip-item">
+              <span v-for="(equip,equipidx) in equips" :key="equipidx" class="equip-item">
                 <a-popover placement="bottom" arrow-point-at-center>
                   <template #content>
                     <div class="roadmap-item">
@@ -179,7 +189,7 @@ export default {
                 </a-popover>
               </span>
             </div>
-            <span  v-if="sideDrawer.data.platform===0" class="data-statistics">
+            <span v-if="sideDrawer.data.platform===0" class="data-statistics">
               <em>{{ equips[0].showrate / 100 }}%</em>
               <em>{{ equips[0].winrate / 100 }}%</em>
             </span>

@@ -85,7 +85,7 @@ export default {
           <a-checkbox-group v-model:value="formData.keywords" v-show="formData.drawer">
             <a-descriptions v-for="(cate, index) in formData.equipTypes" :title="cate.cate" :key="index">
               <a-descriptions-item>
-                <a-checkbox v-for="(sub_cate, ii) in cate.sub_cate" :key="ii" :value="sub_cate.keywordsStr">
+                <a-checkbox v-for="(sub_cate, ii) in cate.sub_cate" :key="ii" :id="index+'-'+ii+'-equip-checkbox'"  :value="sub_cate.keywordsStr" >
                   <a-tooltip placement="top" class="equip-box-tooltip">
                     <template #title>
                       <span>{{ sub_cate.keywordsStr }}</span>

@@ -40,6 +40,9 @@ export default {
 </script>
 
 <template>
+  <a-descriptions>
+    <a-descriptions-item>{{ queryResult.tips }}</a-descriptions-item>
+  </a-descriptions>
   <div class="result-card" v-for="(item,i) in queryResult.list" :key="i">
     <a-space direction="vertical">
       <a-card :hoverable="true" @click="showDrawer(item.platform,item.version,item.id)">
@@ -49,7 +52,7 @@ export default {
           </template>
         </a-card-meta>
         <div class="ant-tag-wrap">
-          <a-tag v-for="tag in item.tags" :key="tag.id" color="blue">{{ tag }}</a-tag>
+          <a-tag v-for="tag in item.tags" :key="tag.id" color="blue" :title="tag">{{ tag }}</a-tag>
         </div>
         <a-tag class="platform-tag" color="warning">
           <template #icon>
@@ -58,7 +61,7 @@ export default {
           {{ item.platform === 0 ? '端游' : '手游' }}
         </a-tag>
 
-        <div class="hero-desc mainText" v-html="item.desc"></div>
+        <div class="mainText" v-html="item.desc"></div>
       </a-card>
     </a-space>
   </div>

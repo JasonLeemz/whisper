@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	errors2 "errors"
 	"fmt"
+	"github.com/spf13/cast"
 	"html"
 	"strconv"
 	"strings"
@@ -115,7 +116,9 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 			//resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Sell:%s", hitData.Sell))
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("价格:%s", hitData.Total))
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
-			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("%s", hitData.Maps))
+			if hitData.Platform != cast.ToString(common.PlatformForLOLM) {
+				resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("%s", hitData.Maps))
+			}
 		}
 	case new(model.ESHeroes).GetIndexName():
 		for i, hit := range resp.Hits {

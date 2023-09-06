@@ -13,6 +13,12 @@
   margin: 0 auto;
   padding: 0 15px;
 
+  input[name='search-input']{
+    &:-webkit-autofill {
+      box-shadow: 0 0 0 1000px #fff inset !important;
+    }
+  }
+
   .platform-switch {
     margin-bottom: 7px;
 
@@ -103,6 +109,8 @@
         span {
           max-width: 150px;
           overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
       }
     }
@@ -232,21 +240,24 @@
 
   .hero-suit {
     &.popover-title {
-      margin:  0 0 5px 0;
+      margin: 0 0 5px 0;
     }
 
     &.popover-content {
-      h4{
+      h4 {
         display: none;
       }
-      h5{
-        margin:  5px 0 5px 0;
+
+      h5 {
+        margin: 5px 0 5px 0;
       }
-      h6{
+
+      h6 {
         font-size: 12px;
         margin: 0;
       }
-      p{
+
+      p {
         margin: 0;
         font-size: 12px;
       }
@@ -317,7 +328,8 @@
 
   .pos-title {
     cursor: pointer;
-    h6{
+
+    h6 {
       display: inline-block;
       font-weight: normal;
     }
