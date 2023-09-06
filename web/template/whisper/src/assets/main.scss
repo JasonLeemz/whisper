@@ -229,16 +229,51 @@
 
     }
   }
+
+  .hero-suit {
+    &.popover-title {
+      margin:  0 0 5px 0;
+    }
+
+    &.popover-content {
+      h4{
+        display: none;
+      }
+      h5{
+        margin:  5px 0 5px 0;
+      }
+      h6{
+        font-size: 12px;
+        margin: 0;
+      }
+      p{
+        margin: 0;
+        font-size: 12px;
+      }
+    }
+  }
+
 }
 
 .ant-drawer-body {
-  .foldall-btn{
+  position: relative;
+
+  .ant-collapse {
+    margin-bottom: 20px;
+  }
+
+  .ant-collapse .ant-collapse-content > .ant-collapse-content-box {
+    padding: 10px 15px;
+  }
+
+  .foldall-btn {
     position: absolute;
-    left: 135px;
-    top: 17px;
+    top: 20px;
+    right: 24px;
     font-size: 12px;
     line-height: 12px;
   }
+
   .ant-divider-inner-text {
     img {
       width: 50px;
@@ -280,7 +315,15 @@
     }
   }
 
-  .ant-collapse>.ant-collapse-item >.ant-collapse-header{
+  .pos-title {
+    cursor: pointer;
+    h6{
+      display: inline-block;
+      font-weight: normal;
+    }
+  }
+
+  .ant-collapse > .ant-collapse-item > .ant-collapse-header {
     padding: 7px 16px;
   }
 
@@ -288,12 +331,11 @@
     margin-bottom: 5px;
     overflow: hidden;
 
-    sub{
-      color: #0000FF;
+    sub {
       float: right;
-      margin-top: -37px;
+      margin-top: -32px;
 
-      em{
+      em {
         display: inline-block;
         width: 50px;
         text-align: right;
@@ -305,23 +347,52 @@
       }
     }
 
-    .equip-row{
-      margin-bottom: 2px;
-      .equip-item{
+    .equip-row {
+      margin: 0 -3px;
+      position: relative;
+      border-radius: 5px;
+      transition-property: width, background;
+      transition-duration: .25s, .05s;
+      transition-timing-function: ease;
+
+      &:hover {
+        background: rgba(0, 0, 0, .05);
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .equip-item-wrap {
         display: inline-block;
-        margin-right: 2px;
-        border: 1px solid #fff;
-        .equip-icon{
-          width: 35px;
-          height: 35px;
-          border-radius: 3px;
+        max-width: 175px;
+        padding: 1px 3px;
+
+        &.equip-item-wrap-lolm {
+          max-width: inherit;
+        }
+
+        .equip-item {
+          display: inline-block;
+          margin-right: 2px;
+          border: 1px solid #fff;
+
+          .equip-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 3px;
+          }
         }
       }
 
-      .data-statistics{
-        float: right;
 
-        em{
+      .data-statistics {
+        position: absolute;
+        right: 3px;
+
+        &.equip-intro {
+          top: 0;
+        }
+
+        em {
           display: inline-block;
           width: 50px;
           text-align: right;
@@ -330,7 +401,8 @@
           font-size: 13px;
           color: #9c8250;
         }
-        em:first-child{
+
+        em:first-child {
           color: #1dbaa9;
         }
       }

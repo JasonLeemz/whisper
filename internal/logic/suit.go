@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/spf13/cast"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	redis2 "github.com/redis/go-redis/v9"
+	"github.com/spf13/cast"
 	"whisper/internal/dto"
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
@@ -308,11 +310,12 @@ func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.Her
 	for _, eqs := range heroTech.Data.AnchorRecommend.List {
 		et := equipTech[eqs.Head.Id]
 		desc := make([]string, 0)
-		desc = append(desc, eqs.Body.Desc.Content)
-		desc = append(desc, et.Data.ThinkingInfo.Title)
+		desc = append(desc, fmt.Sprintf("<h4>%s</h4>", eqs.Body.Desc.Title))
+		desc = append(desc, fmt.Sprintf("<p>%s</p>", eqs.Body.Desc.Content))
+		desc = append(desc, fmt.Sprintf("<h5>%s</h5>", et.Data.ThinkingInfo.Title))
 		for _, item := range et.Data.ThinkingInfo.List {
-			desc = append(desc, item.Name)
-			desc = append(desc, item.Content)
+			desc = append(desc, fmt.Sprintf("<h6>%s</h6>", item.Name))
+			desc = append(desc, fmt.Sprintf("<p>%s</p>", item.Content))
 		}
 
 		skillids := make([]string, 0)
@@ -347,15 +350,16 @@ func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.Her
 			RecommendId: eqs.Head.Id,
 			Runeids:     strings.Join(runeids, ","),
 			Skillids:    strings.Join(skillids, ","),
-			Desc:        strings.Join(desc, "<br>"),
+			Desc:        strings.Join(desc, ""),
 			Author:      et.Data.TopInfo.Author,
 			AuthorIcon:  et.Data.TopInfo.AuthorIcon,
-			Pos:         common.PositionNameEN[0],
-			Itemids:     strings.Join(itemids, ","),
-			Type:        m.TypeOther(), // 契合装备
-			Platform:    platform,
-			Version:     now,
-			FileTime:    now,
+			//Pos:         common.PositionNameEN[0],
+			Pos:      et.Data.TopInfo.Title,
+			Itemids:  strings.Join(itemids, ","),
+			Type:     m.TypeOther(), // 契合装备
+			Platform: platform,
+			Version:  now,
+			FileTime: now,
 		})
 
 		for _, l := range et.Data.EquipList {
@@ -372,15 +376,16 @@ func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.Her
 					RecommendId: eqs.Head.Id,
 					Runeids:     strings.Join(runeids, ","),
 					Skillids:    strings.Join(skillids, ","),
-					Desc:        strings.Join(desc, "<br>"),
+					Desc:        strings.Join(desc, ""),
 					Author:      et.Data.TopInfo.Author,
 					AuthorIcon:  et.Data.TopInfo.AuthorIcon,
-					Pos:         common.PositionNameEN[0],
-					Itemids:     strings.Join(itemids, ","),
-					Type:        m.TypeShoes(), // 鞋子装备
-					Platform:    platform,
-					Version:     now,
-					FileTime:    now,
+					//Pos:         common.PositionNameEN[0],
+					Pos:      et.Data.TopInfo.Title,
+					Itemids:  strings.Join(itemids, ","),
+					Type:     m.TypeShoes(), // 鞋子装备
+					Platform: platform,
+					Version:  now,
+					FileTime: now,
 				})
 			}
 		}
@@ -401,15 +406,16 @@ func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.Her
 					RecommendId: eqs.Head.Id,
 					Runeids:     strings.Join(runeids, ","),
 					Skillids:    strings.Join(skillids, ","),
-					Desc:        strings.Join(desc, "<br>"),
+					Desc:        strings.Join(desc, ""),
 					Author:      et.Data.TopInfo.Author,
 					AuthorIcon:  et.Data.TopInfo.AuthorIcon,
-					Pos:         common.PositionNameEN[0],
-					Itemids:     strings.Join(itemids, ","),
-					Type:        m.TypeCore(), // 核心装备
-					Platform:    platform,
-					Version:     now,
-					FileTime:    now,
+					//Pos:         common.PositionNameEN[0],
+					Pos:      et.Data.TopInfo.Title,
+					Itemids:  strings.Join(itemids, ","),
+					Type:     m.TypeCore(), // 核心装备
+					Platform: platform,
+					Version:  now,
+					FileTime: now,
 				}
 			}
 		}
@@ -466,7 +472,7 @@ func heroesSuits2Redis(ctx *context.Context) error {
 		key := fmt.Sprintf(redis.KeyCacheEquip, equip.Maps, strconv.Itoa(common.PlatformForLOL), equip.ItemId)
 		value, _ := json.Marshal(equip)
 		mequip[key] = equip
-		redis.RDB.Set(ctx, key, value, time.Hour*2)
+		redis.RDB.Set(ctx, key, value, redis2.KeepTTL)
 	}
 
 	// 获取全部装备 LOLM
@@ -485,7 +491,7 @@ func heroesSuits2Redis(ctx *context.Context) error {
 		key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), equip.EquipId) // todo
 		value, _ := json.Marshal(equip)
 		mmequip[key] = equip
-		redis.RDB.Set(ctx, key, value, time.Hour*2)
+		redis.RDB.Set(ctx, key, value, redis2.KeepTTL)
 	}
 
 	sd := dao.NewHeroesSuitDAO()
@@ -545,20 +551,22 @@ func heroesSuits2Redis(ctx *context.Context) error {
 								ids := strings.Split(data.Itemids, ",")
 								shoe2 := make([]*dto.SuitData, 0)
 								for _, id := range ids {
-									key1 := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
-									key2 := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
-									if edata, ok := mequip[key1]; ok {
+									if data.Platform == common.PlatformForLOL {
 										// 端游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+										if _, ok := mequip[key]; !ok {
+											continue
+										}
 										shoe2 = append(shoe2, &dto.SuitData{
 											ID:        cast.ToInt(id),
-											Name:      edata.Name,
-											Icon:      edata.IconPath,
-											Maps:      edata.Maps,
-											Plaintext: edata.Plaintext,
-											Desc:      edata.Description,
-											Price:     cast.ToInt(edata.Total),
-											Sell:      cast.ToInt(edata.Sell),
-											Version:   edata.Version,
+											Name:      mequip[key].Name,
+											Icon:      mequip[key].IconPath,
+											Maps:      mequip[key].Maps,
+											Plaintext: mequip[key].Plaintext,
+											Desc:      mequip[key].Description,
+											Price:     cast.ToInt(mequip[key].Total),
+											Sell:      cast.ToInt(mequip[key].Sell),
+											Version:   mequip[key].Version,
 
 											Igamecnt: data.Igamecnt,
 											Wincnt:   data.Wincnt,
@@ -566,47 +574,58 @@ func heroesSuits2Redis(ctx *context.Context) error {
 											Allcnt:   data.Allcnt,
 											Showrate: data.Showrate,
 										})
-									} else if edata2, ok2 := mmequip[key2]; ok2 {
+									} else if data.Platform == common.PlatformForLOLM {
 										// 手游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+										if _, ok := mmequip[key]; !ok {
+											continue
+										}
 										shoe2 = append(shoe2, &dto.SuitData{
-											ID:          cast.ToInt(id),
-											Name:        edata2.Name,
-											Icon:        edata2.IconPath,
-											Desc:        edata2.Description,
-											Price:       cast.ToInt(edata2.Price),
-											Version:     edata2.Version,
-											Igamecnt:    data.Igamecnt,
-											Wincnt:      data.Wincnt,
-											Winrate:     data.Winrate,
-											Allcnt:      data.Allcnt,
-											Showrate:    data.Showrate,
-											Title:       data.Title,
-											Author:      data.Author,
-											AuthorIcon:  data.AuthorIcon,
-											RecommendID: data.RecommendId,
+											ID:           cast.ToInt(id),
+											Name:         mmequip[key].Name,
+											Icon:         mmequip[key].IconPath,
+											Desc:         mmequip[key].Description,
+											Price:        cast.ToInt(mmequip[key].Price),
+											Version:      mmequip[key].Version,
+											Igamecnt:     data.Igamecnt,
+											Wincnt:       data.Wincnt,
+											Winrate:      data.Winrate,
+											Allcnt:       data.Allcnt,
+											Showrate:     data.Showrate,
+											Title:        data.Title,
+											Author:       data.Author,
+											AuthorIcon:   data.AuthorIcon,
+											RecommendID:  data.RecommendId,
+											ThinkingInfo: data.Desc,
 										})
 									} else {
 										continue
 									}
 								}
-								shoe = append(shoe, shoe2)
+
+								if len(shoe2) > 0 {
+									shoe = append(shoe, shoe2)
+								}
 							case mhs.TypeOther():
 								ids := strings.Split(data.Itemids, ",")
 								other2 := make([]*dto.SuitData, 0)
 								for _, id := range ids {
-									key1 := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
-									key2 := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
-									if edata, ok := mequip[key1]; ok {
+									if data.Platform == common.PlatformForLOL {
+										// 端游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+										if _, ok := mequip[key]; !ok {
+											continue
+										}
 										other2 = append(other2, &dto.SuitData{
 											ID:        cast.ToInt(id),
-											Name:      edata.Name,
-											Icon:      edata.IconPath,
-											Maps:      edata.Maps,
-											Plaintext: edata.Plaintext,
-											Desc:      edata.Description,
-											Price:     cast.ToInt(edata.Total),
-											Sell:      cast.ToInt(edata.Sell),
-											Version:   edata.Version,
+											Name:      mequip[key].Name,
+											Icon:      mequip[key].IconPath,
+											Maps:      mequip[key].Maps,
+											Plaintext: mequip[key].Plaintext,
+											Desc:      mequip[key].Description,
+											Price:     cast.ToInt(mequip[key].Total),
+											Sell:      cast.ToInt(mequip[key].Sell),
+											Version:   mequip[key].Version,
 
 											Igamecnt: data.Igamecnt,
 											Wincnt:   data.Wincnt,
@@ -614,14 +633,19 @@ func heroesSuits2Redis(ctx *context.Context) error {
 											Allcnt:   data.Allcnt,
 											Showrate: data.Showrate,
 										})
-									} else if edata2, ok2 := mmequip[key2]; ok2 {
+									} else if data.Platform == common.PlatformForLOLM {
+										// 手游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+										if _, ok := mmequip[key]; !ok {
+											continue
+										}
 										other2 = append(other2, &dto.SuitData{
 											ID:      cast.ToInt(id),
-											Name:    edata2.Name,
-											Icon:    edata2.IconPath,
-											Desc:    edata2.Description,
-											Price:   cast.ToInt(edata2.Price),
-											Version: edata2.Version,
+											Name:    mmequip[key].Name,
+											Icon:    mmequip[key].IconPath,
+											Desc:    mmequip[key].Description,
+											Price:   cast.ToInt(mmequip[key].Price),
+											Version: mmequip[key].Version,
 
 											Igamecnt: data.Igamecnt,
 											Wincnt:   data.Wincnt,
@@ -629,35 +653,41 @@ func heroesSuits2Redis(ctx *context.Context) error {
 											Allcnt:   data.Allcnt,
 											Showrate: data.Showrate,
 
-											Title:       data.Title,
-											Author:      data.Author,
-											AuthorIcon:  data.AuthorIcon,
-											RecommendID: data.RecommendId,
+											Title:        data.Title,
+											Author:       data.Author,
+											AuthorIcon:   data.AuthorIcon,
+											RecommendID:  data.RecommendId,
+											ThinkingInfo: data.Desc,
 										})
 									} else {
 										continue
 									}
 								}
-								other = append(other, other2)
+
+								if len(other2) > 0 {
+									other = append(other, other2)
+								}
 
 							case mhs.TypeOut():
 								ids := strings.Split(data.Itemids, ",")
 								out2 := make([]*dto.SuitData, 0)
 								for _, id := range ids {
-									key1 := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
-									if edata, ok := mequip[key1]; !ok {
-										continue
-									} else {
+									if data.Platform == common.PlatformForLOL {
+										// 端游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+										if _, ok := mequip[key]; !ok {
+											continue
+										}
 										out2 = append(out2, &dto.SuitData{
 											ID:        cast.ToInt(id),
-											Name:      edata.Name,
-											Icon:      edata.IconPath,
-											Maps:      edata.Maps,
-											Plaintext: edata.Plaintext,
-											Desc:      edata.Description,
-											Price:     cast.ToInt(edata.Total),
-											Sell:      cast.ToInt(edata.Sell),
-											Version:   edata.Version,
+											Name:      mequip[key].Name,
+											Icon:      mequip[key].IconPath,
+											Maps:      mequip[key].Maps,
+											Plaintext: mequip[key].Plaintext,
+											Desc:      mequip[key].Description,
+											Price:     cast.ToInt(mequip[key].Total),
+											Sell:      cast.ToInt(mequip[key].Sell),
+											Version:   mequip[key].Version,
 
 											Igamecnt: data.Igamecnt,
 											Wincnt:   data.Wincnt,
@@ -665,26 +695,62 @@ func heroesSuits2Redis(ctx *context.Context) error {
 											Allcnt:   data.Allcnt,
 											Showrate: data.Showrate,
 										})
+									} else if data.Platform == common.PlatformForLOLM {
+										// 手游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+										if _, ok := mmequip[key]; !ok {
+											continue
+										}
+
+										out2 = append(out2, &dto.SuitData{
+											ID:      cast.ToInt(id),
+											Name:    mmequip[key].Name,
+											Icon:    mmequip[key].IconPath,
+											Desc:    mmequip[key].Description,
+											Price:   cast.ToInt(mmequip[key].Price),
+											Version: mmequip[key].Version,
+
+											Igamecnt: data.Igamecnt,
+											Wincnt:   data.Wincnt,
+											Winrate:  data.Winrate,
+											Allcnt:   data.Allcnt,
+											Showrate: data.Showrate,
+
+											Title:        data.Title,
+											Author:       data.Author,
+											AuthorIcon:   data.AuthorIcon,
+											RecommendID:  data.RecommendId,
+											ThinkingInfo: data.Desc,
+										})
+									} else {
+										continue
 									}
 								}
-								out = append(out, out2)
+
+								if len(out2) > 0 {
+									out = append(out, out2)
+								}
+
 							case mhs.TypeCore():
 								ids := strings.Split(data.Itemids, ",")
 								core2 := make([]*dto.SuitData, 0)
 								for _, id := range ids {
-									key1 := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
-									key2 := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
-									if edata, ok := mequip[key1]; ok {
+									if data.Platform == common.PlatformForLOL {
+										// 端游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+										if _, ok := mequip[key]; !ok {
+											continue
+										}
 										core2 = append(core2, &dto.SuitData{
 											ID:        cast.ToInt(id),
-											Name:      edata.Name,
-											Icon:      edata.IconPath,
-											Maps:      edata.Maps,
-											Plaintext: edata.Plaintext,
-											Desc:      edata.Description,
-											Price:     cast.ToInt(edata.Total),
-											Sell:      cast.ToInt(edata.Sell),
-											Version:   edata.Version,
+											Name:      mequip[key].Name,
+											Icon:      mequip[key].IconPath,
+											Maps:      mequip[key].Maps,
+											Plaintext: mequip[key].Plaintext,
+											Desc:      mequip[key].Description,
+											Price:     cast.ToInt(mequip[key].Total),
+											Sell:      cast.ToInt(mequip[key].Sell),
+											Version:   mequip[key].Version,
 
 											Igamecnt: data.Igamecnt,
 											Wincnt:   data.Wincnt,
@@ -692,14 +758,19 @@ func heroesSuits2Redis(ctx *context.Context) error {
 											Allcnt:   data.Allcnt,
 											Showrate: data.Showrate,
 										})
-									} else if edata2, ok2 := mmequip[key2]; ok2 {
+									} else if data.Platform == common.PlatformForLOLM {
+										// 手游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+										if _, ok := mmequip[key]; !ok {
+											continue
+										}
 										core2 = append(core2, &dto.SuitData{
 											ID:      cast.ToInt(id),
-											Name:    edata2.Name,
-											Icon:    edata2.IconPath,
-											Desc:    edata2.Description,
-											Price:   cast.ToInt(edata2.Price),
-											Version: edata2.Version,
+											Name:    mmequip[key].Name,
+											Icon:    mmequip[key].IconPath,
+											Desc:    mmequip[key].Description,
+											Price:   cast.ToInt(mmequip[key].Price),
+											Version: mmequip[key].Version,
 
 											Igamecnt: data.Igamecnt,
 											Wincnt:   data.Wincnt,
@@ -707,16 +778,21 @@ func heroesSuits2Redis(ctx *context.Context) error {
 											Allcnt:   data.Allcnt,
 											Showrate: data.Showrate,
 
-											Title:       data.Title,
-											Author:      data.Author,
-											AuthorIcon:  data.AuthorIcon,
-											RecommendID: data.RecommendId,
+											Title:        data.Title,
+											Author:       data.Author,
+											AuthorIcon:   data.AuthorIcon,
+											RecommendID:  data.RecommendId,
+											ThinkingInfo: data.Desc,
 										})
 									} else {
 										continue
 									}
 								}
-								core = append(core, core2)
+
+								if len(core2) > 0 {
+									core = append(core, core2)
+								}
+
 							}
 						}
 
@@ -746,13 +822,60 @@ func heroesSuits2Redis(ctx *context.Context) error {
 	return nil
 }
 
-func GetHeroSuit(ctx *context.Context, heroID string) (map[string]dto.RecommendSuitEquip, error) {
+func GetHeroSuit(ctx *context.Context, heroID string) (dto.HeroSuit, error) {
 	d := redis.RDB.HGet(ctx, redis.KeyCacheHeroEquip, heroID)
+	hs := dto.HeroSuit{
+		HeroID: heroID,
+		ExtInfo: dto.HeroSuitExtInfo{
+			RecommendReason: make(map[string]string),
+			AuthorInfo: make(map[string]struct {
+				Name string `json:"name"`
+				Icon string `json:"icon"`
+			}),
+		},
+	}
+
+	hid := cast.ToInt(heroID)
+	if hid < common.MinHeroIDForLOLM {
+		hs.Platform = common.PlatformForLOL
+	} else {
+		hs.Platform = common.PlatformForLOLM
+	}
 
 	var rs map[string]dto.RecommendSuitEquip
 	err := json.Unmarshal([]byte(d.Val()), &rs)
+	hs.Equips = rs
 
-	return rs, err
+	for title, data := range rs {
+		var mTypeEquips map[string][][]*dto.SuitData
+		marshal, _ := json.Marshal(data)
+		_ = json.Unmarshal(marshal, &mTypeEquips)
+
+		for _, equips := range mTypeEquips {
+			if len(equips) == 0 {
+				continue
+			}
+
+			for _, suitData := range equips {
+				for _, equip := range suitData {
+					hs.ExtInfo.RecommendReason[title] = equip.ThinkingInfo
+					hs.ExtInfo.AuthorInfo[title] = struct {
+						Name string `json:"name"`
+						Icon string `json:"icon"`
+					}{
+						Name: equip.Author,
+						Icon: equip.AuthorIcon,
+					}
+					break // 只执行一次
+				}
+				break // 只执行一次
+			}
+
+			break // 只执行一次
+		}
+	}
+
+	return hs, err
 }
 
 func HeroesPosition(ctx *context.Context, platform int) (*dto.HeroRankList, error) {

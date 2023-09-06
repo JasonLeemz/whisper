@@ -61,7 +61,7 @@ FROM
 WHERE
 	suit.heroId = %s
 ORDER BY
-	showrate desc
+	winrate desc
 `
 
 	rightJoin := "RIGHT JOIN heroes_position pos ON suit.pos = pos.pos AND suit.heroId = pos.heroId"

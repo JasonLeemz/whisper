@@ -42,8 +42,11 @@ func main() {
 		page.GET("/equip/types", context.Handle(controller.QueryEquipTypes))
 		page.GET("/hotkey", context.Handle(controller.GetHotKey))
 
+		// 查询当前装备的合成路线和可合成路线
 		page.POST("/equip/roadmap", context.Handle(controller.GetRoadmap))
+		// 通过heroID来查询适配的装备，这个接口是将format数据写入db，接口返回的是第三方数据源的数据
 		page.POST("/equip/suit", context.Handle(controller.SuitEquip))
+		// 页面上通过heroID来查询适配的装备
 		page.POST("/hero/suit", context.Handle(controller.GetHeroSuit))
 
 	}

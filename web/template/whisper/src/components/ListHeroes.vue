@@ -13,25 +13,41 @@ export default {
       sideDrawer: {
         show: false,
         title: '推荐出装',
-        activeKey: ref(['out', 'shoe', 'core','other']),
-        panel:{
+        activeKey: ref(),
+        panel: {
           foldAll: false,
-          foldBtn :{
+          foldBtn: {
             top: ref(50)
+          },
+          panelKeys:[],
+          mapEquipType:{
+            'out': '出门装',
+            'shoe': '鞋子',
+            'core': '核心套件',
+            'other': '可选装备',
           },
         },
         data: {},
-        mapPos:{
-          'top':'上单',
-          'mid':'中路',
-          'bottom':'AD',
-          'support':'辅助',
-          'jungle':'打野',
+        mapPos: {
+          'all': '', // 手游目前没有分路数据
+          'top': '上单',
+          'mid': '中路',
+          'bottom': 'AD',
+          'support': '辅助',
+          'jungle': '打野',
         }
       },
     }
   },
-  watch: {},
+  watch: {
+    'sideDrawer.data'(data){
+      for (let postypes in data.equips) {
+        for (let type in data.equips[postypes]) {
+          this.sideDrawer.panel.panelKeys.push(type+'-'+postypes)
+        }
+      }
+    }
+  },
   methods: {
     showDrawer(platform, version, id) {
       if (id === "") {
@@ -48,16 +64,19 @@ export default {
         console.error('Error fetching server data:', error);
       });
     },
-    panelSwitcher(){
-      if (this.sideDrawer.panel.foldAll){
+    panelSwitcher() {
+      if (this.sideDrawer.panel.foldAll) {
         this.sideDrawer.panel.foldAll = false
-        this.sideDrawer.activeKey = ref(['out', 'shoe', 'core','other'])
-      }else{
+        this.sideDrawer.activeKey = ref(this.sideDrawer.panel.panelKeys)
+      } else {
         this.sideDrawer.panel.foldAll = true
         this.sideDrawer.activeKey = ref([])
       }
     },
-  }
+  },
+  mounted(){
+    this.panelSwitcher()
+  },
 }
 </script>
 
@@ -102,131 +121,67 @@ export default {
       placement="right"
   >
 
-    <a-button size="small" @click="panelSwitcher" class="foldall-btn">{{sideDrawer.panel.foldAll?'展开所有':'收起全部'}}</a-button>
+    <a-button type="primary" size="small" @click="panelSwitcher" class="foldall-btn">
+      {{ sideDrawer.panel.foldAll ? '展开所有' : '收起全部' }}
+    </a-button>
 
-    <template v-for="(equips,pos) in sideDrawer.data" :key="pos">
-      <h4>{{ sideDrawer.mapPos[pos] }}</h4>
+    <template v-for="(equips,pos) in sideDrawer.data.equips" :key="pos">
+      <!-- 端游-->
+      <h4 v-if="sideDrawer.data.platform===0">{{ sideDrawer.mapPos[pos]?sideDrawer.mapPos[pos]:pos }}</h4>
+
+      <!-- 手游-->
+      <a-popover placement="topLeft">
+        <template #content>
+          <h4 class="hero-suit popover-title">{{pos}}</h4>
+          <span class="hero-suit popover-content" v-html="sideDrawer.data.ext_info.recommend_reason[pos]"></span>
+        </template>
+        <h4 v-if="sideDrawer.data.platform===1" class="pos-title">
+          {{ pos }}
+          <h6>
+            ({{ sideDrawer.data.ext_info.author_info[pos].name }})
+          </h6>
+        </h4>
+      </a-popover>
+
       <a-collapse
           v-model:activeKey="sideDrawer.activeKey"
       >
         <template #expandIcon="{ isActive }">
           <CaretRightOutlined :rotate="isActive ? 90 : 0"/>
         </template>
-        <a-collapse-panel key="out" header="出门装" class="hero-drawer-panel">
-          <sub>
+
+        <a-collapse-panel v-for="(row,rowidx) in equips" :key="rowidx+'-'+pos"
+                          :header="sideDrawer.panel.mapEquipType[rowidx]"
+                          v-show="row.length > 0"
+                          class="hero-drawer-panel">
+          <sub v-if="sideDrawer.data.platform===0">
             <em>登场率</em>
             <em>胜率</em>
           </sub>
-          <div v-for="(row,rowidx) in equips.out" :key="rowidx" class="equip-row">
-            <span v-for="(equip,equipidx) in row" :key="equipidx" class="equip-item">
-              <a-popover placement="bottom" arrow-point-at-center>
-                <template #content>
-                  <div class="roadmap-item">
-                          <span class="roadmap-item-title">
-                            {{ equip.name }}
-                          </span>
-                    <a-tag>
-                          <span class="roadmap-item-price">
-                            价格:{{ equip.price }}
-                          </span>
-                    </a-tag>
-                  </div>
-                  <span v-html="equip.desc"></span>
-                </template>
-                <img :src="equip.icon" :alt="equip.name" class="equip-icon">
-              </a-popover>
-            </span>
-            <span class="data-statistics">
-              <em>{{row[0].showrate/100}}%</em>
-              <em>{{row[0].winrate/100}}%</em>
-            </span>
-          </div>
-        </a-collapse-panel>
-
-        <a-collapse-panel key="core" header="核心三件套" class="hero-drawer-panel">
-          <sub>
-            <em>登场率</em>
-            <em>胜率</em>
-          </sub>
-          <div v-for="(row,rowidx) in equips.core" :key="rowidx" class="equip-row">
-            <span v-for="(equip,equipidx) in row" :key="equipidx" class="equip-item">
-              <a-popover placement="bottom" arrow-point-at-center>
-                <template #content>
-                  <div class="roadmap-item">
-                          <span class="roadmap-item-title">
-                            {{ equip.name }}
-                          </span>
-                    <a-tag>
-                          <span class="roadmap-item-price">
-                            价格:{{ equip.price }}
-                          </span>
-                    </a-tag>
-                  </div>
-                  <span v-html="equip.desc"></span>
-                </template>
-                <img :src="equip.icon" :alt="equip.name" class="equip-icon">
-              </a-popover>
-            </span>
-            <span class="data-statistics">
-              <em>{{row[0].showrate/100}}%</em>
-              <em>{{row[0].winrate/100}}%</em>
-            </span>
-          </div>
-        </a-collapse-panel>
-
-        <a-collapse-panel key="shoe" header="鞋子" class="hero-drawer-panel">
-          <div class="equip-row">
-            <span v-for="(equip,rowidx) in equips.shoe" :key="rowidx" class="equip-item">
-              <a-popover placement="bottom" arrow-point-at-center>
-                <template #content>
-                  <div class="roadmap-item">
-                          <span class="roadmap-item-title">
-                            {{ equip.name }}
-                          </span>
-                    <a-tag>
-                          <span class="roadmap-item-price">
-                            胜率:{{equip.winrate/100}}%
-                          </span>
-                    </a-tag>
-                    <a-tag>
-                          <span class="roadmap-item-price">
-                            价格:{{ equip.price }}
-                          </span>
-                    </a-tag>
-                  </div>
-                  <span v-html="equip.desc"></span>
-                </template>
-                <img :src="equip.icon" :alt="equip.name" class="equip-icon">
-              </a-popover>
-            </span>
-          </div>
-        </a-collapse-panel>
-
-        <a-collapse-panel key="other" header="其他装备" class="hero-drawer-panel">
-          <div class="equip-row">
-            <span v-for="(equip,rowidx) in equips.other" :key="rowidx" class="equip-item">
-              <a-popover placement="bottom" arrow-point-at-center>
-                <template #content>
-                  <div class="roadmap-item">
-                          <span class="roadmap-item-title">
-                            {{ equip.name }}
-                          </span>
-                    <a-tag>
-                          <span class="roadmap-item-price">
-                            胜率:{{equip.winrate/100}}%
-                          </span>
-                    </a-tag>
-                    <a-tag>
-                          <span class="roadmap-item-price">
-                            价格:{{ equip.price }}
-                          </span>
-                    </a-tag>
-                  </div>
-                  <span v-html="equip.desc"></span>
-                </template>
-                <img :src="equip.icon" :alt="equip.name" class="equip-icon">
-
-              </a-popover>
+          <div v-for="(equips,equipsidx) in row" :key="equipsidx" class="equip-row">
+            <div :class="sideDrawer.data.platform===0?'equip-item-wrap':'equip-item-wrap equip-item-wrap-lolm'">
+              <span  v-for="(equip,equipidx) in equips" :key="equipidx"  class="equip-item">
+                <a-popover placement="bottom" arrow-point-at-center>
+                  <template #content>
+                    <div class="roadmap-item">
+                            <span class="roadmap-item-title">
+                              {{ equip.name }}
+                            </span>
+                      <a-tag>
+                            <span class="roadmap-item-price">
+                              价格:{{ equip.price }}
+                            </span>
+                      </a-tag>
+                    </div>
+                    <span v-html="equip.desc"></span>
+                  </template>
+                  <img :src="equip.icon" :alt="equip.name" class="equip-icon">
+                </a-popover>
+              </span>
+            </div>
+            <span  v-if="sideDrawer.data.platform===0" class="data-statistics">
+              <em>{{ equips[0].showrate / 100 }}%</em>
+              <em>{{ equips[0].winrate / 100 }}%</em>
             </span>
           </div>
         </a-collapse-panel>

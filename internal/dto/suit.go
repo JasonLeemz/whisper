@@ -1,8 +1,18 @@
 package dto
 
 type HeroSuit struct {
-	HeroID string                        `json:"hero_id"`
-	Equips map[string]RecommendSuitEquip `json:"equips"` // map["top|bottom|support..."]RecommendSuitEquip
+	HeroID   string                        `json:"hero_id"`
+	Platform int                           `json:"platform"`
+	Equips   map[string]RecommendSuitEquip `json:"equips"` // map["top|bottom|support..."]RecommendSuitEquip
+	ExtInfo  HeroSuitExtInfo               `json:"ext_info"`
+}
+
+type HeroSuitExtInfo struct {
+	RecommendReason map[string]string `json:"recommend_reason"`
+	AuthorInfo      map[string]struct {
+		Name string `json:"name"`
+		Icon string `json:"icon"`
+	} `json:"author_info"`
 }
 
 type RecommendSuitEquip struct {
@@ -30,8 +40,9 @@ type SuitData struct {
 	Allcnt   int32 `json:"allcnt,omitempty"`
 	Showrate int32 `json:"showrate,omitempty"`
 
-	Title       string `json:"title"`
-	Author      string `json:"author"`
-	AuthorIcon  string `json:"author_icon"`
-	RecommendID string `json:"recommend_id"`
+	Title        string `json:"title"`
+	Author       string `json:"author"`
+	AuthorIcon   string `json:"author_icon"`
+	RecommendID  string `json:"recommend_id"`
+	ThinkingInfo string `json:"thinking_info"`
 }

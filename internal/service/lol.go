@@ -342,7 +342,6 @@ func HeroSuit(ctx *context.Context, heroID string) (*dto.HeroTech, map[string]*d
 
 	met := make(map[string]*dto.EquipTech)
 	syncMap.Range(func(key, value interface{}) bool {
-		fmt.Println(key, value)
 		met[key.(string)] = value.(*dto.EquipTech)
 		return true
 	})
