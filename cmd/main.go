@@ -74,6 +74,9 @@ func main() {
 		// 页面查询英雄合适的装备是从redis中获取的,要提前执行这个才能拿到数据
 		// 这个接口依赖/equip/suit/batch，需要先执行/equip/suit/batch
 		inner.POST("/equip/suit/cache", context.Handle(controller.SuitData2Redis))
+
+		// 装备、符文、技能适配英雄列表，汇总db然后写入redis
+		inner.POST("/equip/hero/cache", context.Handle(controller.SuitHeroData2Redis))
 	}
 	run.Init()
 

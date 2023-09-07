@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	errors2 "errors"
 	"fmt"
+	redis2 "github.com/redis/go-redis/v9"
 	"github.com/spf13/cast"
 	"go.mongodb.org/mongo-driver/bson"
 	"math"
@@ -20,6 +21,7 @@ import (
 	"whisper/pkg/errors"
 	"whisper/pkg/log"
 	"whisper/pkg/pinyin"
+	"whisper/pkg/redis"
 	"whisper/pkg/utils"
 )
 
@@ -575,6 +577,51 @@ func GetRoadmap(ctx *context.Context, version string, platform int, equipID stri
 		}
 
 		resp.GapPriceFrom = resp.Current.Price - fromPrice
+	}
+
+	// 获取英雄适配数据
+	resp.SuitHeroes = make([]dto.SearchResultList, 0)
+
+	min := "-inf"
+	max := "+inf"
+	// ZREVRANGE my_rankings 0 2 WITHSCORES
+	key := fmt.Sprintf(redis.KeyCacheEquipHeroSuit, platform, equipID)
+	score := redis.RDB.ZRevRangeByScoreWithScores(ctx, key, &redis2.ZRangeBy{
+		Min: min,
+		Max: max,
+		//Offset: 0,
+		//Count:  100,
+	})
+
+	var heroesID []string
+	for _, k := range score.Val() {
+		heroesID = append(heroesID, k.Member.(string))
+	}
+
+	had := dao.NewHeroAttributeDAO()
+	heroes, err := had.Find([]string{
+		"heroId", "name", "title", "avatar", "platform", "version",
+	}, map[string]interface{}{
+		"heroId": heroesID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, hero := range heroes {
+		name := ""
+		if platform == common.PlatformForLOL {
+			name = hero.Name + " " + hero.Title
+		} else {
+			name = hero.Title + " " + hero.Name
+		}
+		resp.SuitHeroes = append(resp.SuitHeroes, dto.SearchResultList{
+			Id:       hero.HeroId,
+			Name:     name,
+			Icon:     hero.Avatar,
+			Platform: hero.Platform,
+			Version:  hero.Version,
+		})
 	}
 
 	return &resp, nil

@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"whisper/pkg/utils"
 )
@@ -18,4 +19,11 @@ func TestStr2Int(t *testing.T) {
 	i := utils.Str2Int(text)
 	fmt.Println(i)
 
+}
+
+func TestSplit(t *testing.T) {
+	str := ""
+	split := strings.Split(str, ",")
+
+	fmt.Println(len(split))
 }

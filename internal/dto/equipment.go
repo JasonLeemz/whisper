@@ -94,10 +94,11 @@ type SubCate struct {
 // --------------------------------------------------------
 
 type RespRoadmap struct {
-	Current      Roadmap   `json:"current"`
-	From         []Roadmap `json:"from"`
-	Into         []Roadmap `json:"into"`
-	GapPriceFrom int       `json:"gapPriceFrom"`
+	Current      Roadmap            `json:"current"`
+	From         []Roadmap          `json:"from"`
+	Into         []Roadmap          `json:"into"`
+	GapPriceFrom int                `json:"gapPriceFrom"`
+	SuitHeroes   []SearchResultList `json:"suit_heroes"`
 }
 
 type Roadmap struct {

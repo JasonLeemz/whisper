@@ -208,6 +208,11 @@ func SuitData2Redis(ctx *context.Context) {
 	ctx.Reply(nil, errors.New(err))
 }
 
+func SuitHeroData2Redis(ctx *context.Context) {
+	err := logic.SuitHeroData2Redis(ctx)
+	ctx.Reply(nil, errors.New(err))
+}
+
 type ReqGetHeroSuit struct {
 	Platform int    `form:"platform" json:"platform" binding:"-"`
 	HeroId   string `json:"hero_id"`

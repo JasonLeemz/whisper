@@ -439,6 +439,7 @@ func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.Her
 
 	return nil
 }
+
 func SuitData2Redis(ctx *context.Context) error {
 	err := heroesSuits2Redis(ctx)
 	if err != nil {
@@ -447,6 +448,7 @@ func SuitData2Redis(ctx *context.Context) error {
 
 	return nil
 }
+
 func heroesSuits2Redis(ctx *context.Context) error {
 	hd := dao.NewHeroAttributeDAO()
 	heroes, err := hd.Find([]string{
@@ -927,4 +929,72 @@ func inArray(id string, ids []string) bool {
 		}
 	}
 	return false
+}
+
+func SuitHeroData2Redis(ctx *context.Context) error {
+	err := suitHero2Redis(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func suitHero2Redis(ctx *context.Context) error {
+	hsd := dao.NewHeroesSuitDAO()
+	list, err := hsd.Find([]string{
+		"heroId", "itemids", "skillids", "runeids", "winrate", "showrate", "platform", "author", "version", "fileTime",
+	}, nil)
+	if err != nil {
+		return err
+	}
+
+	var (
+		ch = make(chan struct{}, 5000)
+		wg = sync.WaitGroup{}
+	)
+
+	for _, hero := range list {
+		wg.Add(1)
+		ch <- struct{}{}
+
+		go func(hero *model.HeroesSuit) {
+			defer func() {
+				wg.Done()
+				<-ch
+			}()
+
+			// equip
+			if hero.Itemids != "" {
+				ids := strings.Split(hero.Itemids, ",")
+				for _, id := range ids {
+					key := fmt.Sprintf(redis.KeyCacheEquipHeroSuit, hero.Platform, id)
+					redis.RDB.ZIncrBy(ctx, key, 1, hero.HeroId)
+				}
+			}
+
+			// rune
+			if hero.Runeids != "" {
+				ids := strings.Split(hero.Runeids, ",")
+				for _, id := range ids {
+					key := fmt.Sprintf(redis.KeyCacheRuneHeroSuit, hero.Platform, id)
+					redis.RDB.ZIncrBy(ctx, key, 1, hero.HeroId)
+				}
+			}
+
+			// skill
+			if hero.Skillids != "" {
+				ids := strings.Split(hero.Skillids, ",")
+				for _, id := range ids {
+					key := fmt.Sprintf(redis.KeyCacheSkillHeroSuit, hero.Platform, id)
+					redis.RDB.ZIncrBy(ctx, key, 1, hero.HeroId)
+				}
+			}
+		}(hero)
+
+	}
+
+	wg.Wait()
+	log.Logger.Info(ctx, "suitHero2Redis ok")
+	return nil
 }
