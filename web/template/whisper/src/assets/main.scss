@@ -13,7 +13,7 @@
   margin: 0 auto;
   padding: 0 15px;
 
-  input[name='search-input']{
+  input[name='search-input'] {
     &:-webkit-autofill {
       box-shadow: 0 0 0 1000px #fff inset !important;
     }
@@ -324,6 +324,17 @@
       border-radius: 50%;
       margin: 2px 5px;
     }
+  }
+
+  .equip-suit-hero {
+    margin-top: 20px;
+  }
+
+  .equip-hero-avatar {
+    width: 35px;
+    height: 35px;
+    padding: 1px;
+    border-radius: 5px;
   }
 
   .pos-title {

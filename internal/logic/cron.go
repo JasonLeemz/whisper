@@ -140,6 +140,12 @@ func Cron(ctx *context.Context) {
 		if err != nil {
 			log.Logger.Error(ctx, err)
 		}
+
+		log.Logger.Info(ctx, "start SuitHeroData2Redis...")
+		err = SuitHeroData2Redis(ctx)
+		if err != nil {
+			log.Logger.Error(ctx, err)
+		}
 	}()
 
 	go func() {

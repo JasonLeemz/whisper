@@ -942,7 +942,7 @@ func SuitHeroData2Redis(ctx *context.Context) error {
 
 func suitHero2Redis(ctx *context.Context) error {
 	hsd := dao.NewHeroesSuitDAO()
-	list, err := hsd.Find([]string{
+	list, err := hsd.FindHighRateEquip([]string{
 		"heroId", "itemids", "skillids", "runeids", "winrate", "showrate", "platform", "author", "version", "fileTime",
 	}, nil)
 	if err != nil {

@@ -91,6 +91,24 @@ func (dao *HeroesSuitDAO) Find(query []string, cond map[string]interface{}) ([]*
 	return result, tx.Error
 }
 
+func (dao *HeroesSuitDAO) FindHighRateEquip(query []string, cond map[string]interface{}) ([]*model.HeroesSuit, error) {
+	tx := dao.db.Model(&model.HeroesSuit{})
+	if query != nil {
+		query = append(query, "id")
+		tx = tx.Select(query)
+	}
+	var result []*model.HeroesSuit
+	tx = tx.
+		Where(cond).
+		Where("CAST(winrate AS SIGNED) >= ? AND CAST(showrate AS SIGNED) >= ? AND platform = ?", 4000, 4000, 0).
+		Or("winrate = ? AND showrate= ? AND platform = ?", "", "", 1).
+		Find(&result)
+	if tx.RowsAffected > 0 && result[0].Id == 0 {
+		return nil, nil
+	}
+	return result, tx.Error
+}
+
 func NewHeroesSuitDAO() *HeroesSuitDAO {
 	return &HeroesSuitDAO{
 		db: mysql.DB,
@@ -99,6 +117,7 @@ func NewHeroesSuitDAO() *HeroesSuitDAO {
 
 type HeroesSuit interface {
 	Find(query []string, cond map[string]interface{}) ([]*model.HeroesSuit, error)
+	FindHighRateEquip(query []string, cond map[string]interface{}) ([]*model.HeroesSuit, error)
 	Add([]*model.HeroesSuit) (int64, error)
 	Delete(cond map[string]interface{}) (int64, error)
 	DeleteAndInsert(delCond map[string]interface{}, addData []*model.HeroesSuit) error

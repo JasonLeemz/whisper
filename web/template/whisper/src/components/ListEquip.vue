@@ -17,6 +17,7 @@ export default {
           "from": [],
           "into": [],
           "gapPriceFrom": 0,
+          "suit_heroes": [],
         },
       },
     }
@@ -110,7 +111,6 @@ export default {
         </template>
         <img class="equip-roadmap equip-current" :src="sideDrawer.data['current'].icon" alt="">
       </a-popover>
-
     </a-divider>
     <div class="equip-roadmap equip-from">
       <template v-for="(equip ,index) in sideDrawer.data['from']" :key="index">
@@ -147,5 +147,16 @@ export default {
         </td>
       </tr>
     </table>
+
+    <h4 class="equip-suit-hero">适配英雄</h4>
+    <template v-for="(hero,i) in sideDrawer.data['suit_heroes']" :key="i">
+      <a-tooltip :title="hero.name">
+        <img class="equip-hero-avatar"
+             :src="hero.icon"
+             :alt="hero.name"
+        />
+      </a-tooltip>
+    </template>
+
   </a-drawer>
 </template>
