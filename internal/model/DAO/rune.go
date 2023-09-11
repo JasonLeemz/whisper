@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
+	"sync"
 	"whisper/internal/model"
 	"whisper/pkg/mysql"
 )
@@ -58,10 +59,19 @@ func (dao *LOLRuneDAO) GetLOLRune(version string) ([]*model.LOLRune, error) {
 	}
 	return data, err
 }
+
+var (
+	lolRDao  *LOLRuneDAO
+	lolROnce *sync.Once
+)
+
 func NewLOLRuneDAO() *LOLRuneDAO {
-	return &LOLRuneDAO{
-		db: mysql.DB,
-	}
+	lolROnce.Do(func() {
+		lolRDao = &LOLRuneDAO{
+			db: mysql.DB,
+		}
+	})
+	return lolRDao
 }
 
 type LOLRune interface {
@@ -140,10 +150,18 @@ func (dao *LOLMRuneDAO) Update(data *model.LOLMRune, cond map[string]interface{}
 	return result.RowsAffected, result.Error
 }
 
+var (
+	lolmRDao  *LOLMRuneDAO
+	lolmROnce *sync.Once
+)
+
 func NewLOLMRuneDAO() *LOLMRuneDAO {
-	return &LOLMRuneDAO{
-		db: mysql.DB,
-	}
+	lolmROnce.Do(func() {
+		lolmRDao = &LOLMRuneDAO{
+			db: mysql.DB,
+		}
+	})
+	return lolmRDao
 }
 
 type LOLMRune interface {

@@ -3,6 +3,7 @@ package dao
 import (
 	"fmt"
 	"gorm.io/gorm"
+	"sync"
 	"whisper/internal/model"
 	"whisper/pkg/mysql"
 )
@@ -38,10 +39,18 @@ func (dao *EquipAliasDAO) Truncate() error {
 	return tx.Error
 }
 
+var (
+	lolEADao  *EquipAliasDAO
+	lolEAOnce *sync.Once
+)
+
 func NewEquipAliasDAO() *EquipAliasDAO {
-	return &EquipAliasDAO{
-		db: mysql.DB,
-	}
+	lolEAOnce.Do(func() {
+		lolEADao = &EquipAliasDAO{
+			db: mysql.DB,
+		}
+	})
+	return lolEADao
 }
 
 type EquipAlias interface {

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/olivere/elastic/v7"
+	"sync"
 	"whisper/internal/model"
 	"whisper/pkg/context"
 	"whisper/pkg/es"
@@ -79,8 +80,16 @@ func (dao *ESSkillDAO) Skill2ES(ctx *context.Context, data []*model.ESSkill) err
 	return nil
 }
 
+var (
+	esKDao  *ESSkillDAO
+	esKOnce *sync.Once
+)
+
 func NewESSkillDAO() *ESSkillDAO {
-	return &ESSkillDAO{
-		esClient: es.ESClient,
-	}
+	esKOnce.Do(func() {
+		esKDao = &ESSkillDAO{
+			esClient: es.ESClient,
+		}
+	})
+	return esKDao
 }

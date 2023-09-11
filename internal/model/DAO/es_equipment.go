@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/olivere/elastic/v7"
+	"sync"
 	"whisper/internal/model"
 	"whisper/pkg/context"
 	"whisper/pkg/es"
@@ -79,8 +80,16 @@ func (dao *ESEquipmentDAO) Equipment2ES(ctx *context.Context, data []*model.ESEq
 	return nil
 }
 
+var (
+	esEDao  *ESEquipmentDAO
+	esEOnce *sync.Once
+)
+
 func NewESEquipmentDAO() *ESEquipmentDAO {
-	return &ESEquipmentDAO{
-		esClient: es.ESClient,
-	}
+	esEOnce.Do(func() {
+		esEDao = &ESEquipmentDAO{
+			esClient: es.ESClient,
+		}
+	})
+	return esEDao
 }

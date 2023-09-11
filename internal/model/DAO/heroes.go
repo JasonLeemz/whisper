@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
+	"sync"
 	"whisper/internal/model"
 	"whisper/pkg/mysql"
 )
@@ -109,10 +110,18 @@ GROUP BY
 	return result, err
 }
 
+var (
+	lolHDao  *LOLHeroesDAO
+	lolHOnce *sync.Once
+)
+
 func NewLOLHeroesDAO() *LOLHeroesDAO {
-	return &LOLHeroesDAO{
-		db: mysql.DB,
-	}
+	lolHOnce.Do(func() {
+		lolHDao = &LOLHeroesDAO{
+			db: mysql.DB,
+		}
+	})
+	return lolHDao
 }
 
 // --------------------------------------------------------
@@ -221,8 +230,16 @@ GROUP BY
 	return result, err
 }
 
+var (
+	lolmHDao  *LOLMHeroesDAO
+	lolmHOnce *sync.Once
+)
+
 func NewLOLMHeroesDAO() *LOLMHeroesDAO {
-	return &LOLMHeroesDAO{
-		db: mysql.DB,
-	}
+	lolmHOnce.Do(func() {
+		lolmHDao = &LOLMHeroesDAO{
+			db: mysql.DB,
+		}
+	})
+	return lolmHDao
 }

@@ -2,6 +2,7 @@ package dao
 
 import (
 	"gorm.io/gorm"
+	"sync"
 	"whisper/internal/model"
 	"whisper/pkg/mysql"
 )
@@ -20,10 +21,18 @@ func (dao *RuneTypeDAO) DeleteAll(cond map[string]interface{}) (int64, error) {
 	return tx.RowsAffected, tx.Error
 }
 
+var (
+	rtDao  *RuneTypeDAO
+	rtOnce *sync.Once
+)
+
 func NewRuneTypeDAO() *RuneTypeDAO {
-	return &RuneTypeDAO{
-		db: mysql.DB,
-	}
+	rtOnce.Do(func() {
+		rtDao = &RuneTypeDAO{
+			db: mysql.DB,
+		}
+	})
+	return rtDao
 }
 
 type RuneType interface {

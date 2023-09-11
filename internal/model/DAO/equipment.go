@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"strings"
+	"sync"
 	"whisper/internal/model"
 	"whisper/pkg/config"
 	"whisper/pkg/mysql"
@@ -152,10 +153,18 @@ WHERE
 	return result, err
 }
 
+var (
+	lolEDao  *LOLEquipmentDAO
+	lolEOnce *sync.Once
+)
+
 func NewLOLEquipmentDAO() *LOLEquipmentDAO {
-	return &LOLEquipmentDAO{
-		db: mysql.DB,
-	}
+	lolEOnce.Do(func() {
+		lolEDao = &LOLEquipmentDAO{
+			db: mysql.DB,
+		}
+	})
+	return lolEDao
 }
 
 // --------------------------------------------------------
@@ -320,10 +329,17 @@ WHERE
 	return result, err
 }
 
-func NewLOLMEquipmentDAO() *LOLMEquipmentDAO {
+var (
+	lolmEDao  *LOLMEquipmentDAO
+	lolmEOnce *sync.Once
+)
 
-	d := &LOLMEquipmentDAO{
-		db: mysql.DB,
-	}
-	return d
+func NewLOLMEquipmentDAO() *LOLMEquipmentDAO {
+	lolmEOnce.Do(func() {
+		lolmEDao = &LOLMEquipmentDAO{
+			db: mysql.DB,
+		}
+
+	})
+	return lolmEDao
 }

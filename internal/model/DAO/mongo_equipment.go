@@ -4,6 +4,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"sync"
 	"whisper/internal/model"
 	"whisper/pkg/context"
 	mongo2 "whisper/pkg/mongo"
@@ -58,10 +59,18 @@ func (d *MongoEquipmentDAO) Delete(ctx *context.Context, cond map[string]interfa
 	return err
 }
 
+var (
+	mgDao  *MongoEquipmentDAO
+	mgOnce *sync.Once
+)
+
 func NewMongoEquipmentDAO() *MongoEquipmentDAO {
-	return &MongoEquipmentDAO{
-		client:     mongo2.Client,
-		db:         mongo2.Database,
-		collection: "equipment",
-	}
+	mgOnce.Do(func() {
+		mgDao = &MongoEquipmentDAO{
+			client:     mongo2.Client,
+			db:         mongo2.Database,
+			collection: "equipment",
+		}
+	})
+	return mgDao
 }

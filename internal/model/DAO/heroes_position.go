@@ -2,6 +2,7 @@ package dao
 
 import (
 	"gorm.io/gorm"
+	"sync"
 	"whisper/internal/model"
 	"whisper/pkg/mysql"
 )
@@ -35,10 +36,19 @@ func (dao *HeroesPositionDAO) Delete(cond map[string]interface{}) (int64, error)
 	tx := dao.db.Delete(&model.HeroesPosition{}, cond)
 	return tx.RowsAffected, tx.Error
 }
+
+var (
+	hpDao  *HeroesPositionDAO
+	hpOnce *sync.Once
+)
+
 func NewHeroesPositionDAO() *HeroesPositionDAO {
-	return &HeroesPositionDAO{
-		db: mysql.DB,
-	}
+	hpOnce.Do(func() {
+		hpDao = &HeroesPositionDAO{
+			db: mysql.DB,
+		}
+	})
+	return hpDao
 }
 
 type HeroesPosition interface {

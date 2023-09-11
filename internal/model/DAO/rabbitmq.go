@@ -2,15 +2,24 @@ package dao
 
 import (
 	"github.com/streadway/amqp"
+	"sync"
 	"whisper/pkg/context"
 	"whisper/pkg/log"
 	"whisper/pkg/mq"
 )
 
+var (
+	mqDao  *MQDao
+	mqOnce *sync.Once
+)
+
 func NewMQDao() *MQDao {
-	return &MQDao{
-		Conn: mq.Conn,
-	}
+	mqOnce.Do(func() {
+		mqDao = &MQDao{
+			Conn: mq.Conn,
+		}
+	})
+	return mqDao
 }
 
 type MQDao struct {

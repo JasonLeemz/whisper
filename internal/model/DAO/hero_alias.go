@@ -3,6 +3,7 @@ package dao
 import (
 	"fmt"
 	"gorm.io/gorm"
+	"sync"
 	"whisper/internal/model"
 	"whisper/pkg/mysql"
 )
@@ -38,10 +39,18 @@ func (dao *HeroAliasDAO) Truncate() error {
 	return tx.Error
 }
 
+var (
+	haDao  *HeroAliasDAO
+	haOnce *sync.Once
+)
+
 func NewHeroAliasDAO() *HeroAliasDAO {
-	return &HeroAliasDAO{
-		db: mysql.DB,
-	}
+	haOnce.Do(func() {
+		haDao = &HeroAliasDAO{
+			db: mysql.DB,
+		}
+	})
+	return haDao
 }
 
 type HeroAlias interface {

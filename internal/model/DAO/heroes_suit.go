@@ -3,6 +3,7 @@ package dao
 import (
 	"fmt"
 	"gorm.io/gorm"
+	"sync"
 	"whisper/internal/model"
 	"whisper/pkg/mysql"
 )
@@ -109,10 +110,18 @@ func (dao *HeroesSuitDAO) FindHighRateEquip(query []string, cond map[string]inte
 	return result, tx.Error
 }
 
+var (
+	hsuitDao  *HeroesSuitDAO
+	hsuitOnce *sync.Once
+)
+
 func NewHeroesSuitDAO() *HeroesSuitDAO {
-	return &HeroesSuitDAO{
-		db: mysql.DB,
-	}
+	hsuitOnce.Do(func() {
+		hsuitDao = &HeroesSuitDAO{
+			db: mysql.DB,
+		}
+	})
+	return hsuitDao
 }
 
 type HeroesSuit interface {

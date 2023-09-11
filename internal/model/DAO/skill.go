@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
+	"sync"
 	"whisper/internal/model"
 	"whisper/pkg/mysql"
 )
@@ -61,10 +62,18 @@ func (dao *LOLSkillDAO) Update(data *model.LOLSkill, cond map[string]interface{}
 	return result.RowsAffected, result.Error
 }
 
+var (
+	lolSKDao  *LOLSkillDAO
+	lolSKOnce *sync.Once
+)
+
 func NewLOLSkillDAO() *LOLSkillDAO {
-	return &LOLSkillDAO{
-		db: mysql.DB,
-	}
+	lolSKOnce.Do(func() {
+		lolSKDao = &LOLSkillDAO{
+			db: mysql.DB,
+		}
+	})
+	return lolSKDao
 }
 
 type LOLSkill interface {
@@ -128,10 +137,18 @@ func (dao *LOLMSkillDAO) GetLOLMSkill(version string) ([]*model.LOLMSkill, error
 	return data, err
 }
 
+var (
+	lolmSKDao  *LOLMSkillDAO
+	lolmSKOnce *sync.Once
+)
+
 func NewLOLMSkillDAO() *LOLMSkillDAO {
-	return &LOLMSkillDAO{
-		db: mysql.DB,
-	}
+	lolmSKOnce.Do(func() {
+		lolmSKDao = &LOLMSkillDAO{
+			db: mysql.DB,
+		}
+	})
+	return lolmSKDao
 }
 
 type LOLMSkill interface {

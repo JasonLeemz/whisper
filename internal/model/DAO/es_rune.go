@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/olivere/elastic/v7"
+	"sync"
 	"whisper/internal/model"
 	"whisper/pkg/context"
 	"whisper/pkg/es"
@@ -79,8 +80,16 @@ func (dao *ESRuneDAO) Rune2ES(ctx *context.Context, data []*model.ESRune) error 
 	return nil
 }
 
+var (
+	esRDao  *ESRuneDAO
+	esROnce *sync.Once
+)
+
 func NewESRuneDAO() *ESRuneDAO {
-	return &ESRuneDAO{
-		esClient: es.ESClient,
-	}
+	esROnce.Do(func() {
+		esRDao = &ESRuneDAO{
+			esClient: es.ESClient,
+		}
+	})
+	return esRDao
 }

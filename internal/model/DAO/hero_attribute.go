@@ -2,6 +2,7 @@ package dao
 
 import (
 	"gorm.io/gorm"
+	"sync"
 	"whisper/internal/model"
 	"whisper/pkg/mysql"
 )
@@ -51,10 +52,18 @@ func (dao *HeroAttributeDAO) DeleteAndInsert(delCond map[string]interface{}, add
 	return nil
 }
 
+var (
+	attrDao  *HeroAttributeDAO
+	attrOnce *sync.Once
+)
+
 func NewHeroAttributeDAO() *HeroAttributeDAO {
-	return &HeroAttributeDAO{
-		db: mysql.DB,
-	}
+	attrOnce.Do(func() {
+		attrDao = &HeroAttributeDAO{
+			db: mysql.DB,
+		}
+	})
+	return attrDao
 }
 
 type HeroAttribute interface {
