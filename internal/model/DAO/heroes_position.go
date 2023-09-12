@@ -39,7 +39,7 @@ func (dao *HeroesPositionDAO) Delete(cond map[string]interface{}) (int64, error)
 
 var (
 	hpDao  *HeroesPositionDAO
-	hpOnce *sync.Once
+	hpOnce sync.Once
 )
 
 func NewHeroesPositionDAO() *HeroesPositionDAO {

@@ -82,7 +82,7 @@ func (dao *ESRuneDAO) Rune2ES(ctx *context.Context, data []*model.ESRune) error 
 
 var (
 	esRDao  *ESRuneDAO
-	esROnce *sync.Once
+	esROnce sync.Once
 )
 
 func NewESRuneDAO() *ESRuneDAO {

@@ -41,7 +41,7 @@ func (dao *HeroAliasDAO) Truncate() error {
 
 var (
 	haDao  *HeroAliasDAO
-	haOnce *sync.Once
+	haOnce sync.Once
 )
 
 func NewHeroAliasDAO() *HeroAliasDAO {

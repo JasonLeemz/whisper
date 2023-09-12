@@ -23,7 +23,7 @@ func (dao *RuneTypeDAO) DeleteAll(cond map[string]interface{}) (int64, error) {
 
 var (
 	rtDao  *RuneTypeDAO
-	rtOnce *sync.Once
+	rtOnce sync.Once
 )
 
 func NewRuneTypeDAO() *RuneTypeDAO {

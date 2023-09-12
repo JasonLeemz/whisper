@@ -62,7 +62,7 @@ func (dao *LOLRuneDAO) GetLOLRune(version string) ([]*model.LOLRune, error) {
 
 var (
 	lolRDao  *LOLRuneDAO
-	lolROnce *sync.Once
+	lolROnce sync.Once
 )
 
 func NewLOLRuneDAO() *LOLRuneDAO {
@@ -152,7 +152,7 @@ func (dao *LOLMRuneDAO) Update(data *model.LOLMRune, cond map[string]interface{}
 
 var (
 	lolmRDao  *LOLMRuneDAO
-	lolmROnce *sync.Once
+	lolmROnce sync.Once
 )
 
 func NewLOLMRuneDAO() *LOLMRuneDAO {

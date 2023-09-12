@@ -38,7 +38,7 @@ func (dao *HeroRoleDAO) Delete(cond map[string]interface{}) (int64, error) {
 
 var (
 	hrDao  *HeroRoleDAO
-	hrOnce *sync.Once
+	hrOnce sync.Once
 )
 
 func NewHeroRoleDAO() *HeroRoleDAO {

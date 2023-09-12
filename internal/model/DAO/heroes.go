@@ -112,7 +112,7 @@ GROUP BY
 
 var (
 	lolHDao  *LOLHeroesDAO
-	lolHOnce *sync.Once
+	lolHOnce sync.Once
 )
 
 func NewLOLHeroesDAO() *LOLHeroesDAO {
@@ -232,7 +232,7 @@ GROUP BY
 
 var (
 	lolmHDao  *LOLMHeroesDAO
-	lolmHOnce *sync.Once
+	lolmHOnce sync.Once
 )
 
 func NewLOLMHeroesDAO() *LOLMHeroesDAO {

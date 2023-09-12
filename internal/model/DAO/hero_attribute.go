@@ -54,7 +54,7 @@ func (dao *HeroAttributeDAO) DeleteAndInsert(delCond map[string]interface{}, add
 
 var (
 	attrDao  *HeroAttributeDAO
-	attrOnce *sync.Once
+	attrOnce sync.Once
 )
 
 func NewHeroAttributeDAO() *HeroAttributeDAO {

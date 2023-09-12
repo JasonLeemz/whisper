@@ -46,7 +46,7 @@ func (dao *HeroSpellDAO) DeleteAndInsert(delCond map[string]interface{}, addData
 
 var (
 	hsDao  *HeroSpellDAO
-	hsOnce *sync.Once
+	hsOnce sync.Once
 )
 
 func NewHeroSpellDAO() *HeroSpellDAO {

@@ -18,7 +18,7 @@ func (dao *EquipTypeDAO) Add(et []*model.EquipType) (int64, error) {
 
 var (
 	lolETDao  *EquipTypeDAO
-	lolETOnce *sync.Once
+	lolETOnce sync.Once
 )
 
 func NewEquipTypeDAO() *EquipTypeDAO {

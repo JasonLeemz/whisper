@@ -41,7 +41,7 @@ func (dao *EquipAliasDAO) Truncate() error {
 
 var (
 	lolEADao  *EquipAliasDAO
-	lolEAOnce *sync.Once
+	lolEAOnce sync.Once
 )
 
 func NewEquipAliasDAO() *EquipAliasDAO {

@@ -10,7 +10,7 @@ import (
 
 var (
 	mqDao  *MQDao
-	mqOnce *sync.Once
+	mqOnce sync.Once
 )
 
 func NewMQDao() *MQDao {

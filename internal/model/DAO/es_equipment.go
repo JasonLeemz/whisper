@@ -82,7 +82,7 @@ func (dao *ESEquipmentDAO) Equipment2ES(ctx *context.Context, data []*model.ESEq
 
 var (
 	esEDao  *ESEquipmentDAO
-	esEOnce *sync.Once
+	esEOnce sync.Once
 )
 
 func NewESEquipmentDAO() *ESEquipmentDAO {

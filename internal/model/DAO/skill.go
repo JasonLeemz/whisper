@@ -64,7 +64,7 @@ func (dao *LOLSkillDAO) Update(data *model.LOLSkill, cond map[string]interface{}
 
 var (
 	lolSKDao  *LOLSkillDAO
-	lolSKOnce *sync.Once
+	lolSKOnce sync.Once
 )
 
 func NewLOLSkillDAO() *LOLSkillDAO {
@@ -139,7 +139,7 @@ func (dao *LOLMSkillDAO) GetLOLMSkill(version string) ([]*model.LOLMSkill, error
 
 var (
 	lolmSKDao  *LOLMSkillDAO
-	lolmSKOnce *sync.Once
+	lolmSKOnce sync.Once
 )
 
 func NewLOLMSkillDAO() *LOLMSkillDAO {

@@ -227,7 +227,7 @@ func BuildIndex(ctx *context.Context, index string, rebuild bool) error {
 		for _, tbl := range queue {
 			wg.Add(1)
 			go func(tbl string) {
-				err := mysql2es(ctx, tbl, &wg)
+				err := mysql2es(ctx, tbl, &wg) // 这里的wg必须要传地址，不然值传递后传递的是副本
 				if err != nil {
 					log.Logger.Error(ctx, err)
 					cancelFunc()

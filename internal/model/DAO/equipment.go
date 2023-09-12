@@ -155,7 +155,7 @@ WHERE
 
 var (
 	lolEDao  *LOLEquipmentDAO
-	lolEOnce *sync.Once
+	lolEOnce sync.Once
 )
 
 func NewLOLEquipmentDAO() *LOLEquipmentDAO {
@@ -331,7 +331,7 @@ WHERE
 
 var (
 	lolmEDao  *LOLMEquipmentDAO
-	lolmEOnce *sync.Once
+	lolmEOnce sync.Once
 )
 
 func NewLOLMEquipmentDAO() *LOLMEquipmentDAO {

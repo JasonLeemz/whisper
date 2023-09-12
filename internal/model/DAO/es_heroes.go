@@ -82,7 +82,7 @@ func (dao *ESHeroesDAO) Heroes2ES(ctx *context.Context, data []*model.ESHeroes) 
 
 var (
 	esHDao  *ESHeroesDAO
-	esHOnce *sync.Once
+	esHOnce sync.Once
 )
 
 func NewESHeroesDAO() *ESHeroesDAO {

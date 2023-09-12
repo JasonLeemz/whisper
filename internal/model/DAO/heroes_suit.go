@@ -112,7 +112,7 @@ func (dao *HeroesSuitDAO) FindHighRateEquip(query []string, cond map[string]inte
 
 var (
 	hsuitDao  *HeroesSuitDAO
-	hsuitOnce *sync.Once
+	hsuitOnce sync.Once
 )
 
 func NewHeroesSuitDAO() *HeroesSuitDAO {

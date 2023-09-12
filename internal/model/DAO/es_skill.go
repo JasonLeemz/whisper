@@ -82,7 +82,7 @@ func (dao *ESSkillDAO) Skill2ES(ctx *context.Context, data []*model.ESSkill) err
 
 var (
 	esKDao  *ESSkillDAO
-	esKOnce *sync.Once
+	esKOnce sync.Once
 )
 
 func NewESSkillDAO() *ESSkillDAO {

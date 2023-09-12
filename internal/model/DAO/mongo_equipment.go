@@ -61,7 +61,7 @@ func (d *MongoEquipmentDAO) Delete(ctx *context.Context, cond map[string]interfa
 
 var (
 	mgDao  *MongoEquipmentDAO
-	mgOnce *sync.Once
+	mgOnce sync.Once
 )
 
 func NewMongoEquipmentDAO() *MongoEquipmentDAO {
