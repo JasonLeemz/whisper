@@ -27,7 +27,7 @@ func (s *LOLSkill) TableName() string {
 
 type LOLMSkill struct {
 	Id        uint64    `gorm:"column:id;primary_key;AUTO_INCREMENT;NOT NULL"`
-	SkillID   string    `gorm:"column:skill_id;default:;NOT NULL"`
+	SkillID   string    `gorm:"column:skillId;default:;NOT NULL"`
 	Name      string    `gorm:"column:name;default:;NOT NULL"`
 	IconPath  string    `gorm:"column:iconPath;default:;NOT NULL"`
 	FuncDesc  string    `gorm:"column:funcDesc;default:;NOT NULL"`

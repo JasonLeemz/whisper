@@ -20,6 +20,9 @@ type RecommendSuitEquip struct {
 	Shoe  [][]*SuitData `json:"shoe"`
 	Core  [][]*SuitData `json:"core"`
 	Other [][]*SuitData `json:"other"`
+
+	Rune  [][]*SuitData `json:"rune,omitempty"`
+	Skill [][]*SuitData `json:"skill,omitempty"`
 }
 
 type SuitData struct {
@@ -34,6 +37,8 @@ type SuitData struct {
 	Sell      int    `json:"sell"`
 	Version   string `json:"version"`
 
+	CD int `json:"cd"`
+
 	Igamecnt int32 `json:"igamecnt,omitempty"`
 	Wincnt   int32 `json:"wincnt,omitempty"`
 	Winrate  int32 `json:"winrate,omitempty"`
@@ -45,4 +50,6 @@ type SuitData struct {
 	AuthorIcon   string `json:"author_icon"`
 	RecommendID  string `json:"recommend_id"`
 	ThinkingInfo string `json:"thinking_info"`
+
+	Platform int `json:"platform"`
 }

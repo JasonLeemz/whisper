@@ -234,10 +234,31 @@
     }
 
     .roadmap-item-price {
-
+    }
+    .roadmap-item-rune {
+      long{
+        display: none;
+      }
     }
   }
+  .rune-desc {
+    short {
+      display: none;
+    }
 
+    long {
+      display: block;
+      font-size: 12px;
+      line-height: 12px;
+      color: #ff5722;
+    }
+  }
+  .rune-desc-long{
+    margin-top: 5px;
+    display: block;
+    //font-size: 12px;
+    //line-height: 12px;
+  }
   .hero-suit {
     &.popover-title {
       margin: 0 0 5px 0;
@@ -396,12 +417,17 @@
         .equip-item {
           display: inline-block;
           margin-right: 2px;
-          border: 1px solid #fff;
+          border: 1px solid rgba(0,0,0,0);
 
-          .equip-icon {
+          .equip-icon{
             width: 35px;
             height: 35px;
             border-radius: 3px;
+          }
+          .equip-icon-rune {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
           }
         }
       }

@@ -25,6 +25,8 @@ export default {
             'shoe': '鞋子',
             'core': '核心套件',
             'other': '可选装备',
+            'rune': '符文',
+            'skill': '召唤师技能',
           },
         },
         data: {},
@@ -153,15 +155,13 @@ export default {
         </h4>
       </a-popover>
 
-      <a-collapse
-          v-model:activeKey="sideDrawer.activeKey"
-      >
+      <a-collapse v-model:activeKey="sideDrawer.activeKey">
         <template #expandIcon="{ isActive }">
           <CaretRightOutlined :rotate="isActive ? 90 : 0"/>
         </template>
 
         <a-collapse-panel v-for="(row,rowidx) in equips" :key="rowidx+'-'+pos"
-                          :header="sideDrawer.panel.mapEquipType[rowidx]"
+                          :header="sideDrawer.panel.mapEquipType[rowidx]?sideDrawer.panel.mapEquipType[rowidx]:rowidx"
                           v-show="row.length > 0"
                           class="hero-drawer-panel">
           <sub v-if="sideDrawer.data.platform===0">
@@ -177,15 +177,19 @@ export default {
                             <span class="roadmap-item-title">
                               {{ equip.name }}
                             </span>
-                      <a-tag>
-                            <span class="roadmap-item-price">
+                      <a-tag v-if="rowidx!=='skill'">
+                            <span class="roadmap-item-price" v-if="rowidx!=='rune'">
                               价格:{{ equip.price }}
                             </span>
+
+                            <span class="roadmap-item-rune" v-html="equip.plaintext" v-if="rowidx==='rune'"></span>
                       </a-tag>
                     </div>
-                    <span v-html="equip.desc"></span>
+                    <span v-html="equip.desc" v-if="rowidx!=='rune'"></span>
+                    <span v-html="equip.plaintext" v-if="rowidx==='rune'" class="rune-desc"></span>
+                    <span v-html="equip.desc" v-if="rowidx==='rune'" class="rune-desc-long"></span>
                   </template>
-                  <img :src="equip.icon" :alt="equip.name" class="equip-icon">
+                  <img :src="equip.icon" :alt="equip.name" :class="rowidx==='rune'?'equip-icon-rune':'equip-icon'">
                 </a-popover>
               </span>
             </div>

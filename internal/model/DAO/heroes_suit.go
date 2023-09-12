@@ -61,15 +61,17 @@ FROM
 	%s
 WHERE
 	suit.heroId = %s
+	%s
 ORDER BY
 	winrate desc
 `
 
 	rightJoin := "RIGHT JOIN heroes_position pos ON suit.pos = pos.pos AND suit.heroId = pos.heroId"
 	if platform == 0 {
-		sql = fmt.Sprintf(sql, rightJoin, heroID)
+		rate := "and suit.winrate >= 4000 and suit.showrate >= 1000"
+		sql = fmt.Sprintf(sql, rightJoin, heroID, rate)
 	} else {
-		sql = fmt.Sprintf(sql, "", heroID)
+		sql = fmt.Sprintf(sql, "", heroID, "")
 	}
 
 	result := make([]*model.HeroesSuit, 0)
