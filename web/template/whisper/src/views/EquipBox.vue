@@ -3,12 +3,13 @@
 </script>
 <script>
 import axios from 'axios';
+import ListSkeleton from "@/components/ListSkeleton.vue";
 import ListEquip from "@/components/ListEquip.vue";
 
 export default {
   emits: ['loadingEvent'],
   components: {
-    ListEquip
+    ListSkeleton, ListEquip
   },
   data() {
     return {
@@ -27,6 +28,10 @@ export default {
         ],
         drawer: true,
       },
+      SkeletonState: {
+        show: false,
+        isLoading: false,
+      },
       query: {
         data: {},
       }
@@ -41,6 +46,8 @@ export default {
         if (this.formData.keywords.length === 0) {
           return
         }
+
+        this.SkeletonState.show = true
         this.$emit('loadingEvent', 30)
         axios.post('/equip/filter', this.formData)
             .then(response => {
@@ -49,6 +56,7 @@ export default {
             .catch(error => {
               console.error('Error fetching server data:', error);
             }).finally(() => {
+              this.SkeletonState.show = false
               this.$emit('loadingEvent', 100)
             }
         );
@@ -106,7 +114,12 @@ export default {
           </a-checkbox-group>
         </a-form>
 
+        <ListSkeleton
+            v-if="SkeletonState.show"
+            :skeleton-state="SkeletonState"/>
+
         <ListEquip
+            v-if="!SkeletonState.show"
             :query-result="query.data"
         />
 

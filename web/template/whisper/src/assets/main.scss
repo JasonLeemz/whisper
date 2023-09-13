@@ -6,18 +6,9 @@
   line-height: 25px;
   background-color: #141414;
 }
-.ant-progress{
-  opacity: 1;
-  transition: opacity 2s ease-in-out;
+.ant-skeleton{
+  margin-top: 20px;
 }
-//@keyframes fadeOut {
-//  from {
-//    opacity: 1;
-//  }
-//  to {
-//    opacity: 0;
-//  }
-//}
 .ant-progress .ant-progress-inner{
   border-radius: 0;
   height: 2px;

@@ -15,6 +15,7 @@ const mapOptions = [
 <script>
 import axios from 'axios';
 import {message} from 'ant-design-vue';
+import ListSkeleton from "@/components/ListSkeleton.vue";
 import ListEquip from "@/components/ListEquip.vue";
 import ListHeroes from "@/components/ListHeroes.vue";
 import ListRune from "@/components/ListRune.vue";
@@ -23,7 +24,7 @@ import ListSkill from "@/components/ListSkill.vue";
 export default {
   emits: ['loadingEvent'],
   components: {
-    ListEquip, ListHeroes, ListRune, ListSkill
+    ListSkeleton, ListEquip, ListHeroes, ListRune, ListSkill
   },
   data() {
     return {
@@ -34,6 +35,10 @@ export default {
         way: ['name', 'description'],
         map: ['召唤师峡谷'],
         more_cond_show: true,
+      },
+      SkeletonState:{
+        show: false,
+        isLoading: false,
       },
       query: {
         tips: '',
@@ -66,6 +71,7 @@ export default {
         return
       }
 
+      this.SkeletonState.show = true
       this.$emit('loadingEvent', 30)
       // 使用 Axios 发起请求获取服务器数据
       axios.post('/query', this.formData)
@@ -87,6 +93,7 @@ export default {
           .catch(error => {
             console.error('Error fetching server data:', error);
           }).finally(() => {
+            this.SkeletonState.show = false
             this.$emit('loadingEvent', 100)
           }
       );
@@ -155,27 +162,31 @@ export default {
           </Transition>
         </a-form>
 
-        <ListEquip
-            v-if="formData.category==='lol_equipment'"
-            :query-result="query.equip.data"
-        />
+        <ListSkeleton
+            v-if="SkeletonState.show"
+            :skeleton-state="SkeletonState"/>
 
-        <ListHeroes
-            v-if="formData.category==='lol_heroes'"
-            :query-result="query.hero.data"
-        />
+        <template v-if="!SkeletonState.show">
+          <ListEquip
+              v-if="formData.category==='lol_equipment'"
+              :query-result="query.equip.data"
+          />
 
-        <ListRune
-            v-if="formData.category==='lol_rune'"
-            :query-result="query.rune.data"
-        />
+          <ListHeroes
+              v-if="formData.category==='lol_heroes'"
+              :query-result="query.hero.data"
+          />
 
-        <ListSkill
-            v-if="formData.category==='lol_skill'"
-            :query-result="query.skill.data"
-        />
+          <ListRune
+              v-if="formData.category==='lol_rune'"
+              :query-result="query.rune.data"
+          />
 
-
+          <ListSkill
+              v-if="formData.category==='lol_skill'"
+              :query-result="query.skill.data"
+          />
+        </template>
         <a-back-top/>
       </a-layout-content>
     </a-layout>
