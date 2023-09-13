@@ -2,7 +2,7 @@
 
 export default {
   props: {
-    runeResult: {
+    skillResult: {
       show: 0,
       isLoading: false,
       data: {},
@@ -17,10 +17,10 @@ export default {
     }
   },
   watch: {
-    'runeResult.show'() {
+    'skillResult.show'() {
       this.sideDrawer.show = true
     },
-    'runeResult.isLoading'(isLoading) {
+    'skillResult.isLoading'(isLoading) {
       this.sideDrawer.isLoading = isLoading
     },
   },
@@ -41,13 +41,13 @@ export default {
     </template>
 
     <a-empty
-        v-if="!sideDrawer.isLoading && Object.keys(runeResult.data).length === 0"
+        v-if="!sideDrawer.isLoading && Object.keys(skillResult.data).length === 0"
         description="当前版本该符文缺乏足够的样本数据"/>
 
     <!-- 适配英雄 START-->
-    <template v-if="!sideDrawer.isLoading && Object.keys(runeResult.data).length > 0">
+    <template v-if="!sideDrawer.isLoading && Object.keys(skillResult.data).length > 0">
       <h4 class="equip-suit-hero">适配英雄</h4>
-      <template v-for="(hero,i) in runeResult.data" :key="i">
+      <template v-for="(hero,i) in skillResult.data" :key="i">
         <a-tooltip :title="hero.name">
           <img class="equip-hero-avatar"
                :title="hero.name"

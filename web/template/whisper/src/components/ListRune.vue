@@ -19,7 +19,6 @@ export default {
   watch: {},
   methods: {
     showDrawer(platform, version, id) {
-      console.log(platform, version, id)
       this.drawer.show++
       this.drawer.isLoading = true
 

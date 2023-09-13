@@ -56,6 +56,8 @@ func main() {
 		page.POST("/equip/hero/suit", context.Handle(controller.GetEquipHeroSuit))
 		// 通过符文id查看适配英雄
 		page.POST("/rune/hero/suit", context.Handle(controller.GetRuneHeroSuit))
+		// 通过召唤师技能id查看适配英雄
+		page.POST("/skill/hero/suit", context.Handle(controller.GetSkillHeroSuit))
 
 	}
 

@@ -1,17 +1,17 @@
 <script>
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
-// import axios from "axios";
-
+import axios from "axios";
+import DrawerSkill from "@/components/DrawerSkill.vue";
 export default {
-  components: {ExclamationCircleOutlined},
+  components: { DrawerSkill, ExclamationCircleOutlined},
   props: {
     queryResult: Object, // 父组件传递的数据类型
   },
   data() {
     return {
-      sideDrawer: {
-        show: false,
-        title: '',
+      drawer: {
+        show: 0,
+        isLoading: false,
         data: {},
       },
     }
@@ -19,7 +19,24 @@ export default {
   watch: {},
   methods: {
     showDrawer(platform, version, id) {
-      console.log(platform, version, id)
+      this.drawer.show++
+      this.drawer.isLoading = true
+
+      axios.post('/skill/hero/suit', {
+            'platform': platform,
+            'version': version,
+            'id': id,
+          }
+      ).then(response => {
+            this.drawer.data = response.data.data
+          }
+      ).catch(error => {
+            console.error('Error fetching server data:', error);
+          }
+      ).finally(() => {
+            this.drawer.isLoading = false
+          }
+      );
     },
   }
 }
@@ -52,13 +69,5 @@ export default {
     </a-space>
   </div>
 
-  <a-drawer
-      v-model:open="sideDrawer.show"
-      class="custom-class"
-      root-class-name="root-class-name"
-      :title="sideDrawer.title"
-      placement="right"
-  >
-    drawer
-  </a-drawer>
+  <DrawerSkill :skill-result="drawer"/>
 </template>

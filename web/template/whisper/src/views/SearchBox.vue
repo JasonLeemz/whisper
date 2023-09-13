@@ -150,7 +150,13 @@ export default {
       handler(){
         this.searchResult()
       },
-    }
+    },
+    'formData.platform':{
+      handler(){
+        this.search()
+        this.searchResult()
+      },
+    },
   },
   mounted() {
     this.searchResult()

@@ -1249,3 +1249,52 @@ func GetRuneHeroSuit(ctx *context.Context, platform int, runeID string) ([]*dto.
 
 	return suitHeroes, nil
 }
+
+func GetSkillHeroSuit(ctx *context.Context, platform int, skillID string) ([]*dto.SearchResultList, error) {
+	// 获取英雄适配数据
+	suitHeroes := make([]*dto.SearchResultList, 0)
+
+	min := "-inf"
+	max := "+inf"
+	// ZREVRANGE my_rankings 0 2 WITHSCORES
+	key := fmt.Sprintf(redis.KeyCacheSkillHeroSuit, platform, skillID)
+	score := redis.RDB.ZRevRangeByScoreWithScores(ctx, key, &redis2.ZRangeBy{
+		Min: min,
+		Max: max,
+		//Offset: 0,
+		//Count:  100,
+	})
+
+	var heroesID []string
+	for _, k := range score.Val() {
+		heroesID = append(heroesID, k.Member.(string))
+	}
+
+	had := dao.NewHeroAttributeDAO()
+	heroes, err := had.Find([]string{
+		"heroId", "name", "title", "avatar", "platform", "version",
+	}, map[string]interface{}{
+		"heroId": heroesID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, hero := range heroes {
+		name := ""
+		if platform == common.PlatformForLOL {
+			name = hero.Name + " " + hero.Title
+		} else {
+			name = hero.Title + " " + hero.Name
+		}
+		suitHeroes = append(suitHeroes, &dto.SearchResultList{
+			Id:       hero.HeroId,
+			Name:     name,
+			Icon:     hero.Avatar,
+			Platform: hero.Platform,
+			Version:  hero.Version,
+		})
+	}
+
+	return suitHeroes, nil
+}
