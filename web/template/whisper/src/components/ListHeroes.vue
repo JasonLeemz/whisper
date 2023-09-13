@@ -11,7 +11,7 @@ export default {
   data() {
     return {
       drawer: {
-        show: false,
+        show: 0,
         isLoading: false,
         data: {},
       }
@@ -27,13 +27,16 @@ export default {
       this.drawer.isLoading = true
 
       axios.post('/hero/suit', {
-        'platform': platform,
-        'hero_id': id,
-      }).then(response => {
-        this.drawer.data = response.data.data
-      }).catch(error => {
-        console.error('Error fetching server data:', error);
-      }).finally(() => {
+            'platform': platform,
+            'hero_id': id,
+          }
+      ).then(response => {
+            this.drawer.data = response.data.data
+          }
+      ).catch(error => {
+            console.error('Error fetching server data:', error);
+          }
+      ).finally(() => {
             this.drawer.isLoading = false
           }
       );
@@ -49,7 +52,7 @@ export default {
   <a-descriptions>
     <a-descriptions-item>{{ queryResult.tips }}</a-descriptions-item>
   </a-descriptions>
-  <div class="result-card" v-for="(item,i) in queryResult.list" :key="i">
+  <div class="result-card" v-for="(item,i) in queryResult.data" :key="i">
     <a-space direction="vertical">
       <a-card :hoverable="true" @click="showDrawer(item.platform,item.version,item.id)">
         <a-card-meta :title="item.name">

@@ -33,6 +33,8 @@ export default {
         isLoading: false,
       },
       query: {
+        tips: '',
+        referer: '',
         data: {},
       }
     }
@@ -51,7 +53,9 @@ export default {
         this.$emit('loadingEvent', 30)
         axios.post('/equip/filter', this.formData)
             .then(response => {
-              this.query.data = response.data.data
+              this.query.data = response.data.data.list
+              this.query.tips = response.data.data.tips
+              this.query.referer = "equip-box"
             })
             .catch(error => {
               console.error('Error fetching server data:', error);
@@ -120,7 +124,7 @@ export default {
 
         <ListEquip
             v-if="!SkeletonState.show"
-            :query-result="query.data"
+            :query-result="query"
         />
 
         <a-back-top/>

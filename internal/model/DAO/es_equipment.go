@@ -1,11 +1,14 @@
 package dao
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/olivere/elastic/v7"
 	"sync"
+	"whisper/internal/dto"
 	"whisper/internal/model"
+	"whisper/internal/model/common"
 	"whisper/pkg/context"
 	"whisper/pkg/es"
 )
@@ -14,6 +17,7 @@ type ESEquipment interface {
 	CreateIndex(ctx *context.Context) error
 	DeleteIndex(ctx *context.Context) error
 	Equipment2ES(ctx *context.Context, data []*model.ESEquipment) error
+	Find(ctx *context.Context, cond *common.QueryCond) ([]*model.ESEquipment, error)
 }
 
 type ESEquipmentDAO struct {
@@ -78,6 +82,58 @@ func (dao *ESEquipmentDAO) Equipment2ES(ctx *context.Context, data []*model.ESEq
 	}
 
 	return nil
+}
+func (dao *ESEquipmentDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]*model.ESEquipment, error) {
+	var esModel model.ESEquipment
+	idxName := esModel.GetIndexName()
+	query := elastic.NewBoolQuery()
+
+	if cond.MultiMatchQuery != nil {
+		query = query.Must(elastic.NewMultiMatchQuery(cond.MultiMatchQuery.Text, cond.MultiMatchQuery.Fields...))
+	}
+
+	if cond.TermsQuery != nil {
+		query = query.Must(elastic.NewTermsQuery(cond.TermsQuery.Name, cond.TermsQuery.Values...))
+	}
+
+	if cond.TermQuery != nil {
+		for _, c := range cond.TermQuery {
+			query = query.Must(elastic.NewTermQuery(c.Name, c.Value))
+		}
+	}
+
+	//if cond.FieldSort != nil {
+	//	sortByScore := elastic.NewFieldSort(cond.FieldSort.Field).Desc()
+	//}
+
+	res, err := es.ESClient.Search().
+		Index(idxName).
+		Query(query).
+		From(0).Size(10000).
+		Pretty(true).
+		Do(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := dto.EsResultHits{}
+	data, _ := json.Marshal(res.Hits)
+	err = json.Unmarshal(data, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	var equips []*model.ESEquipment
+	for _, hit := range resp.Hits {
+		sourceStr, _ := json.Marshal(hit.TmpSource)
+		hitData := &model.ESEquipment{}
+		err = json.Unmarshal(sourceStr, hitData)
+		if err != nil {
+			return nil, err
+		}
+		equips = append(equips, hitData)
+	}
+	return equips, nil
 }
 
 var (

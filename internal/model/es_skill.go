@@ -1,5 +1,7 @@
 package model
 
+import "sync"
+
 type ESSkill struct {
 	ID          string `json:"id"`
 	Name        string `json:"name,omitempty"`
@@ -12,6 +14,19 @@ type ESSkill struct {
 	Version     string `json:"version,omitempty"`
 	FileTime    string `json:"fileTime,omitempty"`
 	Platform    string `json:"platform"`
+}
+
+var (
+	modelSkill *ESSkill
+	onceSkill  sync.Once
+)
+
+func NewModelESSkill() *ESSkill {
+	onceSkill.Do(func() {
+		modelSkill = new(ESSkill)
+	})
+
+	return modelSkill
 }
 
 func (e *ESSkill) GetMapping() string {

@@ -11,6 +11,7 @@ const mapOptions = [
   {label: '嚎哭深渊', value: '嚎哭深渊'},
   {label: '斗魂竞技场', value: '斗魂竞技场'},
 ];
+
 </script>
 <script>
 import axios from 'axios';
@@ -20,6 +21,7 @@ import ListEquip from "@/components/ListEquip.vue";
 import ListHeroes from "@/components/ListHeroes.vue";
 import ListRune from "@/components/ListRune.vue";
 import ListSkill from "@/components/ListSkill.vue";
+import {ref} from "vue";
 
 export default {
   emits: ['loadingEvent'],
@@ -29,6 +31,7 @@ export default {
   data() {
     return {
       formData: {
+        dataSource: ref([]),
         key_words: '',
         platform: '0',
         category: 'lol_equipment',
@@ -36,31 +39,41 @@ export default {
         map: ['召唤师峡谷'],
         more_cond_show: true,
       },
-      SkeletonState:{
+      SkeletonState: {
         show: false,
         isLoading: false,
       },
       query: {
-        tips: '',
         equip: {
+          tips: '',
+          referer: '',
           data: {},
         },
         hero: {
+          tips: '',
+          referer: '',
           data: {},
         },
         rune: {
+          tips: '',
+          referer: '',
           data: {},
         },
         skill: {
+          tips: '',
+          referer: '',
           data: {},
         },
       }
     }
   },
   methods: {
+    drawerSearch(keywords) {
+      this.formData.key_words = keywords
+      this.search()
+    },
     search() {
       this.$emit('loadingEvent', 0)
-
       if (this.formData.key_words === '') {
         message.error({
           top: `100px`,
@@ -79,15 +92,18 @@ export default {
             // 将服务器返回的数据更新到组件的 serverData 字段
             if (response.data.data != null) {
               if (this.formData.category === 'lol_equipment') {
-                this.query.equip.data = response.data.data
+                this.query.equip.data = response.data.data.list
+                this.query.equip.tips = response.data.data.tips
               } else if (this.formData.category === 'lol_heroes') {
-                this.query.hero.data = response.data.data
+                this.query.hero.data = response.data.data.list
+                this.query.hero.tips = response.data.data.tips
               } else if (this.formData.category === 'lol_rune') {
-                this.query.rune.data = response.data.data
+                this.query.rune.data = response.data.data.list
+                this.query.rune.tips = response.data.data.tips
               } else if (this.formData.category === 'lol_skill') {
-                this.query.skill.data = response.data.data
+                this.query.skill.data = response.data.data.list
+                this.query.skill.tips = response.data.data.tips
               }
-              this.query.tips = response.data.data.tips
             }
           })
           .catch(error => {
@@ -97,11 +113,40 @@ export default {
             this.$emit('loadingEvent', 100)
           }
       );
-    }
+    },
+    onSelect(keywords) {
+      this.formData.key_words = keywords
+      this.search()
+    },
+    searchResult() {
+      axios.post('/auto/complete', this.formData)
+          .then(response => {
+            let options = []
+            if (response.data.data != null) {
+              for (let i in response.data.data) {
+                options.push({
+                  value: response.data.data[i],
+                })
+              }
+              this.formData.dataSource = ref(options)
+            }
+          })
+          .catch(error => {
+                console.error('Error fetching server data:', error);
+              }
+          ).finally(() => {
+          }
+      );
+    },
+    handleSearch(val) {
+      console.log(val)
+      this.searchResult(val)
+    },
   },
   created() {
   },
   mounted() {
+    this.searchResult()
   }
 }
 </script>
@@ -117,13 +162,20 @@ export default {
         >
           <div>
             <a-space-compact block>
-              <a-input
+              <a-auto-complete
                   name="search-input"
+                  style="width: 100%"
                   v-model:value="formData.key_words"
-                  placeholder="搜索…"
-                  allowClear
-                  @pressEnter="search"
-              />
+                  :options="formData.dataSource"
+                  @select="onSelect"
+                  @search="handleSearch"
+                  allow-clear>
+
+                <template #option="item">
+                  <span>{{ item.value }}</span>
+                </template>
+
+              </a-auto-complete>
               <a-select
                   ref="select"
                   v-model:value="formData.platform"
@@ -169,22 +221,23 @@ export default {
         <template v-if="!SkeletonState.show">
           <ListEquip
               v-if="formData.category==='lol_equipment'"
-              :query-result="query.equip.data"
+              :query-result="query.equip"
+              @drawer-search="drawerSearch"
           />
 
           <ListHeroes
               v-if="formData.category==='lol_heroes'"
-              :query-result="query.hero.data"
+              :query-result="query.hero"
           />
 
           <ListRune
               v-if="formData.category==='lol_rune'"
-              :query-result="query.rune.data"
+              :query-result="query.rune"
           />
 
           <ListSkill
               v-if="formData.category==='lol_skill'"
-              :query-result="query.skill.data"
+              :query-result="query.skill"
           />
         </template>
         <a-back-top/>

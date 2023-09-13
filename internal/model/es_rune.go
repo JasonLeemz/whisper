@@ -1,5 +1,7 @@
 package model
 
+import "sync"
+
 type ESRune struct {
 	ID          string `json:"id"`
 	Name        string `json:"name,omitempty"`
@@ -15,6 +17,19 @@ type ESRune struct {
 	Version     string `json:"version,omitempty"`
 	FileTime    string `json:"fileTime,omitempty"`
 	Platform    string `json:"platform"`
+}
+
+var (
+	modelRune *ESRune
+	onceRune  sync.Once
+)
+
+func NewModelESRune() *ESRune {
+	onceRune.Do(func() {
+		modelRune = new(ESRune)
+	})
+
+	return modelRune
 }
 
 func (e *ESRune) GetMapping() string {

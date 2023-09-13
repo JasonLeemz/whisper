@@ -1,5 +1,7 @@
 package model
 
+import "sync"
+
 type ESEquipment struct {
 	ID           string `json:"id"`
 	ItemId       string `json:"itemId,omitempty"`
@@ -21,6 +23,19 @@ type ESEquipment struct {
 	Version      string `json:"version,omitempty"`
 	FileTime     string `json:"fileTime,omitempty"`
 	Platform     string `json:"platform"`
+}
+
+var (
+	modelEquip *ESEquipment
+	onceEquip  sync.Once
+)
+
+func NewModelESEquipment() *ESEquipment {
+	onceEquip.Do(func() {
+		modelEquip = new(ESEquipment)
+	})
+
+	return modelEquip
 }
 
 func (e *ESEquipment) GetMapping() string {

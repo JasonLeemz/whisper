@@ -1,4 +1,4 @@
-package common
+package dto
 
 type EsResultHits struct {
 	Total    Total   `json:"total,omitempty"`

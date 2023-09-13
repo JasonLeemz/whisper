@@ -33,6 +33,9 @@ func main() {
 		page.Static("assets", "web/template/whisper/dist/assets/")
 		page.StaticFile("favicon.ico", "web/static/favicon.ico")
 
+		// 自动填充
+		page.POST("/auto/complete", context.Handle(controller.AutoComplete))
+
 		page.GET("/", context.Handle(controller.SearchBox))
 		page.GET("/equip", context.Handle(controller.SearchBox))
 		page.POST("/query", context.Handle(controller.Query))

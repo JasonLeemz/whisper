@@ -1,17 +1,17 @@
 <script>
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
-// import axios from "axios";
-
+import axios from "axios";
+import DrawerRune from "@/components/DrawerRune.vue";
 export default {
-  components: {ExclamationCircleOutlined},
+  components: { DrawerRune,ExclamationCircleOutlined},
   props: {
     queryResult: Object, // 父组件传递的数据类型
   },
   data() {
     return {
-      sideDrawer: {
-        show: false,
-        title: '',
+      drawer: {
+        show: 0,
+        isLoading: false,
         data: {},
       },
     }
@@ -20,6 +20,24 @@ export default {
   methods: {
     showDrawer(platform, version, id) {
       console.log(platform, version, id)
+      this.drawer.show++
+      this.drawer.isLoading = true
+
+      axios.post('/rune/hero/suit', {
+            'platform': platform,
+            'version': version,
+            'id': id,
+          }
+      ).then(response => {
+            this.drawer.data = response.data.data
+          }
+      ).catch(error => {
+            console.error('Error fetching server data:', error);
+          }
+      ).finally(() => {
+            this.drawer.isLoading = false
+          }
+      );
     },
   }
 }
@@ -29,7 +47,7 @@ export default {
   <a-descriptions>
     <a-descriptions-item>{{ queryResult.tips }}</a-descriptions-item>
   </a-descriptions>
-  <div class="result-card" v-for="(item,i) in queryResult.list" :key="i">
+  <div class="result-card" v-for="(item,i) in queryResult.data" :key="i">
     <a-space direction="vertical">
       <a-card :hoverable="true" @click="showDrawer(item.platform,item.version,item.id)">
         <a-card-meta :title="item.name">
@@ -52,13 +70,5 @@ export default {
     </a-space>
   </div>
 
-  <a-drawer
-      v-model:open="sideDrawer.show"
-      class="custom-class"
-      root-class-name="root-class-name"
-      :title="sideDrawer.title"
-      placement="right"
-  >
-    drawer
-  </a-drawer>
+  <DrawerRune :rune-result="drawer"/>
 </template>

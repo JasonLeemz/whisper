@@ -31,7 +31,7 @@ type SearchParams struct {
 	Map      []string `json:"map,omitempty"`
 }
 
-func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, error) {
+func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) {
 	indexName := p.Category
 	if indexName == "" {
 		return nil, errors2.New("indexName is nil")
@@ -83,7 +83,7 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*common.EsResultHits, erro
 		return nil, err
 	}
 
-	resp := common.EsResultHits{}
+	resp := dto.EsResultHits{}
 	data, _ := json.Marshal(res.Hits)
 	err = json.Unmarshal(data, &resp)
 	if err != nil {
