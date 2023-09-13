@@ -23,6 +23,7 @@ func AutoComplete(ctx *context.Context) {
 
 	var (
 		keywords []string
+		mk       = make(map[string]struct{})
 	)
 
 	cond := &common.QueryCond{
@@ -63,7 +64,7 @@ func AutoComplete(ctx *context.Context) {
 		for _, item := range esEquipments {
 			if item.Maps == "召唤师峡谷" {
 				name := strings.TrimSpace(item.Name)
-				keywords = append(keywords, name)
+				mk[name] = struct{}{}
 			}
 		}
 	case model.NewModelESHeroes().GetIndexName():
@@ -75,7 +76,7 @@ func AutoComplete(ctx *context.Context) {
 
 		for _, item := range esHeroes {
 			name := strings.TrimSpace(item.Name)
-			keywords = append(keywords, name)
+			mk[name] = struct{}{}
 		}
 	case model.NewModelESRune().GetIndexName():
 		esd := dao.NewESRuneDAO()
@@ -86,7 +87,7 @@ func AutoComplete(ctx *context.Context) {
 
 		for _, item := range esRune {
 			name := strings.TrimSpace(item.Name)
-			keywords = append(keywords, name)
+			mk[name] = struct{}{}
 		}
 	case model.NewModelESSkill().GetIndexName():
 		esd := dao.NewESSkillDAO()
@@ -97,8 +98,13 @@ func AutoComplete(ctx *context.Context) {
 
 		for _, item := range esSkill {
 			name := strings.TrimSpace(item.Name)
-			keywords = append(keywords, name)
+			mk[name] = struct{}{}
 		}
+	}
+
+	// 去重
+	for name, _ := range mk {
+		keywords = append(keywords, name)
 	}
 
 	ctx.Reply(keywords, nil)

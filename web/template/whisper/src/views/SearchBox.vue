@@ -145,6 +145,13 @@ export default {
   },
   created() {
   },
+  watch: {
+    'formData.category':{
+      handler(){
+        this.searchResult()
+      },
+    }
+  },
   mounted() {
     this.searchResult()
   }
