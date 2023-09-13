@@ -21,8 +21,9 @@ import ListRune from "@/components/ListRune.vue";
 import ListSkill from "@/components/ListSkill.vue";
 
 export default {
+  emits: ['loadingEvent'],
   components: {
-    ListEquip, ListHeroes,ListRune,ListSkill
+    ListEquip, ListHeroes, ListRune, ListSkill
   },
   data() {
     return {
@@ -53,6 +54,8 @@ export default {
   },
   methods: {
     search() {
+      this.$emit('loadingEvent', 0)
+
       if (this.formData.key_words === '') {
         message.error({
           top: `100px`,
@@ -60,9 +63,10 @@ export default {
           maxCount: 3,
           content: '请输入查询内容',
         })
-
         return
       }
+
+      this.$emit('loadingEvent', 30)
       // 使用 Axios 发起请求获取服务器数据
       axios.post('/query', this.formData)
           .then(response => {
@@ -82,7 +86,10 @@ export default {
           })
           .catch(error => {
             console.error('Error fetching server data:', error);
-          });
+          }).finally(() => {
+            this.$emit('loadingEvent', 100)
+          }
+      );
     }
   },
   created() {

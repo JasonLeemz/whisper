@@ -6,6 +6,7 @@ import axios from 'axios';
 import ListEquip from "@/components/ListEquip.vue";
 
 export default {
+  emits: ['loadingEvent'],
   components: {
     ListEquip
   },
@@ -26,7 +27,7 @@ export default {
         ],
         drawer: true,
       },
-      query:{
+      query: {
         data: {},
       }
     }
@@ -34,24 +35,30 @@ export default {
   watch: {
     formData: {
       handler(newValue) {
+        this.$emit('loadingEvent', 0)
         this.platformCN = newValue === '0' ? '端游' : '手游'
         // 使用 Axios 发起请求获取服务器数据
         if (this.formData.keywords.length === 0) {
           return
         }
+        this.$emit('loadingEvent', 30)
         axios.post('/equip/filter', this.formData)
             .then(response => {
               this.query.data = response.data.data
             })
             .catch(error => {
               console.error('Error fetching server data:', error);
-            });
+            }).finally(() => {
+              this.$emit('loadingEvent', 100)
+            }
+        );
       },
       deep: true,
     },
   },
   methods: {},
-  created() {},
+  created() {
+  },
   computed: {},
   mounted() {
     // 使用 Axios 发起请求获取服务器数据
@@ -85,7 +92,8 @@ export default {
           <a-checkbox-group v-model:value="formData.keywords" v-show="formData.drawer">
             <a-descriptions v-for="(cate, index) in formData.equipTypes" :title="cate.cate" :key="index">
               <a-descriptions-item>
-                <a-checkbox v-for="(sub_cate, ii) in cate.sub_cate" :key="ii" :id="index+'-'+ii+'-equip-checkbox'"  :value="sub_cate.keywordsStr" >
+                <a-checkbox v-for="(sub_cate, ii) in cate.sub_cate" :key="ii" :id="index+'-'+ii+'-equip-checkbox'"
+                            :value="sub_cate.keywordsStr">
                   <a-tooltip placement="top" class="equip-box-tooltip">
                     <template #title>
                       <span>{{ sub_cate.keywordsStr }}</span>

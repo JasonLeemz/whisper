@@ -55,7 +55,6 @@ export default {
       if (id === "") {
         return
       }
-
       axios.post('/hero/suit', {
         'platform': platform,
         'hero_id': id,
@@ -64,7 +63,10 @@ export default {
         this.sideDrawer.data = response.data.data
       }).catch(error => {
         console.error('Error fetching server data:', error);
-      });
+      }).finally(() => {
+            // this.$emit('loadingEvent', 100)
+          }
+      );
     },
     panelSwitcher() {
       if (this.sideDrawer.panel.foldAll) {

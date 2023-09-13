@@ -6,6 +6,33 @@
   line-height: 25px;
   background-color: #141414;
 }
+.ant-progress{
+  opacity: 1;
+  transition: opacity 2s ease-in-out;
+}
+//@keyframes fadeOut {
+//  from {
+//    opacity: 1;
+//  }
+//  to {
+//    opacity: 0;
+//  }
+//}
+.ant-progress .ant-progress-inner{
+  border-radius: 0;
+  height: 2px;
+}
+.ant-progress .ant-progress-outer{
+  height: 2px !important;
+}
+.ant-progress-line{
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin:0;
+  z-index: 999;
+  line-height: 0;
+}
 
 .wrap {
   font: 14px Helvetica Neue, Helvetica, PingFang SC, Tahoma, Arial, sans-serif;

@@ -28,7 +28,10 @@ export default {
           })
           .catch(error => {
             console.error('Error fetching server data:', error);
-          });
+          }).finally(() => {
+            // this.$emit('loadingEvent', 100)
+          }
+      );
     },
     'formData.platform'(n) {
 
@@ -63,7 +66,8 @@ export default {
   created() {
   },
   computed: {},
-  mounted() {}
+  mounted() {
+  }
 }
 </script>
 <a-drawer

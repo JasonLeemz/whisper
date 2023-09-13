@@ -34,7 +34,10 @@ export default {
         this.sideDrawer.data = response.data.data
       }).catch(error => {
         console.error('Error fetching server data:', error);
-      });
+      }).finally(() => {
+          // this.$emit('loadingEvent', 100)
+        }
+      );
     },
   }
 }
