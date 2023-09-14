@@ -52,7 +52,7 @@ func main() {
 		// 页面上通过heroID来查询适配的装备
 		page.POST("/hero/suit", context.Handle(controller.GetHeroSuit))
 
-		// todo 通过装备id查看适配英雄
+		// 通过装备id查看适配英雄
 		page.POST("/equip/hero/suit", context.Handle(controller.GetEquipHeroSuit))
 		// 通过符文id查看适配英雄
 		page.POST("/rune/hero/suit", context.Handle(controller.GetRuneHeroSuit))

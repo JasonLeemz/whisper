@@ -21,7 +21,7 @@ export default {
   },
   watch: {},
   methods: {
-    showDrawer(platform, version, id) {
+    showDrawer(map, platform, version, id) {
       this.drawer.show++
       this.drawer.isLoading = true
 
@@ -29,7 +29,7 @@ export default {
             'platform': platform,
             'version': version,
             'id': id,
-            'map': this.formData.map,
+            'map': [map],
           }
       ).then(response => {
             this.drawer.data = response.data.data
@@ -59,7 +59,7 @@ export default {
   </a-descriptions>
   <div class="result-card" v-for="(item,i) in queryResult.data" :key="i">
     <a-space direction="vertical">
-      <a-card :hoverable="true" @click="showDrawer(item.platform,item.version,item.id)">
+      <a-card :hoverable="true" @click="showDrawer(item.maps, item.platform,item.version,item.id)">
         <a-card-meta :title="item.name">
           <template #avatar>
             <a-avatar :src="item.icon"/>

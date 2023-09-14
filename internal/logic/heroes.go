@@ -208,7 +208,6 @@ func reloadHeroesForLOL(ctx *context.Context, heroList *dto.LOLHeroes) {
 	startT := time.Now()
 	// 入库更新
 	heroes := make([]*model.LOLHeroes, 0, len(heroList.Hero))
-	heroRole := make([]*model.HeroRole, 0, len(heroList.Hero))
 
 	for _, hero := range heroList.Hero {
 		namePY, nameF := pinyin.Trans(hero.Name)
@@ -241,15 +240,6 @@ func reloadHeroesForLOL(ctx *context.Context, heroList *dto.LOLHeroes) {
 		}
 		heroes = append(heroes, &tmp)
 
-		// 记录英雄角色表
-		for _, role := range hero.Roles {
-			hrTmp := &model.HeroRole{
-				Platform: common.PlatformForLOL,
-				HeroId:   hero.HeroId,
-				Role:     role,
-			}
-			heroRole = append(heroRole, hrTmp)
-		}
 	}
 
 	// 记录英雄列表信息

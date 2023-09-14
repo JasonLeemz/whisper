@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/spf13/cast"
 	"whisper/internal/logic"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
@@ -8,7 +9,7 @@ import (
 
 type ReqGetEquipHeroSuit struct {
 	Platform int    `form:"platform" json:"platform" binding:"-"`
-	SkillId  string `json:"id"`
+	EquipId  int    `json:"id"`
 	Version  string `json:"version"`
 }
 
@@ -18,6 +19,6 @@ func GetEquipHeroSuit(ctx *context.Context) {
 		return
 	}
 
-	suit, err := logic.GetHeroSuit(ctx, req.SkillId)
+	suit, err := logic.GetEquipHeroSuit(ctx, req.Platform, cast.ToString(req.EquipId))
 	ctx.Reply(suit, errors.New(err))
 }

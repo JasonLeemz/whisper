@@ -116,7 +116,6 @@ export default {
       );
     },
     onSelect(keywords) {
-      console.log("onSelect",keywords)
       this.formData.key_words = keywords
       this.search()
     },
@@ -143,7 +142,6 @@ export default {
       );
     },
     handleSearch(val) {
-      console.log("handleSearch",val)
       this.searchResult(val)
     },
     debounceSearch: debounce(function(val) {

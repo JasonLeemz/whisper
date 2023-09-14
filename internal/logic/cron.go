@@ -107,6 +107,32 @@ func Cron(ctx *context.Context) {
 	wg.Wait()
 
 	// ------------------------
+	// 装备、英雄 别名
+	wg.Add(2)
+	go func() {
+		defer func() {
+			wg.Done()
+		}()
+
+		log.Logger.Info(ctx, "start AliasHeroes...")
+		_, err := AliasHeroes(ctx)
+		if err != nil {
+			log.Logger.Error(ctx, err)
+		}
+	}()
+	go func() {
+		defer func() {
+			wg.Done()
+		}()
+
+		log.Logger.Info(ctx, "start AliasEquip...")
+		_, err := AliasEquip(ctx)
+		if err != nil {
+			log.Logger.Error(ctx, err)
+		}
+	}()
+	wg.Wait()
+	// ------------------------
 
 	wg.Add(3)
 

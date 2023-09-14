@@ -1201,6 +1201,59 @@ func suitHero2Redis(ctx *context.Context) error {
 	return nil
 }
 
+func GetEquipHeroSuit(ctx *context.Context, platform int, equipID string) ([]*dto.SearchResultList, error) {
+	// 获取英雄适配数据
+	suitHeroes := make([]*dto.SearchResultList, 0)
+
+	min := "-inf"
+	max := "+inf"
+	// ZREVRANGE my_rankings 0 2 WITHSCORES
+	key := fmt.Sprintf(redis.KeyCacheEquipHeroSuit, platform, equipID)
+	score := redis.RDB.ZRevRangeByScoreWithScores(ctx, key, &redis2.ZRangeBy{
+		Min: min,
+		Max: max,
+		//Offset: 0,
+		//Count:  100,
+	})
+
+	var heroesID []string
+	for _, k := range score.Val() {
+		heroesID = append(heroesID, k.Member.(string))
+	}
+
+	if len(heroesID) == 0 {
+		return suitHeroes, nil
+	}
+
+	had := dao.NewHeroAttributeDAO()
+	heroes, err := had.Find([]string{
+		"heroId", "name", "title", "avatar", "platform", "version",
+	}, map[string]interface{}{
+		"heroId": heroesID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, hero := range heroes {
+		name := ""
+		if platform == common.PlatformForLOL {
+			name = hero.Name + " " + hero.Title
+		} else {
+			name = hero.Title + " " + hero.Name
+		}
+		suitHeroes = append(suitHeroes, &dto.SearchResultList{
+			Id:       hero.HeroId,
+			Name:     name,
+			Icon:     hero.Avatar,
+			Platform: hero.Platform,
+			Version:  hero.Version,
+		})
+	}
+
+	return suitHeroes, nil
+}
+
 func GetRuneHeroSuit(ctx *context.Context, platform int, runeID string) ([]*dto.SearchResultList, error) {
 	// 获取英雄适配数据
 	suitHeroes := make([]*dto.SearchResultList, 0)
@@ -1219,6 +1272,10 @@ func GetRuneHeroSuit(ctx *context.Context, platform int, runeID string) ([]*dto.
 	var heroesID []string
 	for _, k := range score.Val() {
 		heroesID = append(heroesID, k.Member.(string))
+	}
+
+	if len(heroesID) == 0 {
+		return suitHeroes, nil
 	}
 
 	had := dao.NewHeroAttributeDAO()
@@ -1268,6 +1325,10 @@ func GetSkillHeroSuit(ctx *context.Context, platform int, skillID string) ([]*dt
 	var heroesID []string
 	for _, k := range score.Val() {
 		heroesID = append(heroesID, k.Member.(string))
+	}
+
+	if len(heroesID) == 0 {
+		return suitHeroes, nil
 	}
 
 	had := dao.NewHeroAttributeDAO()

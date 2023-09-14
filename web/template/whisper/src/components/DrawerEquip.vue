@@ -1,6 +1,11 @@
 <script>
+import LoadingPart from "@/components/LoadingPart.vue";
+import axios from "axios";
 
 export default {
+  components: {
+    LoadingPart
+  },
   emits: ['skipSearch'],
   props: {
     equipResult: {
@@ -12,8 +17,11 @@ export default {
   data() {
     return {
       sideDrawer: {
+        isLoading:false,
         show: false,
         title: '合成路线',
+        heroes:[],
+        loadingHeroes:false,
       },
     }
   },
@@ -24,8 +32,33 @@ export default {
     'equipResult.isLoading'(isLoading) {
       this.sideDrawer.isLoading = isLoading
     },
+    'equipResult.data'(data){
+      this.querySuitHeroes(data.current.platform,data.current.version,data.current.ID)
+    }
   },
-  methods: {}
+  methods: {
+    querySuitHeroes(platform,version,id) {
+      this.sideDrawer.loadingHeroes  = true
+      axios.post('/equip/hero/suit', {
+            'platform': platform,
+            'version': version,
+            'id': id,
+          }
+      ).then(response => {
+            this.sideDrawer.heroes = response.data.data
+          }
+      ).catch(error => {
+            console.error('Error fetching server data:', error);
+          }
+      ).finally(() => {
+            this.sideDrawer.loadingHeroes = false
+          }
+      );
+    }
+  },
+  mounted() {
+
+  },
 }
 </script>
 
@@ -147,17 +180,21 @@ export default {
       <!-- summary END-->
 
       <!-- 适配英雄 START-->
-      <h4 class="equip-suit-hero">适配英雄</h4>
-      <template v-for="(hero,i) in equipResult.data['suit_heroes']" :key="i">
-        <a-tooltip :title="hero.name">
-          <img class="equip-hero-avatar"
-               :title="hero.name"
-               :src="hero.icon"
-               :alt="hero.name"
-          />
-
-        </a-tooltip>
+      <h4 class="equip-suit-hero" v-if="sideDrawer.loadingHeroes" >适配英雄</h4>
+      <LoadingPart v-if="sideDrawer.loadingHeroes" />
+      <template v-if="!sideDrawer.loadingHeroes && sideDrawer.heroes.length > 0" >
+        <h4 class="equip-suit-hero">适配英雄</h4>
+        <template v-for="(hero,i) in sideDrawer.heroes" :key="i">
+          <a-tooltip :title="hero.name">
+            <img class="equip-hero-avatar"
+                 :title="hero.name"
+                 :src="hero.icon"
+                 :alt="hero.name"
+            />
+          </a-tooltip>
+        </template>
       </template>
+
       <!-- 适配英雄 END-->
     </template>
   </a-drawer>
