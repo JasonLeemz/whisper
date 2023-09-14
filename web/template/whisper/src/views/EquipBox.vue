@@ -138,6 +138,7 @@ export default {
         <ListEquip
             v-if="!SkeletonState.show"
             :query-result="query"
+            :form-data="formData"
         />
 
         <a-back-top/>

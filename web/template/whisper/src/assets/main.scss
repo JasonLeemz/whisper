@@ -120,6 +120,11 @@
       padding: 15px 15px 5px 15px;
       position: relative;
 
+      em{
+        font-style: inherit;
+        color: #ff5722;
+      }
+
       .ant-tag-wrap {
         margin-top: -10px;
         padding-left: 42px;
@@ -181,6 +186,11 @@
 .mainText {
   font-size: 13px;
   line-height: 1.8;
+
+  em{
+    font-style: inherit;
+    color: #ff5722;
+  }
 
   buffedStat, attention, passive, status {
     font-weight: bold;

@@ -270,7 +270,6 @@ func (dao *LOLMEquipmentDAO) GetRoadmap(version string, id string, maps []string
 		"status":  0,
 		"version": version,
 		"equipId": id,
-		"maps":    maps,
 	})
 	if err != nil {
 		return nil, err
@@ -284,7 +283,6 @@ func (dao *LOLMEquipmentDAO) GetRoadmap(version string, id string, maps []string
 		"status":  0,
 		"version": version,
 		"equipId": strings.Split(current[0].From, ","),
-		"maps":    maps,
 	})
 	if err != nil {
 		return nil, err
@@ -295,7 +293,6 @@ func (dao *LOLMEquipmentDAO) GetRoadmap(version string, id string, maps []string
 		"status":  0,
 		"version": version,
 		"equipId": strings.Split(current[0].Into, ","),
-		"maps":    maps,
 	})
 	if err != nil {
 		return nil, err

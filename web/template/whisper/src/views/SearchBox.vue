@@ -190,7 +190,6 @@ export default {
                   :options="formData.dataSource"
                   :backfill="true"
                   :defaultActiveFirstOption="false"
-                  :autofocus="true"
                   @select="onSelect"
                   @search="debounceSearch"
                   @keyup.enter="search"
@@ -255,16 +254,19 @@ export default {
             <ListHeroes
                 v-if="formData.category==='lol_heroes'"
                 :query-result="query.hero"
+                :form-data="formData"
             />
 
             <ListRune
                 v-if="formData.category==='lol_rune'"
                 :query-result="query.rune"
+                :form-data="formData"
             />
 
             <ListSkill
                 v-if="formData.category==='lol_skill'"
                 :query-result="query.skill"
+                :form-data="formData"
             />
 
         </template>

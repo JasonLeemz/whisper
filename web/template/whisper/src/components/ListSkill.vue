@@ -2,13 +2,16 @@
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
 import axios from "axios";
 import DrawerSkill from "@/components/DrawerSkill.vue";
+
 export default {
-  components: { DrawerSkill, ExclamationCircleOutlined},
+  components: {DrawerSkill, ExclamationCircleOutlined},
   props: {
     queryResult: Object, // 父组件传递的数据类型
+    formData: Object,
   },
   data() {
     return {
+      skills: {},
       drawer: {
         show: 0,
         isLoading: false,
@@ -38,6 +41,19 @@ export default {
           }
       );
     },
+    highlight(keywords, text) {
+      let newText = text.replace(new RegExp(`(${keywords})`, 'g'), `<em>$1</em>`);
+      return newText
+    },
+  },
+  mounted() {
+    this.skills = this.queryResult.data
+    if (this.formData != null) {
+      for (let i in this.skills) {
+        this.skills[i].name = this.highlight(this.formData.key_words, this.skills[i].name)
+        this.skills[i].desc = this.highlight(this.formData.key_words, this.skills[i].desc)
+      }
+    }
   }
 }
 </script>
@@ -46,10 +62,13 @@ export default {
   <a-descriptions>
     <a-descriptions-item>{{ queryResult.tips }}</a-descriptions-item>
   </a-descriptions>
-  <div class="result-card" v-for="(item,i) in queryResult.data" :key="i">
+  <div class="result-card" v-for="(item,i) in skills" :key="i">
     <a-space direction="vertical">
       <a-card :hoverable="true" @click="showDrawer(item.platform,item.version,item.id)">
-        <a-card-meta :title="item.name">
+        <a-card-meta>
+          <template #title>
+            <span v-html="item.name"/>
+          </template>
           <template #avatar>
             <a-avatar :src="item.icon"/>
           </template>

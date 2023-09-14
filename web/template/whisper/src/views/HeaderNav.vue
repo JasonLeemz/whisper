@@ -50,7 +50,6 @@ export default {
   methods: {
     showProgress(p) {
       this.loading_percent = p
-      // console.log(p)
     }
   }
 }

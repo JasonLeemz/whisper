@@ -7,9 +7,11 @@ export default {
   components: {ExclamationCircleOutlined, DrawerHero},
   props: {
     queryResult: Object, // 父组件传递的数据类型
+    formData: Object,
   },
   data() {
     return {
+      heroes:{},
       drawer: {
         show: 0,
         isLoading: false,
@@ -41,10 +43,22 @@ export default {
           }
       );
     },
-
+    highlight(keywords, text) {
+      let newText = text.replace(new RegExp(`(${keywords})`, 'g'), `<em>$1</em>`);
+      return newText
+    },
   },
   mounted() {
-  },
+    this.heroes = this.queryResult.data
+    if (this.formData != null) {
+      for (let i in this.heroes) {
+        this.heroes[i].name = this.highlight(this.formData.key_words, this.heroes[i].name)
+        for (let j in this.heroes[i].spell) {
+          this.heroes[i].spell[j].desc = this.highlight(this.formData.key_words, this.heroes[i].spell[j].desc)
+        }
+      }
+    }
+  }
 }
 </script>
 
@@ -52,10 +66,13 @@ export default {
   <a-descriptions>
     <a-descriptions-item>{{ queryResult.tips }}</a-descriptions-item>
   </a-descriptions>
-  <div class="result-card" v-for="(item,i) in queryResult.data" :key="i">
+  <div class="result-card" v-for="(item,i) in heroes" :key="i">
     <a-space direction="vertical">
       <a-card :hoverable="true" @click="showDrawer(item.platform,item.version,item.id)">
-        <a-card-meta :title="item.name">
+        <a-card-meta>
+          <template #title>
+            <span v-html="item.name" />
+          </template>
           <template #avatar>
             <a-avatar :src="item.icon" class="hero-icon"/>
           </template>
