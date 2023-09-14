@@ -15,8 +15,9 @@ const mapOptions = [
 </script>
 <script>
 import axios from 'axios';
+import { debounce } from 'lodash'
 import {message} from 'ant-design-vue';
-import ListSkeleton from "@/components/ListSkeleton.vue";
+import LoadingList from "@/components/LoadingList.vue";
 import ListEquip from "@/components/ListEquip.vue";
 import ListHeroes from "@/components/ListHeroes.vue";
 import ListRune from "@/components/ListRune.vue";
@@ -26,7 +27,7 @@ import {ref} from "vue";
 export default {
   emits: ['loadingEvent'],
   components: {
-    ListSkeleton, ListEquip, ListHeroes, ListRune, ListSkill
+    LoadingList, ListEquip, ListHeroes, ListRune, ListSkill
   },
   data() {
     return {
@@ -115,6 +116,7 @@ export default {
       );
     },
     onSelect(keywords) {
+      console.log("onSelect",keywords)
       this.formData.key_words = keywords
       this.search()
     },
@@ -129,6 +131,8 @@ export default {
                 })
               }
               this.formData.dataSource = ref(options)
+            }else{
+              this.formData.dataSource = ref([])
             }
           })
           .catch(error => {
@@ -139,9 +143,13 @@ export default {
       );
     },
     handleSearch(val) {
-      console.log(val)
+      console.log("handleSearch",val)
       this.searchResult(val)
     },
+    debounceSearch: debounce(function(val) {
+      // 在这里发起请求
+      this.handleSearch(val);
+    }, 1000)
   },
   created() {
   },
@@ -153,7 +161,9 @@ export default {
     },
     'formData.platform':{
       handler(){
-        this.search()
+        if (this.formData.key_words !== ''){
+          this.search()
+        }
         this.searchResult()
       },
     },
@@ -180,8 +190,12 @@ export default {
                   style="width: 100%"
                   v-model:value="formData.key_words"
                   :options="formData.dataSource"
+                  :backfill="true"
+                  :defaultActiveFirstOption="false"
+                  :autofocus="true"
                   @select="onSelect"
-                  @search="handleSearch"
+                  @search="debounceSearch"
+                  @keyup.enter="search"
                   allow-clear>
 
                 <template #option="item">
@@ -227,31 +241,34 @@ export default {
           </Transition>
         </a-form>
 
-        <ListSkeleton
+        <LoadingList
             v-if="SkeletonState.show"
             :skeleton-state="SkeletonState"/>
 
         <template v-if="!SkeletonState.show">
-          <ListEquip
-              v-if="formData.category==='lol_equipment'"
-              :query-result="query.equip"
-              @drawer-search="drawerSearch"
-          />
 
-          <ListHeroes
-              v-if="formData.category==='lol_heroes'"
-              :query-result="query.hero"
-          />
+            <ListEquip
+                v-if="formData.category==='lol_equipment'"
+                :query-result="query.equip"
+                :form-data="formData"
+                @drawer-search="drawerSearch"
+            />
 
-          <ListRune
-              v-if="formData.category==='lol_rune'"
-              :query-result="query.rune"
-          />
+            <ListHeroes
+                v-if="formData.category==='lol_heroes'"
+                :query-result="query.hero"
+            />
 
-          <ListSkill
-              v-if="formData.category==='lol_skill'"
-              :query-result="query.skill"
-          />
+            <ListRune
+                v-if="formData.category==='lol_rune'"
+                :query-result="query.rune"
+            />
+
+            <ListSkill
+                v-if="formData.category==='lol_skill'"
+                :query-result="query.skill"
+            />
+
         </template>
         <a-back-top/>
       </a-layout-content>
@@ -260,4 +277,13 @@ export default {
 </template>
 
 <style scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
 </style>

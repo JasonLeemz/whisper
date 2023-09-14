@@ -105,7 +105,7 @@ func (dao *HeroesSuitDAO) FindHighRateEquip(query []string, cond map[string]inte
 		Where(cond).
 		Where(
 			"type in ? AND CAST(winrate AS SIGNED) >= ? AND CAST(showrate AS SIGNED) >= ? AND platform = ?",
-			[]int{1, 2, 3}, 4000, 4000, 0).
+			[]int{0, 1, 2, 3}, 4000, 4000, 0).
 		Or("winrate = ? AND showrate= ? AND platform = ?", "", "", 1).
 		Find(&result)
 	if tx.RowsAffected > 0 && result[0].Id == 0 {

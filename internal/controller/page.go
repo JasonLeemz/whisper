@@ -32,9 +32,10 @@ func QueryEquipTypes(ctx *context.Context) {
 }
 
 type ReqGetRoadmap struct {
-	ID       string `form:"id" json:"id" binding:"required"`
-	Version  string `form:"version" json:"version" binding:"required"`
-	Platform int    `form:"platform" json:"platform" binding:"-"`
+	ID       string   `form:"id" json:"id" binding:"required"`
+	Version  string   `form:"version" json:"version" binding:"required"`
+	Maps     []string `json:"map,omitempty" form:"map,omitempty"`
+	Platform int      `form:"platform" json:"platform" binding:"-"`
 }
 
 func GetRoadmap(ctx *context.Context) {
@@ -42,7 +43,7 @@ func GetRoadmap(ctx *context.Context) {
 	if err := ctx.Bind(req); err != nil {
 		return
 	}
-	roadmap, err := logic.GetRoadmap(ctx, req.Version, req.Platform, req.ID)
+	roadmap, err := logic.GetRoadmap(ctx, req.Version, req.Platform, req.ID, req.Maps)
 
 	ctx.Reply(roadmap, errors.New(err))
 }

@@ -79,13 +79,14 @@ func (dao *LOLEquipmentDAO) GetLOLEquipment(version string) ([]*model.LOLEquipme
 	return equip, tx.Error
 }
 
-func (dao *LOLEquipmentDAO) GetRoadmap(version string, id string) (map[string][]*model.LOLEquipment, error) {
+func (dao *LOLEquipmentDAO) GetRoadmap(version string, id string, maps []string) (map[string][]*model.LOLEquipment, error) {
 	result := make(map[string][]*model.LOLEquipment)
 
 	current, err := dao.Find(nil, map[string]interface{}{
 		"status":  0,
 		"version": version,
 		"itemId":  id,
+		"maps":    maps,
 	})
 	if err != nil {
 		return nil, err
@@ -99,6 +100,7 @@ func (dao *LOLEquipmentDAO) GetRoadmap(version string, id string) (map[string][]
 		"status":  0,
 		"version": version,
 		"itemId":  strings.Split(current[0].From, ","),
+		"maps":    maps,
 	})
 	if err != nil {
 		return nil, err
@@ -109,6 +111,7 @@ func (dao *LOLEquipmentDAO) GetRoadmap(version string, id string) (map[string][]
 		"status":  0,
 		"version": version,
 		"itemId":  strings.Split(current[0].Into, ","),
+		"maps":    maps,
 	})
 	if err != nil {
 		return nil, err
@@ -260,13 +263,14 @@ func (dao *LOLMEquipmentDAO) GetLOLMEquipment(version string) ([]*model.LOLMEqui
 	return equip, tx.Error
 }
 
-func (dao *LOLMEquipmentDAO) GetRoadmap(version string, id string) (map[string][]*model.LOLMEquipment, error) {
+func (dao *LOLMEquipmentDAO) GetRoadmap(version string, id string, maps []string) (map[string][]*model.LOLMEquipment, error) {
 	result := make(map[string][]*model.LOLMEquipment)
 
 	current, err := dao.Find(nil, map[string]interface{}{
 		"status":  0,
 		"version": version,
 		"equipId": id,
+		"maps":    maps,
 	})
 	if err != nil {
 		return nil, err
@@ -280,6 +284,7 @@ func (dao *LOLMEquipmentDAO) GetRoadmap(version string, id string) (map[string][
 		"status":  0,
 		"version": version,
 		"equipId": strings.Split(current[0].From, ","),
+		"maps":    maps,
 	})
 	if err != nil {
 		return nil, err
@@ -290,6 +295,7 @@ func (dao *LOLMEquipmentDAO) GetRoadmap(version string, id string) (map[string][
 		"status":  0,
 		"version": version,
 		"equipId": strings.Split(current[0].Into, ","),
+		"maps":    maps,
 	})
 	if err != nil {
 		return nil, err

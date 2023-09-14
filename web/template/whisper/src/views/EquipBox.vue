@@ -3,16 +3,21 @@
 </script>
 <script>
 import axios from 'axios';
-import ListSkeleton from "@/components/ListSkeleton.vue";
+import LoadingForm from "@/components/LoadingForm.vue";
+import LoadingList from "@/components/LoadingList.vue";
 import ListEquip from "@/components/ListEquip.vue";
 
 export default {
   emits: ['loadingEvent'],
   components: {
-    ListSkeleton, ListEquip
+    LoadingForm, LoadingList, ListEquip
   },
   data() {
     return {
+      showCheckbox: true,
+      loadingState: {
+        condCheckbox: true,
+      },
       formData: {
         platform: '0',
         keywords: [],
@@ -26,7 +31,6 @@ export default {
             }],
           }
         ],
-        drawer: true,
       },
       SkeletonState: {
         show: false,
@@ -76,12 +80,16 @@ export default {
     // 使用 Axios 发起请求获取服务器数据
     axios.get('/equip/types')
         .then(response => {
-          // 将服务器返回的数据更新到组件的 serverData 字段
-          this.formData.equipTypes = response.data.data.types;
-        })
-        .catch(error => {
+              // 将服务器返回的数据更新到组件的 serverData 字段
+              this.formData.equipTypes = response.data.data.types;
+            }
+        ).catch(error => {
           console.error('Error fetching server data:', error);
-        });
+        }
+    ).finally(() => {
+          this.loadingState.condCheckbox = false;
+        }
+    );
   }
 }
 </script>
@@ -96,29 +104,34 @@ export default {
               <a-radio value=0>端游</a-radio>
               <a-radio value=1>手游</a-radio>
             </a-radio-group>
-            <a-button type="link" class="cond-drawer" size="small" @click="formData.drawer = !formData.drawer">
-              {{ formData.drawer ? '收起条件' : '展开条件' }}
+            <a-button type="link" class="cond-drawer" size="small" @click="showCheckbox = !showCheckbox">
+              {{ showCheckbox ? '收起条件' : '展开条件' }}
             </a-button>
           </div>
 
-          <a-checkbox-group v-model:value="formData.keywords" v-show="formData.drawer">
-            <a-descriptions v-for="(cate, index) in formData.equipTypes" :title="cate.cate" :key="index">
-              <a-descriptions-item>
-                <a-checkbox v-for="(sub_cate, ii) in cate.sub_cate" :key="ii" :id="index+'-'+ii+'-equip-checkbox'"
-                            :value="sub_cate.keywordsStr">
-                  <a-tooltip placement="top" class="equip-box-tooltip">
-                    <template #title>
-                      <span>{{ sub_cate.keywordsStr }}</span>
-                    </template>
-                    {{ sub_cate.name }}
-                  </a-tooltip>
-                </a-checkbox>
-              </a-descriptions-item>
-            </a-descriptions>
-          </a-checkbox-group>
+          <LoadingForm v-if="loadingState.condCheckbox"/>
+          <Transition>
+            <template v-if="showCheckbox && !loadingState.condCheckbox">
+              <a-checkbox-group v-model:value="formData.keywords">
+                <a-descriptions v-for="(cate, index) in formData.equipTypes" :title="cate.cate" :key="index">
+                  <a-descriptions-item>
+                    <a-checkbox v-for="(sub_cate, ii) in cate.sub_cate" :key="ii" :id="index+'-'+ii+'-equip-checkbox'"
+                                :value="sub_cate.keywordsStr">
+                      <a-tooltip placement="top" class="equip-box-tooltip">
+                        <template #title>
+                          <span>{{ sub_cate.keywordsStr }}</span>
+                        </template>
+                        {{ sub_cate.name }}
+                      </a-tooltip>
+                    </a-checkbox>
+                  </a-descriptions-item>
+                </a-descriptions>
+              </a-checkbox-group>
+            </template>
+          </Transition>
         </a-form>
 
-        <ListSkeleton
+        <LoadingList
             v-if="SkeletonState.show"
             :skeleton-state="SkeletonState"/>
 
@@ -134,4 +147,13 @@ export default {
 </template>
 
 <style scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
 </style>

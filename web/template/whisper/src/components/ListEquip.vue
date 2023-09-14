@@ -8,6 +8,7 @@ export default {
   components: {DrawerEquip, ExclamationCircleOutlined},
   props: {
     queryResult: Object, // 父组件传递的数据类型
+    formData: Object,
   },
   data() {
     return {
@@ -28,6 +29,7 @@ export default {
             'platform': platform,
             'version': version,
             'id': id,
+            'map': this.formData.map,
           }
       ).then(response => {
             this.drawer.data = response.data.data
@@ -40,8 +42,8 @@ export default {
           }
       );
     },
-    skipSearch(keywords){
-      if (this.queryResult.referer === 'equip-box'){
+    skipSearch(keywords) {
+      if (this.queryResult.referer === 'equip-box') {
         return
       }
       this.drawer.show = 0

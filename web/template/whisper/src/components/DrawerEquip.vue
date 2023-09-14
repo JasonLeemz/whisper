@@ -57,6 +57,11 @@ export default {
                     价格:{{ equip.price }}
                   </span>
                 </a-tag>
+                <a-tag>
+                  <span class="roadmap-item-price">
+                    {{ equip.maps }}
+                  </span>
+                </a-tag>
               </div>
               <span v-html="equip.desc"></span>
             </template>
@@ -79,10 +84,14 @@ export default {
                     价格:{{ equipResult.data['current'].price }}
                   </span>
                 </a-tag>
+                <a-tag>
+                  <span class="roadmap-item-price">
+                    {{ equipResult.data['current'].maps }}
+                  </span>
+                </a-tag>
               </div>
             </template>
-            <img @click="$emit('skipSearch',equipResult.data['current'].name)"
-                 class="equip-roadmap equip-current"
+            <img class="equip-roadmap equip-current"
                  :src="equipResult.data['current'].icon"
                  alt="">
           </a-popover>
@@ -100,6 +109,11 @@ export default {
                 <a-tag>
                   <span class="roadmap-item-price">
                     价格:{{ equip.price }}
+                  </span>
+                </a-tag>
+                <a-tag>
+                  <span class="roadmap-item-price">
+                    {{ equip.maps }}
                   </span>
                 </a-tag>
               </div>

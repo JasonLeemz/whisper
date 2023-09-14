@@ -462,11 +462,11 @@ func convRoadmapData4LOLM(data any) (string, []string) {
 	return strings.Join(t, ","), t
 }
 
-func GetRoadmap(ctx *context.Context, version string, platform int, equipID string) (*dto.RespRoadmap, error) {
+func GetRoadmap(ctx *context.Context, version string, platform int, equipID string, maps []string) (*dto.RespRoadmap, error) {
 	resp := dto.RespRoadmap{}
 	if platform == common.PlatformForLOL {
 		ed := dao.NewLOLEquipmentDAO()
-		roadmap, err := ed.GetRoadmap(version, equipID)
+		roadmap, err := ed.GetRoadmap(version, equipID, maps)
 		if err != nil {
 			return nil, err
 		}
@@ -523,7 +523,7 @@ func GetRoadmap(ctx *context.Context, version string, platform int, equipID stri
 		resp.GapPriceFrom = resp.Current.Price - fromPrice
 	} else {
 		ed := dao.NewLOLMEquipmentDAO()
-		roadmap, err := ed.GetRoadmap(version, equipID)
+		roadmap, err := ed.GetRoadmap(version, equipID, maps)
 		if err != nil {
 			return nil, err
 		}
