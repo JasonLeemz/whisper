@@ -111,7 +111,7 @@ export default {
           </template>
         </a-card-meta>
         <div class="ant-tag-wrap">
-          <a-tag v-for="tag in item.tags" :key="tag.id" color="blue" :title="tag">{{ tag }}</a-tag>
+          <a-tag v-for="tag in item.tags" :key="tag.id" color="blue" :title="tag" v-show="tag !== '-'">{{ tag }}</a-tag>
         </div>
         <a-tag class="platform-tag" color="warning">
           <template #icon>

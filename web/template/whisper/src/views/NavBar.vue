@@ -73,7 +73,7 @@ export default {
   </Transition>
   <RouterView @loading-event="showProgress"/>
   <div class="nav-bar">
-    <a-menu v-model:selectedKeys="current" mode="horizontal" >
+    <a-menu v-model:selectedKeys="current" mode="horizontal" class="glass">
       <a-menu-item key='SearchBox'>
         <SearchOutlined/>
         <span><RouterLink to="/">检索</RouterLink></span>
@@ -119,5 +119,9 @@ export default {
 .version-tip{
   display: inline-block;
   width: 40px;
+}
+
+.glass {
+  box-shadow: 0 -2px 10px rgba(0,0,0,.05);
 }
 </style>
