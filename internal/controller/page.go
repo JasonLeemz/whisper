@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"whisper/internal/dto"
 	"whisper/internal/logic"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
@@ -16,10 +17,17 @@ func QueryVersion(ctx *context.Context) {
 	// 获取手游版本
 	v2 := logic.GetCurrentLOLMVersion(ctx)
 
-	ctx.Reply(map[string]interface{}{
-		"lol_version":  v1,
-		"lolm_version": v2,
-	}, nil)
+	v := dto.Version{
+		LOL: dto.VersionDetail{
+			Version:    v1.Version,
+			UpdateTime: v1.FileTime,
+		},
+		LOLM: dto.VersionDetail{
+			Version:    v2.Version,
+			UpdateTime: v2.FileTime,
+		},
+	}
+	ctx.Reply(v, nil)
 }
 
 func QueryEquipTypes(ctx *context.Context) {

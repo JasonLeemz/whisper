@@ -1,27 +1,15 @@
 <script setup>
 import {RightOutlined, SearchOutlined} from '@ant-design/icons-vue';
-
-const wayOptions = [
-  {label: '按名字', value: 'name'},
-  {label: '按介绍', value: 'description'},
-];
-
-const mapOptions = [
-  {label: '召唤师峡谷', value: '召唤师峡谷'},
-  {label: '嚎哭深渊', value: '嚎哭深渊'},
-  {label: '斗魂竞技场', value: '斗魂竞技场'},
-];
-
 </script>
 <script>
 import axios from 'axios';
-import { debounce } from 'lodash'
 import {message} from 'ant-design-vue';
 import LoadingList from "@/components/LoadingList.vue";
 import ListEquip from "@/components/ListEquip.vue";
 import ListHeroes from "@/components/ListHeroes.vue";
 import ListRune from "@/components/ListRune.vue";
 import ListSkill from "@/components/ListSkill.vue";
+import {debounce} from 'lodash'
 import {ref} from "vue";
 
 export default {
@@ -31,14 +19,23 @@ export default {
   },
   data() {
     return {
+      dataSource: ref([]),
       formData: {
-        dataSource: ref([]),
         key_words: '',
         platform: '0',
         category: 'lol_equipment',
-        way: ['name', 'description'],
-        map: ['召唤师峡谷'],
-        more_cond_show: true,
+        switch: {
+          way: {
+            name: true,
+            description: true,
+          },
+          maps: {
+            _5v5: true,
+            _dld: false,
+            _2v2: false,
+          }
+        },
+        more_cond_show: false,
       },
       SkeletonState: {
         show: false,
@@ -129,9 +126,9 @@ export default {
                   value: response.data.data[i],
                 })
               }
-              this.formData.dataSource = ref(options)
-            }else{
-              this.formData.dataSource = ref([])
+              this.dataSource = ref(options)
+            } else {
+              this.dataSource = ref([])
             }
           })
           .catch(error => {
@@ -144,22 +141,22 @@ export default {
     handleSearch(val) {
       this.searchResult(val)
     },
-    debounceSearch: debounce(function(val) {
+    debounceSearch: debounce(function (val) {
       // 在这里发起请求
       this.handleSearch(val);
-    }, 1000)
+    }, 500)
   },
   created() {
   },
   watch: {
-    'formData.category':{
-      handler(){
+    'formData.category': {
+      handler() {
         this.searchResult()
       },
     },
-    'formData.platform':{
-      handler(){
-        if (this.formData.key_words !== ''){
+    'formData.platform': {
+      handler() {
+        if (this.formData.key_words !== '') {
           this.search()
         }
         this.searchResult()
@@ -187,7 +184,7 @@ export default {
                   name="search-input"
                   style="width: 100%"
                   v-model:value="formData.key_words"
-                  :options="formData.dataSource"
+                  :options="dataSource"
                   :backfill="true"
                   :defaultActiveFirstOption="false"
                   @select="onSelect"
@@ -213,15 +210,15 @@ export default {
             </a-space-compact>
           </div>
           <div class="blank"></div>
-          <a-radio-group v-model:value="formData.category" name="radioGroup">
-            <a-radio value="lol_equipment">装备</a-radio>
-            <a-radio value="lol_heroes">英雄</a-radio>
-            <a-radio value="lol_rune">符文</a-radio>
-            <a-radio value="lol_skill">召唤师技能</a-radio>
+          <a-radio-group v-model:value="formData.category" button-style="solid" size="small" name="radioGroup">
+            <a-radio-button value="lol_equipment">装备</a-radio-button>
+            <a-radio-button value="lol_heroes">英雄</a-radio-button>
+            <a-radio-button value="lol_rune">符文</a-radio-button>
+            <a-radio-button value="lol_skill">召唤师技能</a-radio-button>
           </a-radio-group>
           <div class="blank"></div>
           <div class="blank"></div>
-          <a-space @click="formData.more_cond_show = !formData.more_cond_show" direction="vertical">
+          <a-space @click="formData.more_cond_show = !formData.more_cond_show" class="more-cond-switch">
             <a-typography-text>更多条件
               <RightOutlined :rotate="formData.more_cond_show ? 90 : 0"/>
             </a-typography-text>
@@ -229,10 +226,22 @@ export default {
           <Transition>
             <div v-show="formData.more_cond_show">
               <div>
-                <a-checkbox-group v-model:value="formData.way" name="way" :options="wayOptions"/>
+                <a-space>
+                  <a-switch v-model:checked="formData.switch.way.name" checked-children="按名字"
+                            un-checked-children="按名字" size="small"/>
+                  <a-switch v-model:checked="formData.switch.way.description" checked-children="按介绍"
+                            un-checked-children="按介绍" size="small"/>
+                </a-space>
               </div>
               <div>
-                <a-checkbox-group v-model:value="formData.map" name="map" :options="mapOptions"/>
+                <a-space>
+                  <a-switch v-model:checked="formData.switch.maps._5v5" checked-children="召唤师峡谷"
+                            un-checked-children="召唤师峡谷" size="small"/>
+                  <a-switch v-model:checked="formData.switch.maps._dld" checked-children="嚎哭深渊"
+                            un-checked-children="嚎哭深渊" size="small"/>
+                  <a-switch v-model:checked="formData.switch.maps._2v2" checked-children="斗魂竞技场"
+                            un-checked-children="斗魂竞技场" size="small"/>
+                </a-space>
               </div>
             </div>
           </Transition>
@@ -244,30 +253,30 @@ export default {
 
         <template v-if="!SkeletonState.show">
 
-            <ListEquip
-                v-if="formData.category==='lol_equipment'"
-                :query-result="query.equip"
-                :form-data="formData"
-                @drawer-search="drawerSearch"
-            />
+          <ListEquip
+              v-if="formData.category==='lol_equipment'"
+              :query-result="query.equip"
+              :form-data="formData"
+              @drawer-search="drawerSearch"
+          />
 
-            <ListHeroes
-                v-if="formData.category==='lol_heroes'"
-                :query-result="query.hero"
-                :form-data="formData"
-            />
+          <ListHeroes
+              v-if="formData.category==='lol_heroes'"
+              :query-result="query.hero"
+              :form-data="formData"
+          />
 
-            <ListRune
-                v-if="formData.category==='lol_rune'"
-                :query-result="query.rune"
-                :form-data="formData"
-            />
+          <ListRune
+              v-if="formData.category==='lol_rune'"
+              :query-result="query.rune"
+              :form-data="formData"
+          />
 
-            <ListSkill
-                v-if="formData.category==='lol_skill'"
-                :query-result="query.skill"
-                :form-data="formData"
-            />
+          <ListSkill
+              v-if="formData.category==='lol_skill'"
+              :query-result="query.skill"
+              :form-data="formData"
+          />
 
         </template>
         <a-back-top/>

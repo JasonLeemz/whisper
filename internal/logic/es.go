@@ -27,6 +27,7 @@ type SearchParams struct {
 	KeyWords string   `json:"key_words"`
 	Platform string   `json:"platform,omitempty"`
 	Category string   `json:"category,omitempty"`
+	Version  string   `json:"version,omitempty"`
 	Way      []string `json:"way,omitempty"`
 	Map      []string `json:"map,omitempty"`
 }

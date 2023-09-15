@@ -20,8 +20,7 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      lol_version: null,
-      lolm_version: null,
+      version_list:{},
       loading_percent: 0,
       isLoading: false,
     }
@@ -40,8 +39,8 @@ export default {
     axios.get('/version')
         .then(response => {
           // 将服务器返回的数据更新到组件的 serverData 字段
-          this.lol_version = response.data.data.lol_version;
-          this.lolm_version = response.data.data.lolm_version;
+          this.version_list = response.data.data;
+          console.log(this.version_list)
         })
         .catch(error => {
           console.error('Error fetching server data:', error);
@@ -68,7 +67,10 @@ export default {
   <a-row>
     <a-col :span="24">
       <div class="alert-banner">
-        Tips: 当前端游版本为 {{ lol_version }}，手游版本为 {{ lolm_version }}
+        Tips: 当前端游版本为
+        <span :title="version_list.LOL.update_time">{{ version_list.LOL.version }}</span>
+        手游版本为
+        <span :title="version_list.LOLM.update_time">{{ version_list.LOLM.version }}</span>
       </div>
       <a-menu v-model:selectedKeys="current" mode="horizontal">
         <a-menu-item key='SearchBox'>

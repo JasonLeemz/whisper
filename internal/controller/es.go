@@ -15,11 +15,21 @@ import (
 )
 
 type ReqQuery struct {
-	KeyWords string   `json:"key_words" form:"key_words"`
-	Platform string   `json:"platform,omitempty" form:"platform,omitempty"`
-	Category string   `json:"category,omitempty" form:"category,omitempty"`
-	Way      []string `json:"way,omitempty" form:"way,omitempty"`
-	Map      []string `json:"map,omitempty" form:"map,omitempty"`
+	KeyWords string `json:"key_words" form:"key_words"`
+	Platform string `json:"platform,omitempty" form:"platform,omitempty"`
+	Category string `json:"category,omitempty" form:"category,omitempty"`
+	Switch   struct {
+		Way struct {
+			Name        bool `json:"name"`
+			Description bool `json:"description"`
+		} `json:"way"`
+		Maps struct {
+			M5v5 bool `json:"_5V5"`
+			Mdld bool `json:"_dld"`
+			M2v2 bool `json:"_2v2"`
+		} `json:"maps"`
+	} `json:"switch,omitempty" form:"switch,omitempty"`
+	Map []string `json:"map,omitempty" form:"map,omitempty"`
 }
 
 type RespQuery struct {
@@ -52,14 +62,22 @@ func Query(ctx *context.Context) {
 	}()
 
 	way := make([]string, 0, 4)
-	for _, w := range req.Way {
-		if w == "name" {
-			way = append(way, "name", "keywords")
-		}
+	if req.Switch.Way.Name {
+		way = append(way, "name", "keywords")
+	}
+	if req.Switch.Way.Description {
+		way = append(way, "description", "plaintext")
+	}
 
-		if w == "description" {
-			way = append(way, "description", "plaintext")
-		}
+	maps := make([]string, 0, 3)
+	if req.Switch.Maps.M5v5 {
+		maps = append(maps, "召唤师峡谷")
+	}
+	if req.Switch.Maps.Mdld {
+		maps = append(maps, "嚎哭深渊")
+	}
+	if req.Switch.Maps.M2v2 {
+		maps = append(maps, "斗魂竞技场")
 	}
 
 	params := logic.SearchParams{
@@ -67,7 +85,7 @@ func Query(ctx *context.Context) {
 		Platform: req.Platform,
 		Category: req.Category,
 		Way:      way,
-		Map:      req.Map,
+		Map:      maps,
 	}
 
 	result, err := logic.EsSearch(ctx, &params)

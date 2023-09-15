@@ -193,12 +193,9 @@ export default {
           </a-collapse-panel>
         </a-collapse>
         <!-- Panel Wrap END-->
-
         <!-- //////////  //////////  //////////  //////////  ////////// -->
-
-
       </template>
-
     </template>
+
   </a-drawer>
 </template>

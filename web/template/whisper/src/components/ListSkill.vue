@@ -19,7 +19,20 @@ export default {
       },
     }
   },
-  watch: {},
+  watch: {
+    queryResult:{
+      handler(){
+        this.skills = this.queryResult.data
+        if (this.formData != null) {
+          for (let i in this.skills) {
+            this.skills[i].name = this.highlight(this.formData.key_words, this.skills[i].name)
+            this.skills[i].desc = this.highlight(this.formData.key_words, this.skills[i].desc)
+          }
+        }
+      },
+      immediate:true,// 这个属性是重点啦
+    },
+  },
   methods: {
     showDrawer(platform, version, id) {
       this.drawer.show++
@@ -42,18 +55,17 @@ export default {
       );
     },
     highlight(keywords, text) {
-      let newText = text.replace(new RegExp(`(${keywords})`, 'g'), `<em>$1</em>`);
-      return newText
+      return text.replace(new RegExp(`(${keywords})`, 'g'), (match, p1) => {
+        if (p1.includes('<em>') && p1.includes('</em>')) {
+          return match;
+        } else {
+          return `<em>${p1}</em>`;
+        }
+      })
     },
   },
   mounted() {
-    this.skills = this.queryResult.data
-    if (this.formData != null) {
-      for (let i in this.skills) {
-        this.skills[i].name = this.highlight(this.formData.key_words, this.skills[i].name)
-        this.skills[i].desc = this.highlight(this.formData.key_words, this.skills[i].desc)
-      }
-    }
+
   }
 }
 </script>

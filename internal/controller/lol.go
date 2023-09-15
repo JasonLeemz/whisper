@@ -127,8 +127,8 @@ func EquipExtract(ctx *context.Context) {
 }
 
 type ReqEquipFilter struct {
-	Platform string   `form:"platform" json:"platform" binding:"-"`
-	Keywords []string `json:"keywords"`
+	Platform string          `form:"platform" json:"platform" binding:"-"`
+	Keywords map[string]bool `json:"keywords"`
 }
 
 func EquipFilter(ctx *context.Context) {
@@ -138,9 +138,15 @@ func EquipFilter(ctx *context.Context) {
 		return
 	}
 
+	words := make([]string, 0)
+	for kws, state := range req.Keywords {
+		if state {
+			words = append(words, kws)
+		}
+	}
 	defer func() {
-		for _, kws := range req.Keywords {
-			mq.ProduceMessage(mq.Exchange, mq.RoutingKeyEquipBox, []byte(kws))
+		for _, v := range words {
+			mq.ProduceMessage(mq.Exchange, mq.RoutingKeyEquipBox, []byte(v))
 		}
 	}()
 
@@ -148,7 +154,7 @@ func EquipFilter(ctx *context.Context) {
 	if err != nil {
 		ctx.Reply(nil, errors.New(err, errors.ErrNoInvalidInput))
 	}
-	equips, err := logic.FilterKeyWords(ctx, req.Keywords, platform)
+	equips, err := logic.FilterKeyWords(ctx, words, platform)
 
 	resp := dto.SearchResult{}
 	total := len(equips)

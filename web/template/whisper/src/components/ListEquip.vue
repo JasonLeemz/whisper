@@ -24,7 +24,36 @@ export default {
       },
     }
   },
-  watch: {},
+  watch: {
+    queryResult:{
+      handler(){
+        this.equips = this.queryResult.data
+        if (this.formData != null && this.formData.key_words != null) {
+          for (let i in this.equips) {
+            this.equips[i].name = this.highlight(this.formData.key_words, this.equips[i].name)
+            this.equips[i].desc = this.highlight(this.formData.key_words, this.equips[i].desc)
+          }
+        }
+
+        // keywords map["string,string"]bool
+        if (this.formData != null && this.formData.keywords != null){
+          for (let i in this.equips) {
+            // 遍历 Map 的键值对
+            for (let keywords in this.formData.keywords){
+              if (this.formData.keywords[keywords]){
+                let arr = keywords.split(",");
+                for (let k in arr) {
+                  this.equips[i].name = this.highlight(arr[k], this.equips[i].name)
+                  this.equips[i].desc = this.highlight(arr[k], this.equips[i].desc)
+                }
+              }
+            }
+          }
+        }
+      },
+      immediate:true,// 这个属性是重点啦
+    },
+  },
   methods: {
     showDrawer(map, platform, version, id) {
       this.drawer.show++
@@ -63,25 +92,7 @@ export default {
   },
   computed: {},
   mounted() {
-    this.equips = this.queryResult.data
-    if (this.formData != null && this.formData.key_words != null) {
-      for (let i in this.equips) {
-        this.equips[i].name = this.highlight(this.formData.key_words, this.equips[i].name)
-        this.equips[i].desc = this.highlight(this.formData.key_words, this.equips[i].desc)
-      }
-    }
 
-    if (this.formData != null && this.formData.keywords != null){
-      for (let i in this.equips) {
-        for (let j in this.formData.keywords) {
-          let arr = this.formData.keywords[j].split(",");
-          for (let k in arr) {
-            this.equips[i].name = this.highlight(arr[k], this.equips[i].name)
-            this.equips[i].desc = this.highlight(arr[k], this.equips[i].desc)
-          }
-        }
-      }
-    }
   }
 }
 </script>

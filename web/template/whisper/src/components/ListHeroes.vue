@@ -19,7 +19,22 @@ export default {
       }
     }
   },
-  watch: {},
+  watch: {
+    queryResult:{
+      handler(){
+        this.heroes = this.queryResult.data
+        if (this.formData != null) {
+          for (let i in this.heroes) {
+            this.heroes[i].name = this.highlight(this.formData.key_words, this.heroes[i].name)
+            for (let j in this.heroes[i].spell) {
+              this.heroes[i].spell[j].desc = this.highlight(this.formData.key_words, this.heroes[i].spell[j].desc)
+            }
+          }
+        }
+      },
+      immediate:true,// 这个属性是重点啦
+    },
+  },
   methods: {
     showDrawer(platform, version, id) {
       if (id === "") {
@@ -44,20 +59,19 @@ export default {
       );
     },
     highlight(keywords, text) {
-      let newText = text.replace(new RegExp(`(${keywords})`, 'g'), `<em>$1</em>`);
-      return newText
+      return text.replace(new RegExp(`(${keywords})`, 'g'), `<em>$1</em>`)
     },
   },
   mounted() {
-    this.heroes = this.queryResult.data
-    if (this.formData != null) {
-      for (let i in this.heroes) {
-        this.heroes[i].name = this.highlight(this.formData.key_words, this.heroes[i].name)
-        for (let j in this.heroes[i].spell) {
-          this.heroes[i].spell[j].desc = this.highlight(this.formData.key_words, this.heroes[i].spell[j].desc)
-        }
-      }
-    }
+    // this.heroes = this.queryResult.data
+    // if (this.formData != null) {
+    //   for (let i in this.heroes) {
+    //     this.heroes[i].name = this.highlight(this.formData.key_words, this.heroes[i].name)
+    //     for (let j in this.heroes[i].spell) {
+    //       this.heroes[i].spell[j].desc = this.highlight(this.formData.key_words, this.heroes[i].spell[j].desc)
+    //     }
+    //   }
+    // }
   }
 }
 </script>
@@ -74,7 +88,7 @@ export default {
             <span v-html="item.name" />
           </template>
           <template #avatar>
-            <a-avatar :src="item.icon" class="hero-icon"/>
+            <img :src="item.icon" class="hero-icon" :alt="item.name"/>
           </template>
         </a-card-meta>
         <div class="ant-tag-wrap">
@@ -90,7 +104,9 @@ export default {
         <div class="hero-desc mainText">
           <ul>
             <li v-for="(s,index) in item.spell" :key="index">
-              <img :src="s.icon" class="spell-icon"/>
+              <span class="spell-icon">
+                <img :src="s.icon" :alt="s.name"/>
+              </span>
               <h6>{{ s.name }}</h6>
               <span>{{ s.sort }}</span>
               <div v-html="s.desc" class="spell-desc"></div>

@@ -18,19 +18,19 @@ export default {
       loadingState: {
         condCheckbox: true,
       },
+      equipTypes: [
+        {
+          cate: '',
+          sub_cate: [{
+            name: '',
+            keywordsStr: '',
+            keywordsSlice: [],
+          }],
+        }
+      ],
       formData: {
         platform: '0',
-        keywords: [],
-        equipTypes: [
-          {
-            cate: '',
-            sub_cate: [{
-              name: '',
-              keywordsStr: '',
-              keywordsSlice: [],
-            }],
-          }
-        ],
+        keywords: {},
       },
       SkeletonState: {
         show: false,
@@ -81,7 +81,7 @@ export default {
     axios.get('/equip/types')
         .then(response => {
               // 将服务器返回的数据更新到组件的 serverData 字段
-              this.formData.equipTypes = response.data.data.types;
+              this.equipTypes = response.data.data.types;
             }
         ).catch(error => {
           console.error('Error fetching server data:', error);
@@ -100,35 +100,40 @@ export default {
       <a-layout-content>
         <a-form :model="formData" name="equip-box">
           <div class="platform-switch">
-            <a-radio-group v-model:value="formData.platform" name="radioGroup">
-              <a-radio value=0>端游</a-radio>
-              <a-radio value=1>手游</a-radio>
+            <a-radio-group v-model:value="formData.platform" button-style="solid" size="small" name="radioGroup" class="platform-switch-btn">
+              <a-radio-button value=0>端游</a-radio-button>
+              <a-radio-button value=1>手游</a-radio-button>
             </a-radio-group>
-            <a-button type="link" class="cond-drawer" size="small" @click="showCheckbox = !showCheckbox">
-              {{ showCheckbox ? '收起条件' : '展开条件' }}
-            </a-button>
           </div>
 
+          <a-button type="link" class="cond-drawer" size="small" @click="showCheckbox = !showCheckbox">
+            {{ showCheckbox ? '收起条件' : '展开条件' }}
+          </a-button>
+
+          <div class="blank"></div>
+
           <LoadingForm v-if="loadingState.condCheckbox"/>
-          <Transition>
-            <template v-if="showCheckbox && !loadingState.condCheckbox">
-              <a-checkbox-group v-model:value="formData.keywords">
-                <a-descriptions v-for="(cate, index) in formData.equipTypes" :title="cate.cate" :key="index">
-                  <a-descriptions-item>
-                    <a-checkbox v-for="(sub_cate, ii) in cate.sub_cate" :key="ii" :id="index+'-'+ii+'-equip-checkbox'"
-                                :value="sub_cate.keywordsStr">
-                      <a-tooltip placement="top" class="equip-box-tooltip">
-                        <template #title>
-                          <span>{{ sub_cate.keywordsStr }}</span>
-                        </template>
-                        {{ sub_cate.name }}
-                      </a-tooltip>
-                    </a-checkbox>
-                  </a-descriptions-item>
-                </a-descriptions>
-              </a-checkbox-group>
-            </template>
-          </Transition>
+          <template v-if="showCheckbox && !loadingState.condCheckbox">
+            <a-descriptions v-for="(cate, index) in equipTypes" :title="cate.cate" :key="index">
+              <a-descriptions-item>
+                <a-checkable-tag
+                    v-for="(sub_cate, ii) in cate.sub_cate"
+                    :key="ii"
+                    :id="index+'-'+ii+'-equip-checkbox'"
+                    v-model:checked="formData.keywords[sub_cate.keywordsStr]"
+                    color="default"
+                >
+                  <a-tooltip placement="top" class="equip-box-tooltip">
+                    <template #title>
+                      <span>{{ sub_cate.keywordsStr }}</span>
+                    </template>
+                    {{ sub_cate.name }}
+                  </a-tooltip>
+                </a-checkable-tag>
+              </a-descriptions-item>
+            </a-descriptions>
+          </template>
+
         </a-form>
 
         <LoadingList

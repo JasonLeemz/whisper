@@ -249,30 +249,30 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 	log.Logger.Info(ctx, fmt.Sprintf("finish record LOLM equipment data. Since:%fs", time.Since(startT).Seconds()))
 }
 
-func GetCurrentLOLVersion(ctx *context.Context) string {
+func GetCurrentLOLVersion(ctx *context.Context) *model.LOLEquipment {
 	equipDao := dao.NewLOLEquipmentDAO()
 	result, err := equipDao.GetLOLEquipmentMaxVersion()
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
-		return ""
+		return nil
 	}
 	if result != nil {
-		return result.Version
+		return result
 	}
-	return ""
+	return nil
 }
 
-func GetCurrentLOLMVersion(ctx *context.Context) string {
+func GetCurrentLOLMVersion(ctx *context.Context) *model.LOLMEquipment {
 	equipDao := dao.NewLOLMEquipmentDAO()
 	result, err := equipDao.GetLOLMEquipmentMaxVersion()
 	if err != nil {
 		log.Logger.Error(ctx, errors.New(err))
-		return ""
+		return nil
 	}
 	if result != nil {
-		return result.Version
+		return result
 	}
-	return ""
+	return nil
 }
 
 func ExtractKeyWords(ctx *context.Context, platform int) map[string]model.EquipIntro {

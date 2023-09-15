@@ -6,21 +6,25 @@
   line-height: 25px;
   background-color: #141414;
 }
-.ant-skeleton{
+
+.ant-skeleton {
   margin-top: 20px;
 }
-.ant-progress .ant-progress-inner{
+
+.ant-progress .ant-progress-inner {
   border-radius: 0;
   height: 2px;
 }
-.ant-progress .ant-progress-outer{
+
+.ant-progress .ant-progress-outer {
   height: 2px !important;
 }
-.ant-progress-line{
+
+.ant-progress-line {
   position: fixed;
   top: 0;
   left: 0;
-  margin:0;
+  margin: 0;
   z-index: 999;
   line-height: 0;
 }
@@ -37,12 +41,26 @@
     }
   }
 
-  .platform-switch {
-    margin-bottom: 7px;
+  .more-cond-switch {
+    //search-box页面的收起更多按钮
+    cursor: pointer;
+  }
 
-    .cond-drawer {
-      font-size: 12px;
-      float: right;
+  .cond-drawer {
+    font-size: 12px;
+    padding: 0;
+    margin: 0;
+  }
+
+  .platform-switch {
+    //equip-box页面的收起表单按钮
+    margin-bottom: 7px;
+    position: relative;
+
+    .platform-switch-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
     }
   }
 
@@ -105,6 +123,18 @@
     border-radius: 0 4px 0 4px;
   }
 
+  .ant-descriptions-item-content {
+    .ant-tag-checkable {
+      margin: 0 0 0 8px;
+      background: rgba(0, 0, 0, .03);
+      line-height: 1.5;
+
+      &.ant-tag-checkable-checked {
+        background: #1677ff;
+      }
+    }
+  }
+
   .result-card {
     .ant-tag {
       line-height: 15px;
@@ -120,10 +150,19 @@
       padding: 15px 15px 5px 15px;
       position: relative;
 
-      em{
+      .ant-avatar {
+        //&:hover{
+        //  position: absolute;
+        //  width: 50px;
+        //  height: 50px;
+        //}
+      }
+
+      em {
         font-style: inherit;
         color: #ff5722;
       }
+
 
       .ant-tag-wrap {
         margin-top: -10px;
@@ -159,11 +198,32 @@
       padding: 5px 0;
       color: rgba(0, 0, 0, 0.85);
 
+      li {
+        h6 {
+          margin-left: 29px;
+        }
+      }
+
       .spell-icon {
+        display: inline-block;
         width: 25px;
         height: 25px;
-        border-radius: 50%;
+        position: absolute;
+
+        img {
+          position: absolute;
+          width: 25px;
+          height: 25px;
+          border-radius: 50%;
+
+          &:hover {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+          }
+        }
       }
+
     }
   }
 
@@ -187,7 +247,7 @@
   font-size: 13px;
   line-height: 1.8;
 
-  em{
+  em {
     font-style: inherit;
     color: #ff5722;
   }
@@ -216,6 +276,11 @@
       width: 25px;
       height: 25px;
       border-radius: 50%;
+
+      &:hover {
+        width: 50px;
+        height: 50px;
+      }
     }
 
     span {
@@ -263,12 +328,14 @@
 
     .roadmap-item-price {
     }
+
     .roadmap-item-rune {
-      long{
+      long {
         display: none;
       }
     }
   }
+
   .rune-desc {
     short {
       display: none;
@@ -281,12 +348,14 @@
       color: #ff5722;
     }
   }
-  .rune-desc-long{
+
+  .rune-desc-long {
     margin-top: 5px;
     display: block;
     //font-size: 12px;
     //line-height: 12px;
   }
+
   .hero-suit {
     &.popover-title {
       margin: 0 0 5px 0;
@@ -445,13 +514,14 @@
         .equip-item {
           display: inline-block;
           margin-right: 2px;
-          border: 1px solid rgba(0,0,0,0);
+          border: 1px solid rgba(0, 0, 0, 0);
 
-          .equip-icon{
+          .equip-icon {
             width: 35px;
             height: 35px;
             border-radius: 3px;
           }
+
           .equip-icon-rune {
             width: 35px;
             height: 35px;
