@@ -1,12 +1,5 @@
 @import './base.scss';
 
-.alert-banner {
-  color: #fff;
-  padding: 2px 5px;
-  line-height: 25px;
-  background-color: #141414;
-}
-
 .ant-skeleton {
   margin-top: 20px;
 }
@@ -33,36 +26,61 @@
   font: 14px Helvetica Neue, Helvetica, PingFang SC, Tahoma, Arial, sans-serif;
   position: relative;
   margin: 0 auto;
-  padding: 0 15px;
+  padding-bottom: 50px;
 
-  input[name='search-input'] {
-    &:-webkit-autofill {
-      box-shadow: 0 0 0 1000px #fff inset !important;
-    }
-  }
-
-  .more-cond-switch {
-    //search-box页面的收起更多按钮
-    cursor: pointer;
-  }
-
-  .cond-drawer {
-    font-size: 12px;
-    padding: 0;
-    margin: 0;
-  }
-
-  .platform-switch {
-    //equip-box页面的收起表单按钮
-    margin-bottom: 7px;
-    position: relative;
-
-    .platform-switch-btn {
-      position: absolute;
+  .ant-form{
+    width: 100%;
+    .search-box-input{
+      position: fixed;
+      width: 100%;
       top: 0;
-      right: 0;
+      left: 0;
+      padding: 10px 15px;
+      background: #fff;
+      z-index: 9999;
+      input[name='search-input'] {
+        &:-webkit-autofill {
+          box-shadow: 0 0 0 1000px #fff inset !important;
+        }
+      }
     }
+
+    .sub-cond{
+      margin-top: 55px;
+      padding: 0 15px;
+      background: #fff;
+    }
+
+    .more-cond-switch {
+      //search-box页面的收起更多按钮
+      cursor: pointer;
+    }
+
+    .cond-drawer {
+      font-size: 12px;
+      padding: 0;
+      margin: 0;
+    }
+
+    .equip-box-cond{
+      padding: 0 15px;
+      background: #fff;
+      .platform-switch {
+        //equip-box页面的收起表单按钮
+        margin-bottom: 7px;
+        position: relative;
+
+        .platform-switch-btn {
+          position: absolute;
+          top: 0;
+          right: 0;
+        }
+      }
+    }
+
   }
+
+
 
   .ant-descriptions-header {
     margin-bottom: 0;
@@ -135,7 +153,13 @@
     }
   }
 
+  .result-tips{
+    margin: 0;
+    padding: 10px 0 0 15px;
+    font-size: 12px;
+  }
   .result-card {
+    padding: 0 15px;
     .ant-tag {
       line-height: 15px;
       padding: 0 5px;
@@ -237,6 +261,7 @@
 .blank {
   height: 5px;
   clear: both;
+  background: #fff;
 }
 
 .ant-divider {

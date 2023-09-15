@@ -1,7 +1,11 @@
 <script lang="ts" setup>
-import HeaderNav from './views/HeaderNav.vue'
+import NavBar from './views/NavBar.vue'
 </script>
 
 <template>
-  <HeaderNav />
+  <NavBar />
+
+  <div id="empty-content">
+    <a-empty />
+  </div>
 </template>

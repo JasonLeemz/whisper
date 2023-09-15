@@ -69,9 +69,7 @@ export default {
 </script>
 
 <template>
-  <a-descriptions>
-    <a-descriptions-item>{{ queryResult.tips }}</a-descriptions-item>
-  </a-descriptions>
+  <p class="result-tips">{{ queryResult.tips }}</p>
   <div class="result-card" v-for="(item,i) in runes" :key="i">
     <a-space direction="vertical">
       <a-card :hoverable="true" @click="showDrawer(item.platform,item.version,item.id)">

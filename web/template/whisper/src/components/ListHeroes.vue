@@ -63,23 +63,13 @@ export default {
     },
   },
   mounted() {
-    // this.heroes = this.queryResult.data
-    // if (this.formData != null) {
-    //   for (let i in this.heroes) {
-    //     this.heroes[i].name = this.highlight(this.formData.key_words, this.heroes[i].name)
-    //     for (let j in this.heroes[i].spell) {
-    //       this.heroes[i].spell[j].desc = this.highlight(this.formData.key_words, this.heroes[i].spell[j].desc)
-    //     }
-    //   }
-    // }
   }
 }
 </script>
 
 <template>
-  <a-descriptions>
-    <a-descriptions-item>{{ queryResult.tips }}</a-descriptions-item>
-  </a-descriptions>
+
+  <p class="result-tips">{{ queryResult.tips }}</p>
   <div class="result-card" v-for="(item,i) in heroes" :key="i">
     <a-space direction="vertical">
       <a-card :hoverable="true" @click="showDrawer(item.platform,item.version,item.id)">

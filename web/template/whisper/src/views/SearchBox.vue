@@ -1,5 +1,6 @@
 <script setup>
 import {RightOutlined, SearchOutlined} from '@ant-design/icons-vue';
+import {ref} from "vue";
 </script>
 <script>
 import axios from 'axios';
@@ -10,7 +11,6 @@ import ListHeroes from "@/components/ListHeroes.vue";
 import ListRune from "@/components/ListRune.vue";
 import ListSkill from "@/components/ListSkill.vue";
 import {debounce} from 'lodash'
-import {ref} from "vue";
 
 export default {
   emits: ['loadingEvent'],
@@ -178,7 +178,7 @@ export default {
             :model="formData"
             name="search-box"
         >
-          <div>
+          <div class="search-box-input">
             <a-space-compact block>
               <a-auto-complete
                   name="search-input"
@@ -209,42 +209,45 @@ export default {
               </a-button>
             </a-space-compact>
           </div>
-          <div class="blank"></div>
-          <a-radio-group v-model:value="formData.category" button-style="solid" size="small" name="radioGroup">
-            <a-radio-button value="lol_equipment">装备</a-radio-button>
-            <a-radio-button value="lol_heroes">英雄</a-radio-button>
-            <a-radio-button value="lol_rune">符文</a-radio-button>
-            <a-radio-button value="lol_skill">召唤师技能</a-radio-button>
-          </a-radio-group>
-          <div class="blank"></div>
-          <div class="blank"></div>
-          <a-space @click="formData.more_cond_show = !formData.more_cond_show" class="more-cond-switch">
-            <a-typography-text>更多条件
-              <RightOutlined :rotate="formData.more_cond_show ? 90 : 0"/>
-            </a-typography-text>
-          </a-space>
-          <Transition>
-            <div v-show="formData.more_cond_show">
-              <div>
-                <a-space>
-                  <a-switch v-model:checked="formData.switch.way.name" checked-children="按名字"
-                            un-checked-children="按名字" size="small"/>
-                  <a-switch v-model:checked="formData.switch.way.description" checked-children="按介绍"
-                            un-checked-children="按介绍" size="small"/>
-                </a-space>
+
+          <div class="sub-cond">
+            <a-radio-group v-model:value="formData.category" button-style="solid" size="small" name="radioGroup">
+              <a-radio-button value="lol_equipment">装备</a-radio-button>
+              <a-radio-button value="lol_heroes">英雄</a-radio-button>
+              <a-radio-button value="lol_rune">符文</a-radio-button>
+              <a-radio-button value="lol_skill">召唤师技能</a-radio-button>
+            </a-radio-group>
+
+            <div class="blank"></div>
+            <div class="blank"></div>
+            <a-space @click="formData.more_cond_show = !formData.more_cond_show" class="more-cond-switch">
+              <a-typography-text>更多条件
+                <RightOutlined :rotate="formData.more_cond_show ? 90 : 0"/>
+              </a-typography-text>
+            </a-space>
+            <Transition>
+              <div v-show="formData.more_cond_show">
+                <div>
+                  <a-space>
+                    <a-switch v-model:checked="formData.switch.way.name" checked-children="按名字"
+                              un-checked-children="按名字" size="small"/>
+                    <a-switch v-model:checked="formData.switch.way.description" checked-children="按介绍"
+                              un-checked-children="按介绍" size="small"/>
+                  </a-space>
+                </div>
+                <div>
+                  <a-space>
+                    <a-switch v-model:checked="formData.switch.maps._5v5" checked-children="召唤师峡谷"
+                              un-checked-children="召唤师峡谷" size="small"/>
+                    <a-switch v-model:checked="formData.switch.maps._dld" checked-children="嚎哭深渊"
+                              un-checked-children="嚎哭深渊" size="small"/>
+                    <a-switch v-model:checked="formData.switch.maps._2v2" checked-children="斗魂竞技场"
+                              un-checked-children="斗魂竞技场" size="small"/>
+                  </a-space>
+                </div>
               </div>
-              <div>
-                <a-space>
-                  <a-switch v-model:checked="formData.switch.maps._5v5" checked-children="召唤师峡谷"
-                            un-checked-children="召唤师峡谷" size="small"/>
-                  <a-switch v-model:checked="formData.switch.maps._dld" checked-children="嚎哭深渊"
-                            un-checked-children="嚎哭深渊" size="small"/>
-                  <a-switch v-model:checked="formData.switch.maps._2v2" checked-children="斗魂竞技场"
-                            un-checked-children="斗魂竞技场" size="small"/>
-                </a-space>
-              </div>
-            </div>
-          </Transition>
+            </Transition>
+          </div>
         </a-form>
 
         <LoadingList
