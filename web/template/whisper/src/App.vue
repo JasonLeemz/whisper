@@ -4,8 +4,4 @@ import NavBar from './views/NavBar.vue'
 
 <template>
   <NavBar />
-
-  <div id="empty-content">
-    <a-empty />
-  </div>
 </template>
