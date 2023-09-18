@@ -3,11 +3,15 @@ package main
 import (
 	context2 "context"
 	"fmt"
-	"github.com/robfig/cron/v3"
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"time"
+	"whisper/pkg/ip"
+
+	"github.com/grafana/pyroscope-go"
+	"github.com/robfig/cron/v3"
 	run "whisper/init"
 	"whisper/internal/controller"
 	"whisper/internal/logic"
@@ -21,6 +25,40 @@ import (
 )
 
 func main() {
+	runtime.SetMutexProfileFraction(5)
+	runtime.SetBlockProfileRate(5)
+
+	pyroscope.Start(pyroscope.Config{
+		ApplicationName: "whisper",
+
+		// replace this with the address of pyroscope server
+		ServerAddress: "http://192.168.31.91:4040",
+
+		// you can disable logging by setting this to nil
+		Logger: nil,
+
+		// you can provide static tags via a map:
+		Tags: map[string]string{
+			"ip": ip.GetLocalIP(),
+		},
+
+		ProfileTypes: []pyroscope.ProfileType{
+			// these profile types are enabled by default:
+			pyroscope.ProfileCPU,
+			pyroscope.ProfileAllocObjects,
+			pyroscope.ProfileAllocSpace,
+			pyroscope.ProfileInuseObjects,
+			pyroscope.ProfileInuseSpace,
+
+			// these profile types are optional:
+			pyroscope.ProfileGoroutines,
+			pyroscope.ProfileMutexCount,
+			pyroscope.ProfileMutexDuration,
+			pyroscope.ProfileBlockCount,
+			pyroscope.ProfileBlockDuration,
+		},
+	})
+
 	router := gin.New()
 	pprof.Register(router, "dev/pprof")
 	router.Use(gin.Logger(), gin.Recovery())

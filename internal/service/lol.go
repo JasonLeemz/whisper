@@ -149,11 +149,11 @@ func QuerySkillForLOLM(ctx *context.Context) (*dto.LOLMSkill, error) {
 	return &r, err
 }
 
-// GetLOLHeroAttribute https://game.gtimg.cn/images/lol/act/img/js/hero/%d.js
+// GetLOLHeroAttribute https://xxx/%d.js
 func GetLOLHeroAttribute(ctx *context.Context, heroID string) (*dto.HeroAttribute, error) {
 	heroAttrUrl := fmt.Sprintf(config.LOLConfig.Lol.Hero, heroID)
 	url := fmt.Sprintf("%s?ts=%d", heroAttrUrl, time.Now().Unix()/600)
-	log.Logger.Info(ctx, "url="+url)
+	log.Logger.Debug(ctx, "url="+url)
 
 	// 发送 GetForm 请求
 	r := dto.HeroAttribute{}
@@ -167,11 +167,11 @@ func GetLOLHeroAttribute(ctx *context.Context, heroID string) (*dto.HeroAttribut
 	return &r, err
 }
 
-// GetLOLMHeroAttribute https://game.gtimg.cn/images/lgamem/act/lrlib/js/hero/%d.js
+// GetLOLMHeroAttribute https://xx/%d.js
 func GetLOLMHeroAttribute(ctx *context.Context, heroID string) (*dto.HeroAttribute, error) {
 	heroAttrUrl := fmt.Sprintf(config.LOLConfig.LolM.Hero, heroID)
 	url := fmt.Sprintf("%s?ts=%d", heroAttrUrl, time.Now().Unix()/600)
-	log.Logger.Info(ctx, "url="+url)
+	//log.Logger.Info(ctx, "url="+url)
 
 	// 发送 GetForm 请求
 	r := dto.HeroAttribute{}
