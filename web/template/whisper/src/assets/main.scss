@@ -54,6 +54,10 @@
     .more-cond-switch {
       //search-box页面的收起更多按钮
       cursor: pointer;
+      .more-cond-text{
+        font-style: normal;
+        font-size: 12px;
+      }
     }
 
     .cond-drawer {
@@ -155,7 +159,7 @@
 
   .result-tips{
     margin: 0;
-    padding: 10px 0 2px 15px;
+    padding: 2px 0 2px 15px;
     font-size: 12px;
   }
   .result-card {
@@ -240,11 +244,11 @@
           height: 25px;
           border-radius: 50%;
 
-          &:hover {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-          }
+          //&:hover {
+          //  position: absolute;
+          //  width: 50px;
+          //  height: 50px;
+          //}
         }
       }
 

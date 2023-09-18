@@ -219,9 +219,8 @@ export default {
             </a-radio-group>
 
             <div class="blank"></div>
-            <div class="blank"></div>
             <a-space @click="formData.more_cond_show = !formData.more_cond_show" class="more-cond-switch">
-              <a-typography-text>更多条件
+              <a-typography-text><em class="more-cond-text">更多条件</em>
                 <RightOutlined :rotate="formData.more_cond_show ? 90 : 0"/>
               </a-typography-text>
             </a-space>
