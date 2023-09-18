@@ -4,8 +4,14 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 	"whisper/pkg/errors"
 	"whisper/pkg/trace"
+)
+
+const (
+	TraceID   = "trace-id"
+	StartTime = "start_time"
 )
 
 // Context ...
@@ -23,7 +29,7 @@ type reply struct {
 // Reply ...
 func (c *Context) Reply(obj interface{}, err *errors.Error) {
 	r := &reply{
-		TraceID: c.Value(trace.TraceID).(string),
+		TraceID: c.Value(TraceID).(string),
 		Data:    obj,
 	}
 	if err != nil {
@@ -70,7 +76,8 @@ func NewContext() *Context {
 	req := new(http.Request)
 	req.Header = make(http.Header)
 	tr := trace.GetTrace(req)
-	ctx.Set(trace.TraceID, tr.TraceID)
+	ctx.Set(TraceID, tr.TraceID)
+	ctx.Set(StartTime, time.Now())
 
 	return ctx
 }

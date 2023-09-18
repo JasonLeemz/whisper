@@ -4,17 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
-	"time"
-	errors2 "whisper/pkg/errors"
-	"whisper/pkg/trace"
-
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
+	"strconv"
+	"sync"
+	"time"
 	"whisper/pkg/config"
+	context2 "whisper/pkg/context"
+	errors2 "whisper/pkg/errors"
 )
 
 // Logger 声明日志类全局变量
@@ -61,11 +61,10 @@ func (log ESLogger) Printf(format string, v ...interface{}) {
 var (
 	whisperTplStr = "%s\t "
 
-	debugStr     = "%s\tDEBUG "
-	infoStr      = "%s\tINFO "
-	warnStr      = "%s\tWARN "
-	errStr       = "%s\tERROR "
-	traceStr     = "%s\t[%.3fms] [rows:%v] %s"
+	infoStr      = "INFO "
+	warnStr      = "WARN "
+	errStr       = "ERROR "
+	traceStr     = "[%.3fms] [rows:%v] %s"
 	traceWarnStr = "%s %s\t[%.3fms] [rows:%v] %s"
 	traceErrStr  = "%s %s\t[%.3fms] [rows:%v] %s"
 )
@@ -126,19 +125,22 @@ func (glog *GormLogger) LogMode(level logger.LogLevel) logger.Interface {
 
 func (glog *GormLogger) Info(ctx context.Context, msg string, data ...interface{}) {
 	if glog.LogLevel >= logger.Info {
-		glog.logger.Infof(infoStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+		tpl := genLogTpl(ctx, infoStr+msg, data)
+		glog.logger.Infof(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
 	}
 }
 
 func (glog *GormLogger) Warn(ctx context.Context, msg string, data ...interface{}) {
 	if glog.LogLevel >= logger.Warn {
-		glog.logger.Warnf(warnStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+		tpl := genLogTpl(ctx, warnStr+msg, data)
+		glog.logger.Warnf(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
 	}
 }
 
 func (glog *GormLogger) Error(ctx context.Context, msg string, data ...interface{}) {
 	if glog.LogLevel >= logger.Error {
-		glog.logger.Errorf(errStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+		tpl := genLogTpl(ctx, errStr+msg, data)
+		glog.logger.Errorf(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
 	}
 }
 
@@ -167,17 +169,28 @@ func (glog *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (s
 		}
 	case glog.LogLevel == logger.Info:
 		sql, rows := fc()
+		tpl := genLogTpl(ctx, traceStr, nil)
 		if rows == -1 {
-			glog.logger.Infof(traceStr, utils.FileWithLineNum(), float64(elapsed.Nanoseconds())/1e6, "-", sql)
+			glog.logger.Infof(tpl, utils.FileWithLineNum(), float64(elapsed.Nanoseconds())/1e6, "-", sql)
 		} else {
-			glog.logger.Infof(traceStr, utils.FileWithLineNum(), float64(elapsed.Nanoseconds())/1e6, rows, sql)
+			glog.logger.Infof(tpl, utils.FileWithLineNum(), float64(elapsed.Nanoseconds())/1e6, rows, sql)
 		}
 	}
 }
 
-func genLogTpl(traceID string, data []interface{}) string {
-	tpl := whisperTplStr + "|trace_id=" + traceID
-
+// func genLogTpl(traceID string, startTime time.Time, data []interface{}) string {
+func genLogTpl(ctx context.Context, msg string, data []interface{}) string {
+	traceID := ""
+	if tid, ok := ctx.Value(context2.TraceID).(string); ok {
+		traceID = tid
+	}
+	proc := ""
+	if st, ok := ctx.Value(context2.StartTime).(time.Time); ok {
+		proc = strconv.FormatFloat(time.Since(st).Seconds(), 'f', -1, 64)
+	}
+	tpl := whisperTplStr + msg +
+		"|trace_id=" + traceID +
+		"|proc=" + proc
 	for _, v := range data {
 		switch v.(type) {
 		case string:
@@ -195,22 +208,22 @@ func genLogTpl(traceID string, data []interface{}) string {
 }
 
 func (log *WhisperLogger) Debug(ctx context.Context, data ...interface{}) {
-	tpl := genLogTpl(ctx.Value(trace.TraceID).(string), data)
+	tpl := genLogTpl(ctx, "", data)
 	log.Debugf(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
 }
 
 func (log *WhisperLogger) Info(ctx context.Context, data ...interface{}) {
-	tpl := genLogTpl(ctx.Value(trace.TraceID).(string), data)
+	tpl := genLogTpl(ctx, "", data)
 	log.Infof(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
 }
 
 func (log *WhisperLogger) Warn(ctx context.Context, data ...interface{}) {
-	tpl := genLogTpl(ctx.Value(trace.TraceID).(string), data)
+	tpl := genLogTpl(ctx, "", data)
 	log.Warnf(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
 }
 
 func (log *WhisperLogger) Error(ctx context.Context, data ...interface{}) {
-	tpl := genLogTpl(ctx.Value(trace.TraceID).(string), data)
+	tpl := genLogTpl(ctx, "", data)
 	log.Errorf(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
 }
 

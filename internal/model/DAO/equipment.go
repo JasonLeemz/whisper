@@ -12,13 +12,13 @@ import (
 )
 
 type LOLEquipment interface {
-	Add(data []*model.LOLEquipment) (int64, error)
+	Add(equips []*model.LOLEquipment) (int64, error)
 	Find(query []string, cond map[string]interface{}) ([]*model.LOLEquipment, error)
 	Update(data *model.LOLEquipment, cond map[string]interface{}) (int64, error)
 	GetLOLEquipmentMaxVersion() (*model.LOLEquipment, error)
 	GetLOLEquipment(version string) ([]*model.LOLEquipment, error)
 	GetLOLEquipmentWithExt(version string) ([]*model.LOLEquipment, error)
-	GetRoadmap(version string, id string) (map[string][]*model.LOLMEquipment, error)
+	GetRoadmap(version string, id string, maps []string) (map[string][]*model.LOLEquipment, error)
 }
 
 type LOLEquipmentDAO struct {

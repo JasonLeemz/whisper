@@ -8,20 +8,19 @@ import (
 	"os/signal"
 	"runtime"
 	"time"
-	"whisper/pkg/ip"
-
-	"github.com/grafana/pyroscope-go"
-	"github.com/robfig/cron/v3"
 	run "whisper/init"
 	"whisper/internal/controller"
 	"whisper/internal/logic"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
+	"whisper/pkg/ip"
 	"whisper/pkg/log"
 	"whisper/pkg/middleware"
 
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"github.com/grafana/pyroscope-go"
+	"github.com/robfig/cron/v3"
 )
 
 func main() {
@@ -61,9 +60,10 @@ func main() {
 
 	router := gin.New()
 	pprof.Register(router, "dev/pprof")
-	router.Use(gin.Logger(), gin.Recovery())
+	router.Use(gin.Recovery())
 	router.Use(middleware.Cors())
 	router.Use(middleware.Trace())
+	router.Use(middleware.Proc(), middleware.Params(), middleware.Auth())
 	router.LoadHTMLGlob("web/template/whisper/dist/*.html")
 
 	page := router.Group("/")
@@ -80,6 +80,7 @@ func main() {
 		page.POST("/equip/filter", context.Handle(controller.EquipFilter))
 
 		page.GET("/version", context.Handle(controller.QueryVersion))
+		page.POST("/version", context.Handle(controller.QueryVersion))
 		page.GET("/equip/types", context.Handle(controller.QueryEquipTypes))
 		page.GET("/hotkey", context.Handle(controller.GetHotKey))
 
