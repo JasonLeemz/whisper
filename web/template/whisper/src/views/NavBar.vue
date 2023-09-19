@@ -1,21 +1,25 @@
 <script setup>
 import {RouterLink, RouterView} from 'vue-router'
-import {ref} from 'vue';
-import {SearchOutlined, ShareAltOutlined} from '@ant-design/icons-vue';
-let current = ref(['SearchBox']);
-if (window.location.pathname === "/equip") {
-  current = ref(['EquipBox']);
-} else if (window.location.pathname === "/") {
-  current = ref(['SearchBox']);
-}
+import {LikeOutlined, SearchOutlined, ShareAltOutlined} from '@ant-design/icons-vue';
 </script>
 
 <script>
 import axios from 'axios';
+import IconDonate from "@/components/icons/IconDonate.vue";
 
 export default {
+  components: {
+    IconDonate
+  },
   data() {
     return {
+      donate: {
+        show: false,
+        title: '维护说明',
+        placement: 'top',
+        content: ' 作为一个免费、纯净无广告的开源项目，能得到大家的喜欢真的是意外又惊喜。由于服务器费用昂贵，维护也需要时间和精力。如果经济允许，可以赞助支持一下作者，留言都有认真看，谢谢你们❤️！ ',
+      },
+      current: ['SearchBox'],
       version_list: {
         LOL: {
           version: '',
@@ -26,7 +30,7 @@ export default {
           update_time: '',
         },
       },
-      wm_content : {
+      wm_content: {
         content: [],
         font: {
           fontSize: 12,
@@ -43,16 +47,29 @@ export default {
     'loading_percent'(p) {
       this.isLoading = !(p === 0 || p === 100);
     },
+    'current'(n, o) {
+      let old = o[0]
+      if (n[0] === 'Donate') {
+        this.donate.show = true
+        this.current = [old]
+      }
+    }
   },
   mounted() {
+    if (window.location.pathname === "/equip") {
+      this.current = ['EquipBox'];
+    } else if (window.location.pathname === "/") {
+      this.current = ['SearchBox'];
+    }
+
     // 使用 Axios 发起请求获取服务器数据
     axios.get('/version')
         .then(response => {
           // 将服务器返回的数据更新到组件的 serverData 字段
           this.version_list = response.data.data;
           this.wm_content.content = [
-              '端游:'+this.version_list.LOL.version+'('+this.version_list.LOL.update_time+')',
-              '手游:'+this.version_list.LOLM.version+'('+this.version_list.LOLM.update_time+')',
+            '端游:' + this.version_list.LOL.version + '(' + this.version_list.LOL.update_time + ')',
+            '手游:' + this.version_list.LOLM.version + '(' + this.version_list.LOLM.update_time + ')',
           ]
         })
         .catch(error => {
@@ -62,6 +79,9 @@ export default {
   methods: {
     showProgress(p) {
       this.loading_percent = p
+    },
+    closeDrawer() {
+      this.donate.show = false
     }
   }
 }
@@ -84,8 +104,15 @@ export default {
     <div/>
   </a-watermark>
 
+  <a-drawer :title="donate.title" :placement="donate.placement" :open="donate.show" @close="closeDrawer">
+    <a-row>
+      <a-col :span="6"><IconDonate/></a-col>
+      <a-col :span="18" class="donate-content">{{ donate.content }}</a-col>
+    </a-row>
+  </a-drawer>
+
   <div class="nav-bar">
-    <a-menu v-model:selectedKeys="current" mode="horizontal" class="glass">
+    <a-menu v-model:selectedKeys="current" mode="horizontal" class="bottom-nav">
       <a-menu-item key='SearchBox'>
         <SearchOutlined/>
         <span><RouterLink to="/">检索</RouterLink></span>
@@ -94,14 +121,11 @@ export default {
         <ShareAltOutlined/>
         <span><RouterLink to="/equip">装备</RouterLink></span>
       </a-menu-item>
+      <a-menu-item key='Donate'>
+        <LikeOutlined/>
+        <span>赞赏</span>
+      </a-menu-item>
     </a-menu>
-
-    <!--    <p>-->
-    <!--      Tips: 当前端游版本为-->
-    <!--      <span :title="version_list.LOL.update_time" class="version-tip">{{ version_list.LOL.version }}</span>-->
-    <!--      手游版本为-->
-    <!--      <span :title="version_list.LOLM.update_time" class="version-tip">{{ version_list.LOLM.version }}</span>-->
-    <!--    </p>-->
   </div>
 </template>
 
@@ -135,7 +159,13 @@ export default {
   width: 40px;
 }
 
-.glass {
+.bottom-nav {
   box-shadow: 0 -2px 10px rgba(0, 0, 0, .05);
+}
+.donate-content{
+  padding-left: 10px;
+  color: #00aeec;
+  font-size: 12px;
+  text-align: left;
 }
 </style>
