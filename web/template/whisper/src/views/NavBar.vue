@@ -1,6 +1,6 @@
 <script setup>
 import {RouterLink, RouterView} from 'vue-router'
-import {LikeOutlined, SearchOutlined, ShareAltOutlined} from '@ant-design/icons-vue';
+import {LikeOutlined, SearchOutlined, ShareAltOutlined, SoundOutlined} from '@ant-design/icons-vue';
 </script>
 
 <script>
@@ -58,8 +58,10 @@ export default {
   mounted() {
     if (window.location.pathname === "/equip") {
       this.current = ['EquipBox'];
-    } else if (window.location.pathname === "/") {
+    } else if (window.location.pathname === "/search") {
       this.current = ['SearchBox'];
+    } else if (window.location.pathname === "/") {
+      this.current = ['HomePage'];
     }
 
     // 使用 Axios 发起请求获取服务器数据
@@ -106,16 +108,22 @@ export default {
 
   <a-drawer :title="donate.title" :placement="donate.placement" :open="donate.show" @close="closeDrawer">
     <a-row>
-      <a-col :span="6"><IconDonate/></a-col>
+      <a-col :span="6">
+        <IconDonate/>
+      </a-col>
       <a-col :span="18" class="donate-content">{{ donate.content }}</a-col>
     </a-row>
   </a-drawer>
 
   <div class="nav-bar">
     <a-menu v-model:selectedKeys="current" mode="horizontal" class="bottom-nav">
+      <a-menu-item key='HomePage'>
+        <SoundOutlined/>
+        <span><RouterLink to="/">资讯</RouterLink></span>
+      </a-menu-item>
       <a-menu-item key='SearchBox'>
         <SearchOutlined/>
-        <span><RouterLink to="/">检索</RouterLink></span>
+        <span><RouterLink to="/search">检索</RouterLink></span>
       </a-menu-item>
       <a-menu-item key='EquipBox'>
         <ShareAltOutlined/>
@@ -162,7 +170,8 @@ export default {
 .bottom-nav {
   box-shadow: 0 -2px 10px rgba(0, 0, 0, .05);
 }
-.donate-content{
+
+.donate-content {
   padding-left: 10px;
   color: #00aeec;
   font-size: 12px;

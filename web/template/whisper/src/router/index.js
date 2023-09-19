@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import HomePage from '../views/HomePage.vue'
 import SearchBox from '../views/SearchBox.vue'
 import EquipBox from '../views/EquipBox.vue'
 
@@ -8,14 +9,17 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
+      component: HomePage
+    },
+    {
+      path: '/search',
+      name: 'search',
       component: SearchBox
-      // component: () => import('../views/SearchBox.vue')
     },
     {
       path: '/equip',
       name: 'equip',
       component: EquipBox
-      // component: () => import('../views/EquipBox.vue')
     }
   ]
 })
