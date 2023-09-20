@@ -25,6 +25,13 @@ func (dao *HeroAttributeDAO) Find(query []string, cond map[string]interface{}) (
 	return result, tx.Error
 }
 
+func (dao *HeroAttributeDAO) GetMaxVersion() ([]*model.HeroAttribute, error) {
+	var result []*model.HeroAttribute
+	sql := "select id,`version`,platform,MAX(ctime) as ctime,fileTime from hero_attribute group by platform order by platform asc"
+	err := dao.db.Raw(sql).Scan(&result).Error
+	return result, err
+}
+
 func (dao *HeroAttributeDAO) Add(et []*model.HeroAttribute) (int64, error) {
 	result := dao.db.Create(et)
 	return result.RowsAffected, result.Error
@@ -71,4 +78,5 @@ type HeroAttribute interface {
 	Add([]*model.HeroAttribute) (int64, error)
 	Delete(cond map[string]interface{}) (int64, error)
 	DeleteAndInsert(delCond map[string]interface{}, addData []*model.HeroAttribute) error
+	GetMaxVersion() ([]*model.HeroAttribute, error)
 }

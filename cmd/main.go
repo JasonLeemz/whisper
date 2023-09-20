@@ -75,6 +75,7 @@ func main() {
 		page.POST("/auto/complete", context.Handle(controller.AutoComplete))
 
 		page.GET("/", context.Handle(controller.SearchBox))
+		page.POST("/hero/skins", context.Handle(controller.GetHeroSkins))
 
 		page.GET("/search", context.Handle(controller.SearchBox))
 		page.POST("/query", context.Handle(controller.Query))

@@ -10,6 +10,7 @@ type HeroAttribute struct {
 	Title               string    `gorm:"column:title;default:;NOT NULL"`
 	Name                string    `gorm:"column:name;default:;NOT NULL"`
 	Alias               string    `gorm:"column:alias;default:;NOT NULL"`
+	ShortBio            string    `gorm:"column:shortBio;default:;NOT NULL"`
 	Defense             string    `gorm:"column:defense;default:;NOT NULL"`
 	Magic               string    `gorm:"column:magic;default:;NOT NULL"`
 	Difficulty          string    `gorm:"column:difficulty;default:;NOT NULL"`

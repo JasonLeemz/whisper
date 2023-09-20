@@ -12,21 +12,21 @@ func SearchBox(ctx *context.Context) {
 }
 
 func QueryVersion(ctx *context.Context) {
-	// 获取端游版本
-	v1 := logic.GetCurrentLOLVersion(ctx)
-	// 获取手游版本
-	v2 := logic.GetCurrentLOLMVersion(ctx)
-
-	v := dto.Version{
-		LOL: dto.VersionDetail{
-			Version:    v1.Version,
-			UpdateTime: v1.FileTime,
-		},
-		LOLM: dto.VersionDetail{
-			Version:    v2.Version,
-			UpdateTime: v2.FileTime,
-		},
+	v := dto.Version{}
+	version := logic.GetVersion(ctx)
+	if version != nil {
+		v = dto.Version{
+			LOL: dto.VersionDetail{
+				Version:    version[0].Version,
+				UpdateTime: version[0].FileTime,
+			},
+			LOLM: dto.VersionDetail{
+				Version:    version[1].Version,
+				UpdateTime: version[1].FileTime,
+			},
+		}
 	}
+
 	ctx.Reply(v, nil)
 }
 

@@ -25,7 +25,7 @@ func HeroAttribute(ctx *context.Context, heroID string, platform int) (*dto.Hero
 			log.Logger.Error(ctx, err)
 			return nil, err
 		}
-		err = recordHeroRoleAndSpell(ctx, attribute, platform)
+		err = recordHeroRoleAndSpellAndSkin(ctx, attribute, platform)
 		if err != nil {
 			log.Logger.Error(ctx, err)
 			return nil, err
@@ -68,7 +68,7 @@ func HeroAttribute(ctx *context.Context, heroID string, platform int) (*dto.Hero
 
 				attribute, err := QueryHeroAttribute(ctx, id, platform)
 				if err == nil {
-					if err := recordHeroRoleAndSpell(ctx, attribute, platform); err != nil {
+					if err := recordHeroRoleAndSpellAndSkin(ctx, attribute, platform); err != nil {
 						runningErr <- err
 						atomic.AddInt32(&failNum, 1)
 					} else {
@@ -110,7 +110,7 @@ func QueryHeroAttribute(ctx *context.Context, heroID string, platform int) (*dto
 	}
 }
 
-func recordHeroRoleAndSpell(ctx *context.Context, data *dto.HeroAttribute, platform int) error {
+func recordHeroRoleAndSpellAndSkin(ctx *context.Context, data *dto.HeroAttribute, platform int) error {
 	// 记录HeroRole
 	if err := recordHeroRole(ctx, data, platform); err != nil {
 		return err
@@ -118,6 +118,11 @@ func recordHeroRoleAndSpell(ctx *context.Context, data *dto.HeroAttribute, platf
 
 	// 记录HeroSpell
 	if err := recordHeroSpell(ctx, data, platform); err != nil {
+		return err
+	}
+
+	// 记录HeroSkin
+	if err := recordHeroSkin(ctx, data, platform); err != nil {
 		return err
 	}
 
@@ -131,6 +136,7 @@ func recordHeroRoleAndSpell(ctx *context.Context, data *dto.HeroAttribute, platf
 		Title:               data.Hero.Title,
 		Name:                data.Hero.Name,
 		Alias:               data.Hero.Alias,
+		ShortBio:            data.Hero.ShortBio,
 		Defense:             data.Hero.Defense,
 		Magic:               data.Hero.Magic,
 		Difficulty:          data.Hero.Difficulty,
@@ -195,6 +201,8 @@ func recordHeroRole(ctx *context.Context, data *dto.HeroAttribute, platform int)
 
 	return nil
 }
+
+// recordHeroSpell ...
 func recordHeroSpell(ctx *context.Context, data *dto.HeroAttribute, platform int) error {
 	hrs := make([]*model.HeroSpell, 0, len(data.Spells))
 	var keyMap = map[string]int{
@@ -246,7 +254,46 @@ func recordHeroSpell(ctx *context.Context, data *dto.HeroAttribute, platform int
 	return nil
 }
 
+// recordHeroSkin ...
+func recordHeroSkin(ctx *context.Context, data *dto.HeroAttribute, platform int) error {
+	if platform == common.PlatformForLOLM {
+		// 手游皮肤获取逻辑不同，这里只处理端游
+		return nil
+	}
+	hrs := make([]*model.HeroSkin, 0, len(data.Skins))
+
+	for _, skin := range data.Skins {
+		if skin.MainImg == "" {
+			continue
+		}
+		hs := &model.HeroSkin{
+			HeroId:     data.Hero.HeroId,
+			MainImg:    skin.MainImg,
+			IconImg:    skin.IconImg,
+			LoadingImg: skin.LoadingImg,
+			VideoImg:   skin.VideoImg,
+			SourceImg:  skin.SourceImg,
+			Platform:   platform,
+			Version:    data.Version,
+			FileTime:   data.FileTime,
+		}
+
+		hrs = append(hrs, hs)
+	}
+
+	hrdao := dao.NewHeroSkinDAO()
+	err := hrdao.DeleteAndInsert(map[string]interface{}{
+		"heroId": data.Hero.HeroId,
+	}, hrs)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func getAllHeroIDs(platform int) ([]string, error) {
+	// 这里必须从heroes表获取
 	var heroIDs []string
 	// 获取所有英雄ID
 	if platform == common.PlatformForLOL {
@@ -280,4 +327,43 @@ func getAllHeroIDs(platform int) ([]string, error) {
 	}
 
 	return heroIDs, nil
+}
+
+func GetVersion(ctx *context.Context) []*model.HeroAttribute {
+	ad := dao.NewHeroAttributeDAO()
+	result, err := ad.GetMaxVersion()
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return nil
+	}
+	if result != nil {
+		return result
+	}
+	return nil
+}
+
+func GetAllHeroesFromAttr(ctx *context.Context, platform []int) ([]*model.HeroAttribute, error) {
+	ad := dao.NewHeroAttributeDAO()
+	return ad.Find([]string{
+		"heroId",
+	}, map[string]interface{}{
+		"platform": platform,
+	})
+}
+
+func GetAttribute(ctx *context.Context, platform int, heroID string) (*model.HeroAttribute, error) {
+	ad := dao.NewHeroAttributeDAO()
+	ret, err := ad.Find([]string{
+		"heroId", "title", "name", "alias", "shortBio", "defense", "magic", "difficulty", "difficultyL", "attack", "attackrange", "attackdamage", "attackspeed", "attackspeedperlevel", "hp", "hpperlevel", "mp", "mpperlevel", "movespeed", "armor", "armorperlevel", "spellblock", "spellblockperlevel", "hpregen", "hpregenperlevel", "mpregen", "mpregenperlevel", "crit", "damage", "durability", "mobility", "avatar", "highlightprice", "goldPrice", "couponprice", "isWeekFree", "platform", "version", "fileTime", "ctime", "utime",
+	}, map[string]interface{}{
+		"platform": platform,
+		"heroId":   heroID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(ret) > 0 {
+		return ret[0], nil
+	}
+	return nil, nil
 }

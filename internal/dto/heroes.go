@@ -73,11 +73,12 @@ type HeroAttribute struct {
 }
 
 type HeroBaseInfo struct {
-	HeroId string   `json:"heroId,omitempty"`
-	Title  string   `json:"title,omitempty"` // LOL 布隆, LOLM 弗雷尔卓德之心
-	Name   string   `json:"name,omitempty"`  // LOL 弗雷尔卓德之心, LOLM 布隆
-	Alias  string   `json:"alias,omitempty"`
-	Roles  []string `json:"roles,omitempty"`
+	HeroId   string   `json:"heroId,omitempty"`
+	Title    string   `json:"title,omitempty"` // LOL 布隆, LOLM 弗雷尔卓德之心
+	Name     string   `json:"name,omitempty"`  // LOL 弗雷尔卓德之心, LOLM 布隆
+	Alias    string   `json:"alias,omitempty"`
+	ShortBio string   `json:"shortBio,omitempty"`
+	Roles    []string `json:"roles,omitempty"`
 
 	Defense string `json:"defense,omitempty"` // 防守 仅LOL有值
 	Magic   string `json:"magic,omitempty"`
@@ -132,15 +133,17 @@ type Skins struct {
 	IsBase          string `json:"isBase,omitempty"`
 	EmblemsName     string `json:"emblemsName,omitempty"`
 	Description     string `json:"description,omitempty"`
-	MainImg         string `json:"mainImg,omitempty"`
-	IconImg         string `json:"iconImg,omitempty"`
-	LoadingImg      string `json:"loadingImg,omitempty"`
-	VideoImg        string `json:"videoImg,omitempty"`
-	SourceImg       string `json:"sourceImg,omitempty"`
-	VedioPath       string `json:"vedioPath,omitempty"`
-	SuitType        string `json:"suitType,omitempty"`
-	PublishTime     string `json:"publishTime,omitempty"`
-	ChromaImg       string `json:"chromaImg,omitempty"`
+
+	MainImg    string `json:"mainImg,omitempty"`
+	IconImg    string `json:"iconImg,omitempty"`
+	LoadingImg string `json:"loadingImg,omitempty"`
+	VideoImg   string `json:"videoImg,omitempty"`
+	SourceImg  string `json:"sourceImg,omitempty"`
+
+	VedioPath   string `json:"vedioPath,omitempty"`
+	SuitType    string `json:"suitType,omitempty"`
+	PublishTime string `json:"publishTime,omitempty"`
+	ChromaImg   string `json:"chromaImg,omitempty"`
 }
 
 type Spells struct {
