@@ -27,26 +27,28 @@
     left: 0;
   }
 
-  .carousel-tip{
+  .carousel-tip {
     position: absolute;
     top: 10px;
     right: 10px;
     z-index: 2;
   }
-  .carousel-name,.carousel-title {
+
+  .carousel-name, .carousel-title {
     position: absolute;
     z-index: 2;
     display: block;
     font-style: normal;
   }
 
-  .carousel-name{
+  .carousel-name {
     color: #fff;
     font-size: 13px;
     font-weight: 400;
     top: 40px;
     left: 31px;
   }
+
   .carousel-title {
     color: #fff;
     font-size: 30px;
@@ -66,6 +68,7 @@
     z-index: 2;
     margin: 0;
     padding: 0 30px 25px 30px;
+    text-shadow: 1px 1px rgba(0, 0, 0, 0.5);
   }
 
 }

@@ -267,15 +267,22 @@ func recordHeroSkin(ctx *context.Context, data *dto.HeroAttribute, platform int)
 			continue
 		}
 		hs := &model.HeroSkin{
-			HeroId:     data.Hero.HeroId,
-			MainImg:    skin.MainImg,
-			IconImg:    skin.IconImg,
-			LoadingImg: skin.LoadingImg,
-			VideoImg:   skin.VideoImg,
-			SourceImg:  skin.SourceImg,
-			Platform:   platform,
-			Version:    data.Version,
-			FileTime:   data.FileTime,
+			HeroId:      data.Hero.HeroId,
+			SkinId:      skin.SkinId,
+			HeroName:    skin.HeroName,
+			HeroTitle:   skin.HeroTitle,
+			Name:        skin.Name,
+			IsBase:      skin.IsBase,
+			EmblemsName: skin.EmblemsName,
+			Description: skin.Description,
+			MainImg:     skin.MainImg,
+			IconImg:     skin.IconImg,
+			LoadingImg:  skin.LoadingImg,
+			VideoImg:    skin.VideoImg,
+			SourceImg:   skin.SourceImg,
+			Platform:    platform,
+			Version:     data.Version,
+			FileTime:    data.FileTime,
 		}
 
 		hrs = append(hrs, hs)

@@ -40,9 +40,9 @@ export default {
         <div class="carousel-content">
 
           <a-tag color="green" class="carousel-tip">{{i+1}}/{{skins.length}}</a-tag>
-          <em class="carousel-name">{{data.name}}</em>
-          <em class="carousel-title">{{data.title}}</em>
-          <p class="carousel-desc">{{data.ShortBio}}</p>
+          <em class="carousel-name">{{data.heroName}}</em>
+          <em class="carousel-title">{{data.skinName}}</em>
+          <p class="carousel-desc">{{data.description}}</p>
         </div>
       </div>
     </template>
@@ -50,15 +50,9 @@ export default {
 </template>
 
 <style scoped>
-/* For demo */
 :deep(.slick-slide) {
   text-align: center;
   background: url("https://game.gtimg.cn/images/lol/lolstrategy/bg-dhjjc.jpg");
-  overflow: hidden;
-}
-
-:deep(.slick-slide h3) {
-  color: #fff;
 }
 
 </style>
