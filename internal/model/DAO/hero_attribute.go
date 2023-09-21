@@ -11,6 +11,63 @@ type HeroAttributeDAO struct {
 	db *gorm.DB
 }
 
+func (dao *HeroAttributeDAO) FindWithExt(cond map[string]interface{}) ([]*model.HeroAttrWithExt, error) {
+	sql := `SELECT
+	attr.heroId,
+	attr.title,
+	attr.name,
+	attr.alias,
+	attr.shortBio,
+	attr.defense,
+	attr.magic,
+	attr.difficulty,
+	attr.difficultyL,
+	attr.attack,
+	attr.attackrange,
+	attr.attackdamage,
+	attr.attackspeed,
+	attr.attackspeedperlevel,
+	attr.hp,
+	attr.hpperlevel,
+	attr.mp,
+	attr.mpperlevel,
+	attr.movespeed,
+	attr.armor,
+	attr.armorperlevel,
+	attr.spellblock,
+	attr.spellblockperlevel,
+	attr.hpregen,
+	attr.hpregenperlevel,
+	attr.mpregen,
+	attr.mpregenperlevel,
+	attr.crit,
+	attr.damage,
+	attr.durability,
+	attr.mobility,
+	attr.avatar,
+	attr.highlightprice,
+	attr.goldPrice,
+	attr.couponprice,
+	attr.isWeekFree,
+	attr.platform,
+	skin.skinId,
+	skin.name AS skin_name,
+	skin.description,
+	skin.emblemsName,
+	skin.mainImg,
+	skin.iconImg,
+	skin.loadingImg,
+	skin.videoImg,
+	skin.sourceImg
+FROM
+	hero_attribute attr
+	LEFT JOIN hero_skin skin ON attr.heroId = skin.heroId;
+`
+	result := make([]*model.HeroAttrWithExt, 0)
+	err := dao.db.Raw(sql).Scan(&result).Error
+
+	return result, err
+}
 func (dao *HeroAttributeDAO) Find(query []string, cond map[string]interface{}) ([]*model.HeroAttribute, error) {
 	tx := dao.db.Model(&model.HeroAttribute{})
 	if query != nil {
@@ -75,6 +132,7 @@ func NewHeroAttributeDAO() *HeroAttributeDAO {
 
 type HeroAttribute interface {
 	Find(query []string, cond map[string]interface{}) ([]*model.HeroAttribute, error)
+	FindWithExt(cond map[string]interface{}) ([]*model.HeroAttrWithExt, error)
 	Add([]*model.HeroAttribute) (int64, error)
 	Delete(cond map[string]interface{}) (int64, error)
 	DeleteAndInsert(delCond map[string]interface{}, addData []*model.HeroAttribute) error

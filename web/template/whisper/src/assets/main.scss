@@ -67,7 +67,7 @@
     line-height: 12px;
     z-index: 2;
     margin: 0;
-    padding: 0 30px 25px 30px;
+    padding: 0 30px 20px 30px;
     text-shadow: 1px 1px rgba(0, 0, 0, 0.5);
   }
 
@@ -203,6 +203,18 @@
     padding: 0;
   }
 
+  // v-bind:style="{'background-image': 'linear-gradient(to right, rgba(255,255,255,1), rgba(255,255,255,.92)),url('+item.mainImg+')'}"
+  //.ant-card{
+  //  background-position: center center;
+  //  /* 背景图片裁切 */
+  //  background-size: cover;
+  //  background-repeat: no-repeat;
+  //  //opacity: 0.05;
+  //  //z-index: 999;
+  //}
+  //.ant-card-bordered {
+  //  border: 1px solid rgba(255,255,255,1);
+  //}
   .ant-card .ant-card-meta-detail > div:not(:last-child) {
     margin-bottom: 2px;
   }
@@ -489,6 +501,13 @@
     }
   }
 
+}
+
+.ant-drawer{
+  .ant-drawer-content{
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
 }
 
 .ant-drawer-body {

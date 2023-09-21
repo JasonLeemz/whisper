@@ -6,6 +6,7 @@ type ESHeroes struct {
 	ID          string `json:"id"`
 	Name        string `json:"name,omitempty"`
 	IconPath    string `json:"iconPath,omitempty"`
+	MainImg     string `json:"mainImg,omitempty"`
 	Roles       string `json:"roles,omitempty"`
 	Price       string `json:"price,omitempty"`
 	Description string `json:"description,omitempty"`
@@ -60,6 +61,9 @@ func (e *ESHeroes) GetMapping() string {
                 "type": "keyword"
             },
             "iconPath": {
+                "type": "keyword"
+            },
+			"mainImg": {
                 "type": "keyword"
             },
             "itemId": {

@@ -80,6 +80,7 @@ SELECT
 	hero.alias,
 	hero.title,
 	attr.avatar,
+	attr.mainImg,
 	hero.goldPrice,
 	hero.couponPrice,
 	CONCAT_WS(',', hero.keywords, alias.keywords, alias.keywords_py) AS keywords,

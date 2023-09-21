@@ -25,6 +25,7 @@ type Source struct {
 	ID          string   `json:"id"`
 	Name        string   `json:"name"`
 	IconPath    string   `json:"iconPath"`
+	MainImg     string   `json:"mainImg"`
 	ItemId      string   `json:"itemId"`
 	Description string   `json:"description"`
 	Plaintext   string   `json:"plaintext"`

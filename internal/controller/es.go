@@ -106,6 +106,7 @@ func Query(ctx *context.Context) {
 			Id:        hit.Source.ID,
 			Name:      hit.Source.Name,
 			Icon:      hit.Source.IconPath,
+			MainImg:   hit.Source.MainImg,
 			Desc:      hit.Source.Description,
 			Plaintext: hit.Source.Plaintext,
 			Tags:      hit.Source.Tags,

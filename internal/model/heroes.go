@@ -5,7 +5,8 @@ import (
 )
 
 type LOLHeroesEXT struct {
-	Avatar      string `json:"avatar"`
+	Avatar      string `gorm:"column:avatar;default:;NOT NULL"`
+	MainImg     string `gorm:"column:mainImg;default:;NOT NULL"`
 	HeroId      string `gorm:"column:heroId;default:;NOT NULL"`
 	Name        string `gorm:"column:name;default:;NOT NULL"`
 	Alias       string `gorm:"column:alias;default:;NOT NULL"`

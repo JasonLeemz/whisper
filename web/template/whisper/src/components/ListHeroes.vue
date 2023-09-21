@@ -11,17 +11,18 @@ export default {
   },
   data() {
     return {
-      heroes:{},
+      heroes: {},
       drawer: {
         show: 0,
+        background: '',
         isLoading: false,
         data: {},
       }
     }
   },
   watch: {
-    queryResult:{
-      handler(){
+    queryResult: {
+      handler() {
         this.heroes = this.queryResult.data
         if (this.formData != null) {
           for (let i in this.heroes) {
@@ -32,16 +33,17 @@ export default {
           }
         }
       },
-      immediate:true,// 这个属性是重点啦
+      immediate: true,// 这个属性是重点啦
     },
   },
   methods: {
-    showDrawer(platform, version, id) {
+    showDrawer(platform, version, id, mainImg) {
       if (id === "") {
         return
       }
       this.drawer.show++
       this.drawer.isLoading = true
+      this.drawer.background = mainImg
 
       axios.post('/hero/suit', {
             'platform': platform,
@@ -72,10 +74,12 @@ export default {
   <p class="result-tips">{{ queryResult.tips }}</p>
   <div class="result-card" v-for="(item,i) in heroes" :key="i">
     <a-space direction="vertical">
-      <a-card :hoverable="true" @click="showDrawer(item.platform,item.version,item.id)">
+      <a-card :hoverable="true"
+              @click="showDrawer(item.platform,item.version,item.id,item.icon)"
+      >
         <a-card-meta>
           <template #title>
-            <span v-html="item.name" />
+            <span v-html="item.name"/>
           </template>
           <template #avatar>
             <img :src="item.icon" class="hero-icon" :alt="item.name"/>

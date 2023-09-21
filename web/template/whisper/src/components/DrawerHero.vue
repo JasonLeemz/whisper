@@ -8,6 +8,7 @@ export default {
     heroResult: {
       show: 0,
       isLoading: false,
+      background: '',
       data: {},
     }, // 父组件传递的数据
   },
@@ -79,12 +80,11 @@ export default {
   }
 }
 </script>
+<!--v-bind:style="{'background-image': 'linear-gradient(to bottom, rgba(255,255,255,1),rgba(255,255,255,1), rgba(255,255,255,1),rgba(255,255,255,.5)),url('+heroResult.background+')'}"-->
 
 <template>
   <a-drawer
       v-model:open="sideDrawer.show"
-      class="custom-class"
-      root-class-name="root-class-name"
       :title="sideDrawer.title"
       placement="right"
   >
@@ -199,3 +199,6 @@ export default {
 
   </a-drawer>
 </template>
+
+<style scoped>
+</style>

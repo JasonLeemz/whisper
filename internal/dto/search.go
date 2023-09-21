@@ -12,6 +12,7 @@ type SearchResultList struct {
 	Id        string   `json:"id"`
 	Name      string   `json:"name"`
 	Icon      string   `json:"icon"`
+	MainImg   string   `json:"mainImg"`
 	Desc      string   `json:"desc"`
 	Plaintext string   `json:"plaintext"`
 	Price     int      `json:"price"`

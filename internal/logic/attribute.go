@@ -128,8 +128,10 @@ func recordHeroRoleAndSpellAndSkin(ctx *context.Context, data *dto.HeroAttribute
 
 	// 记录HeroAttr
 	avatar := data.Hero.Avatar
+	mainImg := ""
 	if len(data.Skins) > 0 {
 		avatar = data.Skins[0].IconImg
+		mainImg = data.Skins[0].MainImg
 	}
 	attr := &model.HeroAttribute{
 		HeroId:              data.Hero.HeroId,
@@ -164,6 +166,7 @@ func recordHeroRoleAndSpellAndSkin(ctx *context.Context, data *dto.HeroAttribute
 		Durability:          data.Hero.Durability,
 		Mobility:            data.Hero.Mobility,
 		Avatar:              avatar,
+		MainImg:             mainImg,
 		Highlightprice:      data.Hero.Highlightprice,
 		GoldPrice:           data.Hero.GoldPrice,
 		Couponprice:         data.Hero.Couponprice,
@@ -373,4 +376,20 @@ func GetAttribute(ctx *context.Context, platform int, heroID string) (*model.Her
 		return ret[0], nil
 	}
 	return nil, nil
+}
+
+// AttrData2Redis todo 未完成
+func AttrData2Redis(ctx *context.Context) error {
+	ad := dao.NewHeroAttributeDAO()
+	attrs, err := ad.FindWithExt(nil)
+	if err != nil {
+		return err
+	}
+
+	data := make(map[string]dto.AttrWithExt)
+	for _, attr := range attrs {
+		data[attr.HeroId] = dto.AttrWithExt{}
+	}
+
+	return nil
 }

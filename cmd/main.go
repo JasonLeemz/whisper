@@ -131,6 +131,9 @@ func main() {
 		// 装备、符文、技能适配英雄列表，汇总db然后写入redis
 		// 页面查询：1.根据装备id获取适配的英雄
 		inner.POST("/suit/high_rate/cache", context.Handle(controller.SuitHeroData2Redis))
+
+		// 缓存heroes的attribute
+		//inner.POST("/attr/hero/cache", context.Handle(controller.AttrData2Redis))
 	}
 	run.Init()
 

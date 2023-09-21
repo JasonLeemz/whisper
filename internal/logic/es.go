@@ -132,6 +132,7 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) 
 			resp.Hits[i].Source.ID = hitData.ID
 			resp.Hits[i].Source.Name = hitData.Name
 			resp.Hits[i].Source.IconPath = hitData.IconPath
+			resp.Hits[i].Source.MainImg = hitData.MainImg
 			resp.Hits[i].Source.Description = hitData.Description
 			resp.Hits[i].Source.Plaintext = hitData.Plaintext
 			resp.Hits[i].Source.Version = hitData.Version
@@ -349,6 +350,7 @@ func buildHeroesIndex(ctx *context.Context) error {
 					ID:       tmp.HeroId,
 					Name:     tmp.Name + " " + tmp.Title + "(" + tmp.Alias + ")",
 					IconPath: tmp.Avatar,
+					MainImg:  tmp.MainImg,
 					Price:    "GoldPrice:" + tmp.GoldPrice + "/" + "CouponPrice:" + tmp.CouponPrice,
 					Roles:    tmp.Roles,
 					//Plaintext: "",
@@ -446,6 +448,7 @@ func buildMHeroesIndex(ctx *context.Context) error {
 					ID:       tmp.HeroId,
 					Name:     tmp.Title + " " + tmp.Name + "(" + tmp.Alias + ")",
 					IconPath: tmp.Avatar,
+					MainImg:  tmp.Poster,
 					Price:    "GoldPrice:" + tmp.Highlightprice + "/" + "CouponPrice:" + tmp.Couponprice,
 					Roles:    tmp.Roles,
 					//Plaintext: "",
