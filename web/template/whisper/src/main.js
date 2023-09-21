@@ -7,8 +7,8 @@ import './assets/main.scss'
 
 import axios from 'axios';
 // 设置 Axios 全局配置
-// axios.defaults.baseURL = '';
-axios.defaults.baseURL = 'http://192.168.31.218:8123';
+axios.defaults.baseURL = '';
+// axios.defaults.baseURL = 'http://192.168.31.218:8123';
 
 
 const app = createApp(App)
