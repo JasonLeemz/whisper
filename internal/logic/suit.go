@@ -534,11 +534,16 @@ func heroesSuits2Redis(ctx *context.Context) error {
 
 	// 获取全部符文
 	mrd := dao.NewLOLMRuneDAO()
-	mrunes, err := mrd.Find([]string{
-		"*",
-	}, map[string]interface{}{
-		"status": 0,
-	})
+	version, err := mrd.GetLOLMRuneMaxVersion()
+	if err != nil {
+		return err
+	}
+	mrunes, err := mrd.GetLOLMRune(version.Version)
+	//mrunes, err := mrd.Find([]string{
+	//	"*",
+	//}, map[string]interface{}{
+	//	"status": 0,
+	//})
 	if err != nil {
 		return err
 	}
@@ -644,6 +649,7 @@ func heroesSuits2Redis(ctx *context.Context) error {
 												Plaintext: mrune[key].Tooltip,
 												Desc:      fmt.Sprintf("<short>%s</short><long>%s</long>", mrune[key].Shortdesc, mrune[key].Longdesc),
 												Version:   mrune[key].Version,
+												RuneType:  mrune[key].StyleName,
 
 												Igamecnt: data.Igamecnt,
 												Wincnt:   data.Wincnt,
@@ -675,6 +681,7 @@ func heroesSuits2Redis(ctx *context.Context) error {
 												AuthorIcon:   data.AuthorIcon,
 												RecommendID:  data.RecommendId,
 												ThinkingInfo: data.Desc,
+												RuneType:     mmrune[key].StyleName,
 
 												Platform: data.Platform,
 											})

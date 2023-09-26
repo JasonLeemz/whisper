@@ -39,6 +39,8 @@ type SuitData struct {
 
 	CD int `json:"cd"`
 
+	RuneType string `json:"rune_type"` // 符文类别
+
 	Igamecnt int32 `json:"igamecnt,omitempty"`
 	Wincnt   int32 `json:"wincnt,omitempty"`
 	Winrate  int32 `json:"winrate,omitempty"`
