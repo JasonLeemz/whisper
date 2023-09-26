@@ -88,8 +88,6 @@ func BatchUpdateSuitEquip(ctx *context.Context) error {
 	return nil
 }
 func QuerySuitEquip(ctx *context.Context, platform int, heroId string) (any, error) {
-	//smu.Lock()
-	//defer smu.Unlock()
 
 	if platform == common.PlatformForLOL {
 		fightData, err := getFightData(ctx, heroId)

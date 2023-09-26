@@ -18,4 +18,8 @@ html, body {
     padding-top: 250px;
     z-index: -1;
   }
+
+  .ant-skeleton .ant-skeleton-content{
+    padding: 0 15px;
+  }
 }
