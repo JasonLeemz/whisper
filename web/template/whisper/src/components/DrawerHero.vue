@@ -153,7 +153,8 @@ export default {
               <!-- 每一项内容的行:出门装/鞋子... START-->
               <div class="equip-item-wrap" :class="heroResult.data.platform===0?'':'equip-item-wrap-lolm'">
                 <span v-for="(equip,equipidx) in equips" :key="equipidx" class="equip-item">
-                <!-- 具体的每一项 START-->
+                  <em class="rune-type" v-if="equipidx===0 && equip.rune_type !== ''">{{ equip.rune_type }}</em>
+                  <!-- 具体的每一项 START-->
                   <a-popover placement="bottom" arrow-point-at-center>
                     <template #content>
                       <div class="roadmap-item">
