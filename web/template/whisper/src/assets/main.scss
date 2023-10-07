@@ -661,6 +661,21 @@
             height: 35px;
             border-radius: 50%;
           }
+
+          .rune-desc-img{
+            .rune-desc-img-wrap{
+              position: relative;
+              display: inline-block;
+              height: 50px;
+              .rune-name{
+                position: absolute;
+                left: 0;
+                top: 35px;
+                font-style: normal;
+                font-size: 12px;
+              }
+            }
+          }
         }
       }
 

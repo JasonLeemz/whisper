@@ -1,5 +1,6 @@
 html, body {
   height: 100%;
+  font-size: 12px;
 }
 
 #app {
@@ -19,7 +20,7 @@ html, body {
     z-index: -1;
   }
 
-  .ant-skeleton .ant-skeleton-content{
+  .ant-skeleton .ant-skeleton-content {
     padding: 0 15px;
   }
 }

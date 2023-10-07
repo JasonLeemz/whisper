@@ -20,7 +20,7 @@ export default {
         title: '推荐出装',
         activeKey: ref(),
         panel: {
-          foldAll: false,
+          foldAll: true,
           foldBtn: {
             top: ref(50)
           },
@@ -47,16 +47,18 @@ export default {
     }
   },
   watch: {
-    'heroResult.show'(){
+    'heroResult.show'() {
       this.sideDrawer.show = true
     },
-    'heroResult.isLoading'(isLoading){
+    'heroResult.isLoading'(isLoading) {
       this.sideDrawer.isLoading = isLoading
     },
     'heroResult.data'(data) {
       for (let postypes in data.equips) {
         for (let type in data.equips[postypes]) {
-          this.sideDrawer.panel.panelKeys.push(type + '-' + postypes)
+          if (type === 'rune' || type === 'core') {
+            this.sideDrawer.panel.panelKeys.push(type + '-' + postypes)
+          }
         }
       }
     }
@@ -89,17 +91,17 @@ export default {
       placement="right"
   >
     <template v-if="sideDrawer.isLoading">
-      <a-skeleton active />
+      <a-skeleton active/>
     </template>
 
     <template v-if="!sideDrawer.isLoading">
       <!-- 展开所有/收起全部 START-->
-      <a-button v-if="Object.keys(heroResult.data.equips).length !== 0"
-                type="primary" size="small"
-                @click="panelSwitcher"
-                class="foldall-btn">
-        {{ sideDrawer.panel.foldAll ? '展开所有' : '收起全部' }}
-      </a-button>
+      <!--      <a-button v-if="Object.keys(heroResult.data.equips).length !== 0"-->
+      <!--                type="primary" size="small"-->
+      <!--                @click="panelSwitcher"-->
+      <!--                class="foldall-btn">-->
+      <!--        {{ sideDrawer.panel.foldAll ? '展开所有' : '收起全部' }}-->
+      <!--      </a-button>-->
       <!-- 展开所有/收起全部 END-->
 
       <a-empty
@@ -153,7 +155,6 @@ export default {
               <!-- 每一项内容的行:出门装/鞋子... START-->
               <div class="equip-item-wrap" :class="heroResult.data.platform===0?'':'equip-item-wrap-lolm'">
                 <span v-for="(equip,equipidx) in equips" :key="equipidx" class="equip-item">
-                  <em class="rune-type" v-if="equipidx===0 && equip.rune_type !== ''">{{ equip.rune_type }}</em>
                   <!-- 具体的每一项 START-->
                   <a-popover placement="bottom" arrow-point-at-center>
                     <template #content>
@@ -176,9 +177,15 @@ export default {
                       <span v-html="equip.plaintext" v-if="rowidx==='rune'" class="rune-desc"></span>
                       <span v-html="equip.desc" v-if="rowidx==='rune'" class="rune-desc-long"></span>
                     </template>
-                    <img :src="equip.icon" :alt="equip.name" :class="rowidx==='rune'?'equip-icon-rune':'equip-icon'">
+                    <div class="rune-desc-img">
+                      <em class="rune-type" v-if="equipidx===0 && equip.rune_type !== ''">{{ equip.rune_type }}</em>
+                      <div :class="rowidx==='rune'?'rune-desc-img-wrap':''" >
+                        <img :src="equip.icon" :alt="equip.name" :class="rowidx==='rune'?'equip-icon-rune':'equip-icon'">
+                        <em class="rune-name" v-if="rowidx==='rune'">{{ equip.name }}</em>
+                      </div>
+                    </div>
                   </a-popover>
-                <!-- 具体的每一项 END-->
+                  <!-- 具体的每一项 END-->
                 </span>
               </div>
 
