@@ -667,12 +667,14 @@
               position: relative;
               display: inline-block;
               height: 50px;
+              width: 60px;
               .rune-name{
                 position: absolute;
                 left: 0;
                 top: 35px;
                 font-style: normal;
                 font-size: 12px;
+                font-weight: 300;
               }
             }
           }

@@ -96,12 +96,12 @@ export default {
 
     <template v-if="!sideDrawer.isLoading">
       <!-- 展开所有/收起全部 START-->
-      <!--      <a-button v-if="Object.keys(heroResult.data.equips).length !== 0"-->
-      <!--                type="primary" size="small"-->
-      <!--                @click="panelSwitcher"-->
-      <!--                class="foldall-btn">-->
-      <!--        {{ sideDrawer.panel.foldAll ? '展开所有' : '收起全部' }}-->
-      <!--      </a-button>-->
+            <a-button v-if="Object.keys(heroResult.data.equips).length !== 0"
+                      type="primary" size="small"
+                      @click="panelSwitcher"
+                      class="foldall-btn">
+              {{ sideDrawer.panel.foldAll ? '展开常用' : '收起常用' }}
+            </a-button>
       <!-- 展开所有/收起全部 END-->
 
       <a-empty
