@@ -1,20 +1,39 @@
 @import './base.scss';
 
+.ant-carousel-wrap{
+  text-align: center;
+  padding-top: 5px;
+  .carousel-border-radius{
+    display: inline-block;
+    width: 95%;
+    height: 100%;
+    background: #FFF;
+    border-radius: 20px;
+    .ant-carousel{
+      display: inline-block;
+      width: 100%;
+    }
+  }
+
+}
+
 .carousel-wrap {
   position: relative;
   width: 100%;
-  height: 250px;
+  height: 150px;
+  text-align: center;
 
   .carousel-mask {
     position: absolute;
     width: 100%;
     height: 100%;
-    //background: rgba(0,0,0,.5);
     z-index: 1;
-    box-shadow: inset 0 0 50px 35px rgba(0, 0, 0, 0.8);
+
+    box-shadow: inset 0 0 25px 15px rgba(0, 0, 0, 0.8);
   }
 
   .carousel-img {
+
     /* 设置图片的宽度和高度为100%，即填充容器 */
     width: 100%;
     height: 100%;
@@ -34,28 +53,42 @@
     z-index: 2;
   }
 
-  .carousel-name, .carousel-title {
+  .name-mask{
     position: absolute;
+    top: 30px;
+    left: 21px;
+    //min-width: 50%;
+    //min-height: 50%;
+    //background: rgba(0,0,0,.6);
     z-index: 2;
-    display: block;
-    font-style: normal;
+    padding: 10px 15px;
+
+    .carousel-name, .carousel-title {
+      //position: absolute;
+      //z-index: 2;
+      text-align: left;
+      display: block;
+      font-style: normal;
+    }
+
+    .carousel-name {
+      color: #fff;
+      font-size: 13px;
+      font-weight: 400;
+      //top: 40px;
+      //left: 31px;
+    }
+
+    .carousel-title {
+      color: #fff;
+      font-size: 30px;
+      font-weight: 700;
+      margin-top: 10px;
+      //top: 65px;
+      //left: 30px;
+    }
   }
 
-  .carousel-name {
-    color: #fff;
-    font-size: 13px;
-    font-weight: 400;
-    top: 40px;
-    left: 31px;
-  }
-
-  .carousel-title {
-    color: #fff;
-    font-size: 30px;
-    font-weight: 700;
-    top: 65px;
-    left: 30px;
-  }
 
   .carousel-desc {
     color: #d9d9d9;

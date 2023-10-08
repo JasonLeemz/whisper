@@ -32,27 +32,35 @@ export default {
 
 
 <template>
-  <a-carousel  :dot-position="'top'" :dots="false">
-    <template v-for="(data,i) in skins" :key="i">
-      <div class="carousel-wrap">
-        <div class="carousel-mask"></div>
-        <img :src="data.mainImg" class="carousel-img">
-        <div class="carousel-content">
+  <div class="ant-carousel-wrap">
+    <div class="carousel-border-radius">
+      <a-carousel  :dot-position="'top'" :dots="false">
+        <template v-for="(data,i) in skins" :key="i">
+          <div class="carousel-wrap">
+            <div class="carousel-mask"></div>
+            <img :src="data.mainImg" class="carousel-img">
+            <div class="carousel-content">
 
-          <a-tag color="green" class="carousel-tip">{{i+1}}/{{skins.length}}</a-tag>
-          <em class="carousel-name">{{data.heroName}}</em>
-          <em class="carousel-title">{{data.skinName}}</em>
-          <p class="carousel-desc">{{data.description}}</p>
-        </div>
-      </div>
-    </template>
-  </a-carousel>
+              <a-tag color="green" class="carousel-tip">{{i+1}}/{{skins.length}}</a-tag>
+
+              <div class="name-mask">
+                <em class="carousel-name">{{data.heroName}}</em>
+                <em class="carousel-title">{{data.skinName}}</em>
+              </div>
+
+              <!--          <p class="carousel-desc">{{data.description}}</p>-->
+            </div>
+          </div>
+        </template>
+      </a-carousel>
+    </div>
+  </div>
 </template>
 
 <style scoped>
 :deep(.slick-slide) {
-  text-align: center;
-  background: url("https://game.gtimg.cn/images/lol/lolstrategy/bg-dhjjc.jpg");
+  //text-align: center;
+  //background: url("https://game.gtimg.cn/images/lol/lolstrategy/bg-dhjjc.jpg");
 }
 
 </style>
