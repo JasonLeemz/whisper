@@ -557,6 +557,40 @@
 }
 
 .ant-drawer {
+  .version-panel-row{
+    //margin-bottom: 10px;
+  }
+  .version-panel{
+    font-size: 12px;
+    .version-avatar{
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+    }
+    .version-title{
+      margin-left: 5px;
+    }
+    .version-attach-content{
+      line-height: 15px;
+      color: #5d5d5d;
+    }
+    .version-spell-list{
+      position: relative;
+      .version-spell{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 25px;
+        height: 25px;
+      }
+      .version-spell-desc{
+        white-space: pre-line;
+        padding-left:30px;
+      }
+    }
+
+  }
+
   .ant-drawer-content {
     background-size: cover;
     background-repeat: no-repeat;

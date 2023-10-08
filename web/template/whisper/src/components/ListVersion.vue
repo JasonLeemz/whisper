@@ -12,15 +12,18 @@ export default {
       drawer: {
         show: 0,
         isLoading: false,
+        title: '',
         data: {},
       },
     }
   },
   watch: {},
   methods: {
-    showDrawer(platform, version) {
+    showDrawer(platform, version, desc) {
       this.drawer.show++
       this.drawer.isLoading = true
+      this.drawer.title = desc
+
 
       axios.post('/version/detail', {
             'platform': platform,
@@ -48,7 +51,7 @@ export default {
   <p class="result-tips"></p>
   <div class="result-card" v-for="(item,i) in versionResult.data" :key="i">
     <a-space direction="vertical">
-      <a-card hoverable @click="showDrawer(item.platform,item.vkey)" style="max-width: 500px">
+      <a-card hoverable @click="showDrawer(item.platform,item.vkey,item.name)" style="max-width: 500px">
         <template #cover>
           <img :alt="item.name" :src="item.image"/>
         </template>
@@ -66,7 +69,5 @@ export default {
 </template>
 
 <style scoped>
-.ant-card .ant-card-meta-description {
-  padding: 0 !important;
-}
+
 </style>
