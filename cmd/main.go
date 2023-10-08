@@ -83,6 +83,7 @@ func main() {
 		page.GET("/equip", context.Handle(controller.SearchBox))
 		page.POST("/equip/filter", context.Handle(controller.EquipFilter))
 
+		page.GET("/version/lolm", context.Handle(controller.LOLMVersion))
 		page.GET("/version", context.Handle(controller.QueryVersion))
 		page.POST("/version", context.Handle(controller.QueryVersion))
 		page.GET("/equip/types", context.Handle(controller.QueryEquipTypes))

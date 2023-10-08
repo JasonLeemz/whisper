@@ -10,6 +10,15 @@ type VersionDetail struct {
 	UpdateTime string `json:"update_time"`
 }
 
+type PageVersionList struct {
+	Name         string `json:"name,omitempty"`
+	Title        string `json:"title,omitempty"`
+	Introduction string `json:"introduction,omitempty"`
+	Isnew        string `json:"isnew,omitempty"`
+	Image        string `json:"image,omitempty"`
+	PublicDate   string `json:"public_date,omitempty"`
+}
+
 type LOLMVersionList struct {
 	Baton   string                `json:"baton,omitempty"`
 	Code    int                   `json:"code,omitempty"`
@@ -52,21 +61,28 @@ type BuyInfo struct {
 }
 
 type List struct {
-	Title         string  `json:"title,omitempty"`
-	Content       string  `json:"content,omitempty"`
-	Descirbe      string  `json:"descirbe,omitempty"`
-	MarkBgColor   string  `json:"mark_bg_color,omitempty"`
-	ImgUrl        string  `json:"img_url,omitempty"`
-	AttachContent string  `json:"attach_content,omitempty"`
-	HeadUrl       string  `json:"head_url,omitempty"`
-	VideoPlayUrl  string  `json:"video_play_url,omitempty"`
-	HeroId        string  `json:"heroId,omitempty"`
-	IsExpend      int     `json:"is_expend,omitempty"`
-	IsEnableShare bool    `json:"is_enable_share,omitempty"`
-	IsColorType   bool    `json:"is_color_type,omitempty"`
-	BuyInfo       BuyInfo `json:"buy_info,omitempty"`
-	HeroTag       string  `json:"hero_tag,omitempty"`
-	ShowIndex     int     `json:"showIndex,omitempty"`
+	Title         string       `json:"title,omitempty"`
+	Content       string       `json:"content,omitempty"`
+	Descirbe      string       `json:"descirbe,omitempty"`
+	MarkBgColor   string       `json:"mark_bg_color,omitempty"`
+	ImgUrl        string       `json:"img_url,omitempty"`
+	AttachContent string       `json:"attach_content,omitempty"`
+	HeadUrl       string       `json:"head_url,omitempty"`
+	VideoPlayUrl  string       `json:"video_play_url,omitempty"`
+	HeroId        string       `json:"heroId,omitempty"`
+	IsExpend      int          `json:"is_expend,omitempty"`
+	IsEnableShare bool         `json:"is_enable_share,omitempty"`
+	IsColorType   bool         `json:"is_color_type,omitempty"`
+	BuyInfo       BuyInfo      `json:"buy_info,omitempty"`
+	HeroTag       string       `json:"hero_tag,omitempty"`
+	ShowIndex     int          `json:"showIndex,omitempty"`
+	List          []DetailList `json:"list,omitempty"`
+}
+
+type DetailList struct {
+	Icon    string `json:"icon,omitempty"`
+	Title   string `json:"title,omitempty"`
+	Content string `json:"content,omitempty"`
 }
 
 type LOLMVersionDetailData struct {

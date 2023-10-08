@@ -26,4 +26,9 @@ const (
 	// KeyCacheSkillHeroSuit HSET cache:skill_hero:platform:item
 	KeyCacheSkillHeroSuit    = "cache:skill_hero:%d:%s"
 	KeyCacheSkillHeroSuitAll = "cache:skill_hero:*"
+
+	// KeyCacheVersionList SET
+	KeyCacheVersionList = "cache:version:lolm"
+	// KeyCacheVersionDetail SET cache:version:detail:lolm:hero
+	KeyCacheVersionDetail = "cache:version:detail:lolm:%s"
 )
