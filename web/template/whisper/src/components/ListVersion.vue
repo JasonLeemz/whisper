@@ -18,7 +18,7 @@ export default {
   },
   watch: {},
   methods: {
-    showDrawer(version, platform) {
+    showDrawer(platform, version) {
       this.drawer.show++
       this.drawer.isLoading = true
 

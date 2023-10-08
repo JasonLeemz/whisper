@@ -28,7 +28,7 @@ const (
 	KeyCacheSkillHeroSuitAll = "cache:skill_hero:*"
 
 	// KeyCacheVersionList SET
-	KeyCacheVersionList = "cache:version:lolm"
-	// KeyCacheVersionDetail SET cache:version:detail:lolm:hero
-	KeyCacheVersionDetail = "cache:version:detail:lolm:%s"
+	KeyCacheVersionList = "cache:version"
+	// KeyCacheVersionDetail SET cache:version:detail:4.2_hero
+	KeyCacheVersionDetail = "cache:version:detail:%s"
 )

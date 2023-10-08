@@ -54,6 +54,16 @@ func LOLMVersion(ctx *context.Context) {
 	ctx.Reply(data, errors.New(err))
 }
 
+type VersionDetailReq struct {
+	Platform int    `json:"platform" form:"platform"`
+	Version  string `json:"version" form:"version"`
+}
+
 func VersionDetail(ctx *context.Context) {
-	ctx.Reply(nil, nil)
+	req := &VersionDetailReq{}
+	if err := ctx.Bind(req); err != nil {
+		return
+	}
+	detail, err := logic.VersionDetail(ctx, req.Version)
+	ctx.Reply(detail, errors.New(err))
 }

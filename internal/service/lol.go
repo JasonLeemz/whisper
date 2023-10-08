@@ -357,19 +357,25 @@ func LOLMVersionList(ctx *context.Context) (*dto.LOLMVersionList, map[string]*dt
 		return nil, nil, errors.New(versionList.Msg, versionList.ErrMsg)
 	}
 
+	vd, err := VersionDetail(ctx, 1, versionList.Data[0].Vkey)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &versionList, vd, nil
+}
+
+// VersionDetail 版本更新详情
+func VersionDetail(ctx *context.Context, platform int, version string) (map[string]*dto.LOLMVersionDetail, error) {
 	// -----------------------------
 	wg := sync.WaitGroup{}
 
-	latestVer := versionList.Data[0]
 	keys := []string{
-		fmt.Sprintf("lgame_%s_hero", latestVer.Vkey),
-		fmt.Sprintf("lgame_%s_prop", latestVer.Vkey),
-		fmt.Sprintf("lgame_%s_system", latestVer.Vkey),
-		fmt.Sprintf("lgame_%s_skin", latestVer.Vkey),
+		fmt.Sprintf("lgame_%s_hero", version),
+		fmt.Sprintf("lgame_%s_prop", version),
+		fmt.Sprintf("lgame_%s_system", version),
+		fmt.Sprintf("lgame_%s_rune", version),
 	}
-
-	versionDetailUrl := config.LOLConfig.LolM.VersionDetail
-
 	syncMap := sync.Map{}
 	for _, k := range keys {
 		wg.Add(1)
@@ -377,9 +383,10 @@ func LOLMVersionList(ctx *context.Context) (*dto.LOLMVersionList, map[string]*dt
 			defer wg.Done()
 
 			// https://mlol.qt.qq.com/go/database/versiondetail?key=%s
+			versionDetailUrl := config.LOLConfig.LolM.VersionDetail
 			detailUrl := fmt.Sprintf(versionDetailUrl, k)
 			log.Logger.Info(ctx, "detailUrl="+detailUrl)
-			body, err = http.GetForm(ctx, detailUrl, header.CommonHeaders()...)
+			body, err := http.GetForm(ctx, detailUrl, header.CommonHeaders()...)
 			if err != nil {
 				log.Logger.Error(ctx, err)
 				return
@@ -403,5 +410,6 @@ func LOLMVersionList(ctx *context.Context) (*dto.LOLMVersionList, map[string]*dt
 		return true
 	})
 
-	return &versionList, vd, nil
+	return vd, nil
+
 }

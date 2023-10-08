@@ -2,7 +2,7 @@
 
 export default {
   props: {
-    skillResult: {
+    versionResult: {
       show: 0,
       isLoading: false,
       data: {},
@@ -12,15 +12,15 @@ export default {
     return {
       sideDrawer: {
         show: false,
-        title: '适配英雄',
+        title: '',
       },
     }
   },
   watch: {
-    'skillResult.show'() {
+    'versionResult.show'() {
       this.sideDrawer.show = true
     },
-    'skillResult.isLoading'(isLoading) {
+    'versionResult.isLoading'(isLoading) {
       this.sideDrawer.isLoading = isLoading
     },
   },
@@ -40,24 +40,15 @@ export default {
       <a-skeleton active/>
     </template>
 
-    <a-empty
-        v-if="!sideDrawer.isLoading && Object.keys(skillResult.data).length === 0"
-        description="当前版本该符文缺乏足够的样本数据"/>
-
-    <!-- 适配英雄 START-->
-    <template v-if="!sideDrawer.isLoading && Object.keys(skillResult.data).length > 0">
-      <h4 class="equip-suit-hero">适配英雄</h4>
-      <template v-for="(hero,i) in skillResult.data" :key="i">
-        <a-tooltip :title="hero.name">
-          <img class="equip-hero-avatar"
-               :title="hero.name"
-               :src="hero.icon"
-               :alt="hero.name"
-          />
-
-        </a-tooltip>
-      </template>
+    <template>
+      <a-collapse>
+        <a-collapse-panel key="1" header="This is panel header 1">
+          <p>1</p>
+        </a-collapse-panel>
+        <a-collapse-panel key="2" header="This is panel header 2">
+          <p>2</p>
+        </a-collapse-panel>
+      </a-collapse>
     </template>
-    <!-- 适配英雄 END-->
   </a-drawer>
 </template>
