@@ -11,7 +11,7 @@ import (
 	"whisper/pkg/redis"
 )
 
-func GetLOLMVersionList(ctx *context.Context) ([]dto.PageVersionList, error) {
+func GetLOLMVersionList(ctx *context.Context) ([]dto.LOLMVersionListData, error) {
 	var queryFromUrl = false
 	var vl []dto.LOLMVersionListData
 	vd := make(map[string]*dto.LOLMVersionDetail)
@@ -50,17 +50,5 @@ func GetLOLMVersionList(ctx *context.Context) ([]dto.PageVersionList, error) {
 		}
 	}
 
-	pvl := make([]dto.PageVersionList, 0, len(vl))
-	for _, item := range vl {
-		pvl = append(pvl, dto.PageVersionList{
-			Name:         item.Name,
-			Title:        item.Title,
-			Introduction: item.Introduction,
-			Isnew:        item.Isnew,
-			Image:        item.Image,
-			PublicDate:   item.PublicDate,
-		})
-	}
-
-	return pvl, err
+	return vl, err
 }

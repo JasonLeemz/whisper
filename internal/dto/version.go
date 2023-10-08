@@ -13,10 +13,12 @@ type VersionDetail struct {
 type PageVersionList struct {
 	Name         string `json:"name,omitempty"`
 	Title        string `json:"title,omitempty"`
+	Vkey         string `json:"vkey,omitempty"`
 	Introduction string `json:"introduction,omitempty"`
 	Isnew        string `json:"isnew,omitempty"`
 	Image        string `json:"image,omitempty"`
 	PublicDate   string `json:"public_date,omitempty"`
+	Platform     int    `json:"platform"`
 }
 
 type LOLMVersionList struct {

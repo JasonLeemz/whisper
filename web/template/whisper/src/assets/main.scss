@@ -1,35 +1,31 @@
 @import './base.scss';
 
-.timeline-version{
-  margin: 15px;
-  padding: 15px 15px;
-  border-radius: 20px;
-  background: #FFF;
-}
-.ant-carousel-wrap{
-  text-align: center;
-  padding-top: 5px;
-  .carousel-border-radius{
-    display: inline-block;
-    width: 95%;
-    height: 100%;
-    background: #FFF;
-
-    .ant-carousel{
-    }
-  }
-
-}
+//.ant-carousel-wrap {
+//  text-align: center;
+//  padding-top: 5px;
+//
+//  .carousel-border-radius {
+//    display: inline-block;
+//    width: 100%;
+//    padding: 0 5px;
+//    height: 100%;
+//    background: #FFF;
+//
+//    .ant-carousel {
+//    }
+//  }
+//
+//}
 
 .carousel-wrap {
-  border-radius: 20px;
+  //border-radius: 20px;
   position: relative;
   width: 100%;
   height: 150px;
   text-align: center;
 
   .carousel-mask {
-    border-radius: 20px;
+    //border-radius: 20px;
     position: absolute;
     width: 100%;
     height: 100%;
@@ -39,7 +35,7 @@
   }
 
   .carousel-img {
-    border-radius: 20px;
+    //border-radius: 20px;
     /* 设置图片的宽度和高度为100%，即填充容器 */
     width: 100%;
     height: 100%;
@@ -59,7 +55,7 @@
     z-index: 2;
   }
 
-  .name-mask{
+  .name-mask {
     position: absolute;
     top: 30px;
     left: 21px;
@@ -293,6 +289,19 @@
   .result-card {
     padding: 0 15px;
 
+    .version-title{
+      position: absolute;
+      width: 100%;
+      height: 35px;
+      line-height: 25px;
+      border: 0;
+      left: 0;
+      top:-35px;
+      padding: 5px 10px;
+      color: #fff;
+      background: rgba(0,0,0,.5);
+    }
+
     .ant-tag {
       line-height: 15px;
       padding: 0 5px;
@@ -399,6 +408,11 @@
 
 .ant-divider {
   margin: 10px 0;
+}
+
+.version-public-date{
+  font-size: 12px;
+  color: #5d5d5d;
 }
 
 .mainText {
@@ -542,8 +556,8 @@
 
 }
 
-.ant-drawer{
-  .ant-drawer-content{
+.ant-drawer {
+  .ant-drawer-content {
     background-size: cover;
     background-repeat: no-repeat;
   }
@@ -676,7 +690,7 @@
           max-width: inherit;
         }
 
-        .rune-type{
+        .rune-type {
           font-style: normal;
           font-size: 12px;
           line-height: 12px;
@@ -701,13 +715,14 @@
             border-radius: 50%;
           }
 
-          .rune-desc-img{
-            .rune-desc-img-wrap{
+          .rune-desc-img {
+            .rune-desc-img-wrap {
               position: relative;
               display: inline-block;
               height: 50px;
               width: 60px;
-              .rune-name{
+
+              .rune-name {
                 position: absolute;
                 left: 0;
                 top: 35px;
