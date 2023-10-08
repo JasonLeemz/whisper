@@ -7,8 +7,10 @@ import (
 	"sync"
 	"time"
 	"whisper/internal/dto"
+	header "whisper/internal/service/common"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
+	"whisper/pkg/errors"
 	"whisper/pkg/http"
 	"whisper/pkg/log"
 )
@@ -210,11 +212,7 @@ func QuerySuitEquipForLOL(ctx *context.Context, heroId string) (*dto.JDataDataRe
 	// 发送 GetForm 请求
 	suitEquip := dto.HeroSuitEquip{}
 
-	header := http.Header{
-		Key:   "Referer",
-		Value: "https://101.qq.com/",
-	}
-	body, err := http.GetForm(ctx, url, header)
+	body, err := http.GetForm(ctx, url, header.Referer...)
 	if err != nil {
 		return nil, err
 	}
@@ -243,11 +241,7 @@ func ChampionFightData(ctx *context.Context, heroID string) (*dto.ChampionFightD
 	// 发送 GetForm 请求
 	championFightData := dto.ChampionFightData{}
 
-	header := http.Header{
-		Key:   "Referer",
-		Value: "https://101.qq.com/",
-	}
-	body, err := http.GetForm(ctx, url, header)
+	body, err := http.GetForm(ctx, url, header.Referer...)
 	if err != nil {
 		return nil, err
 	}
@@ -272,11 +266,7 @@ func HeroRankList(ctx *context.Context) (*dto.HeroRankList, error) {
 	// 发送 GetForm 请求
 	championFightData := dto.HeroRankList{}
 
-	header := http.Header{
-		Key:   "Referer",
-		Value: "https://lolm.qq.com/",
-	}
-	body, err := http.GetForm(ctx, url, header)
+	body, err := http.GetForm(ctx, url, header.Referer...)
 	if err != nil {
 		return nil, err
 	}
@@ -296,12 +286,8 @@ func HeroSuit(ctx *context.Context, heroID string) (*dto.HeroTech, map[string]*d
 
 	// 发送 GetForm 请求
 	heroTech := dto.HeroTech{}
-	header := http.Header{
-		Key:   "Referer",
-		Value: "https://101.qq.com/",
-	}
 	// -----------------------------
-	body, err := http.GetForm(ctx, heroTechUrl, header)
+	body, err := http.GetForm(ctx, heroTechUrl, header.Referer...)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -322,7 +308,7 @@ func HeroSuit(ctx *context.Context, heroID string) (*dto.HeroTech, map[string]*d
 
 			equipTechUrl := fmt.Sprintf(config.LOLConfig.LolM.HeroEquip, eqs.Head.Id)
 			log.Logger.Info(ctx, "equipTechUrl="+equipTechUrl)
-			body, err = http.GetForm(ctx, equipTechUrl, header)
+			body, err = http.GetForm(ctx, equipTechUrl, header.Referer...)
 			if err != nil {
 				log.Logger.Error(ctx, err)
 				return
@@ -347,4 +333,75 @@ func HeroSuit(ctx *context.Context, heroID string) (*dto.HeroTech, map[string]*d
 	})
 
 	return &heroTech, met, nil
+}
+
+// LOLMVersionList 手游版本列表
+func LOLMVersionList(ctx *context.Context) (*dto.LOLMVersionList, map[string]*dto.LOLMVersionDetail, error) {
+	versionListUrl := config.LOLConfig.LolM.VersionList
+	log.Logger.Info(ctx, "versionListUrl="+versionListUrl)
+
+	// 发送 GetForm 请求
+	versionList := dto.LOLMVersionList{}
+	// -----------------------------
+	body, err := http.GetForm(ctx, versionListUrl, header.CommonHeaders()...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = json.Unmarshal(body, &versionList)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if versionList.Result != 0 {
+		return nil, nil, errors.New(versionList.Msg, versionList.ErrMsg)
+	}
+
+	// -----------------------------
+	wg := sync.WaitGroup{}
+
+	latestVer := versionList.Data[0]
+	keys := []string{
+		fmt.Sprintf("lgame_%s_hero", latestVer.Vkey),
+		fmt.Sprintf("lgame_%s_prop", latestVer.Vkey),
+		fmt.Sprintf("lgame_%s_system", latestVer.Vkey),
+		fmt.Sprintf("lgame_%s_skin", latestVer.Vkey),
+	}
+
+	versionDetailUrl := config.LOLConfig.LolM.VersionDetail
+
+	syncMap := sync.Map{}
+	for _, k := range keys {
+		wg.Add(1)
+		go func(k string) {
+			defer wg.Done()
+
+			// https://mlol.qt.qq.com/go/database/versiondetail?key=%s
+			detailUrl := fmt.Sprintf(versionDetailUrl, k)
+			log.Logger.Info(ctx, "detailUrl="+detailUrl)
+			body, err = http.GetForm(ctx, detailUrl, header.CommonHeaders()...)
+			if err != nil {
+				log.Logger.Error(ctx, err)
+				return
+			}
+
+			detail := dto.LOLMVersionDetail{}
+			err = json.Unmarshal(body, &detail)
+			if err != nil {
+				log.Logger.Error(ctx, err)
+				return
+			}
+
+			syncMap.Store(k, &detail)
+		}(k)
+	}
+	wg.Wait()
+
+	vd := make(map[string]*dto.LOLMVersionDetail)
+	syncMap.Range(func(key, value interface{}) bool {
+		vd[key.(string)] = value.(*dto.LOLMVersionDetail)
+		return true
+	})
+
+	return &versionList, vd, nil
 }

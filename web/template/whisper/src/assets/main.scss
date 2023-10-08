@@ -1,5 +1,11 @@
 @import './base.scss';
 
+.timeline-version{
+  margin: 15px;
+  padding: 15px 15px;
+  border-radius: 20px;
+  background: #FFF;
+}
 .ant-carousel-wrap{
   text-align: center;
   padding-top: 5px;
@@ -8,22 +14,22 @@
     width: 95%;
     height: 100%;
     background: #FFF;
-    border-radius: 20px;
+
     .ant-carousel{
-      display: inline-block;
-      width: 100%;
     }
   }
 
 }
 
 .carousel-wrap {
+  border-radius: 20px;
   position: relative;
   width: 100%;
   height: 150px;
   text-align: center;
 
   .carousel-mask {
+    border-radius: 20px;
     position: absolute;
     width: 100%;
     height: 100%;
@@ -33,7 +39,7 @@
   }
 
   .carousel-img {
-
+    border-radius: 20px;
     /* 设置图片的宽度和高度为100%，即填充容器 */
     width: 100%;
     height: 100%;

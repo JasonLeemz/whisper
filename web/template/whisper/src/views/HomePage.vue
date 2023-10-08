@@ -55,6 +55,12 @@ export default {
       </a-carousel>
     </div>
   </div>
+
+  <div class="timeline-version">
+    <a-timeline>
+      <a-timeline-item>Create a services site 2015-09-01</a-timeline-item>
+    </a-timeline>
+  </div>
 </template>
 
 <style scoped>

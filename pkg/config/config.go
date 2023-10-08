@@ -53,6 +53,8 @@ type LolmCfg struct {
 	HeroWinRate     string `yaml:"heroWinRate"`
 	HeroSuit        string `yaml:"heroSuit"`
 	HeroEquip       string `yaml:"heroEquip"`
+	VersionList     string `yaml:"versionList"`
+	VersionDetail   string `yaml:"versionDetail"`
 }
 
 type Config struct {
