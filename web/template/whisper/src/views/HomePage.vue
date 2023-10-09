@@ -2,19 +2,19 @@
 </script>
 <script>
 import axios from 'axios';
-import { FilterOutlined,AppleOutlined,AndroidOutlined} from "@ant-design/icons-vue";
-import LoadingList from "@/components/LoadingList.vue";
+// import {FilterOutlined, AppleOutlined, AndroidOutlined} from "@ant-design/icons-vue";
+// import LoadingList from "@/components/LoadingList.vue";
 import ListVersion from "@/components/ListVersion.vue";
 
 export default {
   emits: ['loadingEvent'],
   components: {
-    LoadingList, ListVersion,  FilterOutlined,AppleOutlined,AndroidOutlined,
+     ListVersion,
   },
   data() {
     return {
       skins: [],
-      platform: "1",
+      platform: Number(0),
       detailVersion: "",
       SkeletonState: {
         show: false,
@@ -29,36 +29,50 @@ export default {
       }
     }
   },
-  methods: {},
-  created() {
-    this.$emit('loadingEvent', 0)
+  methods: {
+    heroSkins() {
+      // 使用 Axios 发起请求获取服务器数据
+      axios.post('/hero/skins', {platform: 0, id: ''})
+          .then(response => {
+            // 将服务器返回的数据更新到组件的 serverData 字段
+            this.skins = response.data.data;
+          })
+          .catch(error => {
+            console.error('Error fetching server data:', error);
+          });
+    },
+    getVersionList() {
+      this.$emit('loadingEvent', 0)
 
-    // 使用 Axios 发起请求获取服务器数据
-    axios.post('/hero/skins', {platform: 0, id: ''})
-        .then(response => {
-          // 将服务器返回的数据更新到组件的 serverData 字段
-          this.skins = response.data.data;
-        })
-        .catch(error => {
-          console.error('Error fetching server data:', error);
-        });
-    this.SkeletonState.show = true
-    this.$emit('loadingEvent', 30)
-    axios.get('/version/lolm', {})
-        .then(response => {
-          // 将服务器返回的数据更新到组件的 serverData 字段
-          this.query.data = response.data.data.data;
-          this.query.tips = response.data.data.tips;
-        })
-        .catch(error => {
-          console.error('Error fetching server data:', error);
-        }).finally(() => {
-          this.SkeletonState.show = false
-          this.$emit('loadingEvent', 100)
-        }
-    );
+      this.SkeletonState.show = true
+      this.$emit('loadingEvent', 30)
+
+      axios.post('/version/list', {
+        'platform': this.platform,
+      })
+          .then(response => {
+            // 将服务器返回的数据更新到组件的 serverData 字段
+            this.query.data = response.data.data.data;
+            this.query.tips = response.data.data.tips;
+          })
+          .catch(error => {
+            console.error('Error fetching server data:', error);
+          }).finally(() => {
+            this.SkeletonState.show = false
+            this.$emit('loadingEvent', 100)
+          }
+      );
+    }
   },
-  watch: {},
+  created() {
+    // this.heroSkins()
+    this.getVersionList()
+  },
+  watch: {
+    'platform'() {
+      this.getVersionList()
+    },
+  },
   mounted() {
 
   }
@@ -91,29 +105,16 @@ export default {
   <!--    </div>-->
   <!--  </div>-->
 
-  <a-float-button-group trigger="hover" :style="{ right: '24px' }">
-    <template #icon>
-      <FilterOutlined />
-    </template>
-    <a-float-button>
-      <template #icon>
-        <AppleOutlined />
-      </template>
-    </a-float-button>
-    <a-float-button>
-      <template #icon>
-        <AndroidOutlined />
-      </template>
-    </a-float-button>
-  </a-float-button-group>
+  <div class="version-platform-switch">
+    <a-radio-group v-model:value="platform" button-style="solid" size="small" name="platform">
+      <a-radio-button :value="0">端游</a-radio-button>
+      <a-radio-button :value="1">手游</a-radio-button>
+    </a-radio-group>
+  </div>
 
   <a-space direction="vertical" :style="{ width: '100%' }" class="wrap">
     <a-layout>
       <a-layout-content>
-        <LoadingList
-            v-if="SkeletonState.show"
-            :skeleton-state="SkeletonState"/>
-
         <template v-if="!SkeletonState.show">
           <ListVersion
               :version-result="query"

@@ -1,16 +1,17 @@
 package dto
 
 type Version struct {
-	LOL  VersionDetail `json:"LOL"`
-	LOLM VersionDetail `json:"LOLM"`
+	LOL  LocalVersionDetail `json:"LOL"`
+	LOLM LocalVersionDetail `json:"LOLM"`
 }
 
-type VersionDetail struct {
+type LocalVersionDetail struct {
 	Version    string `json:"version"`
 	UpdateTime string `json:"update_time"`
 }
 
 type PageVersionList struct {
+	Id           string `json:"id,omitempty"`
 	Name         string `json:"name,omitempty"`
 	Title        string `json:"title,omitempty"`
 	Vkey         string `json:"vkey,omitempty"`
@@ -21,17 +22,17 @@ type PageVersionList struct {
 	Platform     int    `json:"platform"`
 }
 
-type LOLMVersionList struct {
-	Baton   string                `json:"baton,omitempty"`
-	Code    int                   `json:"code,omitempty"`
-	Data    []LOLMVersionListData `json:"data,omitempty"`
-	ErrMsg  string                `json:"errMsg,omitempty"`
-	Err_Msg string                `json:"err_msg,omitempty"`
-	Msg     string                `json:"msg,omitempty"`
-	Result  int                   `json:"result,omitempty"`
+type VersionList struct {
+	Baton   string            `json:"baton,omitempty"`
+	Code    int               `json:"code,omitempty"`
+	Data    []VersionListData `json:"data,omitempty"`
+	ErrMsg  string            `json:"errMsg,omitempty"`
+	Err_Msg string            `json:"err_msg,omitempty"`
+	Msg     string            `json:"msg,omitempty"`
+	Result  int               `json:"result,omitempty"`
 }
 
-type LOLMVersionListData struct {
+type VersionListData struct {
 	Id           string   `json:"id,omitempty"`
 	Name         string   `json:"name,omitempty"`
 	Vkey         string   `json:"vkey,omitempty"`
@@ -42,16 +43,18 @@ type LOLMVersionListData struct {
 	PublicDate   string   `json:"public_date,omitempty"`
 	Versions     []string `json:"versions,omitempty"`
 	Intent       string   `json:"intent,omitempty"`
+	//Name2  string `json:"Name,omitempty"`   // LOL
+	//Change string `json:"change,omitempty"` // LOL
 }
 
-type LOLMVersionDetail struct {
-	Baton   string                `json:"baton,omitempty"`
-	Code    int                   `json:"code,omitempty"`
-	Data    LOLMVersionDetailData `json:"data,omitempty"`
-	ErrMsg  string                `json:"errMsg,omitempty"`
-	Err_Msg string                `json:"err_msg,omitempty"`
-	Msg     string                `json:"msg,omitempty"`
-	Result  int                   `json:"result,omitempty"`
+type VersionDetail struct {
+	Baton   string            `json:"baton,omitempty"`
+	Code    int               `json:"code,omitempty"`
+	Data    VersionDetailData `json:"data,omitempty"`
+	ErrMsg  string            `json:"errMsg,omitempty"`
+	Err_Msg string            `json:"err_msg,omitempty"`
+	Msg     string            `json:"msg,omitempty"`
+	Result  int               `json:"result,omitempty"`
 }
 
 type BuyInfo struct {
@@ -79,6 +82,8 @@ type List struct {
 	HeroTag       string       `json:"hero_tag,omitempty"`
 	ShowIndex     int          `json:"showIndex,omitempty"`
 	List          []DetailList `json:"list,omitempty"`
+
+	ItemId int `json:"item_id,omitempty"` // LOL
 }
 
 type DetailList struct {
@@ -87,8 +92,31 @@ type DetailList struct {
 	Content string `json:"content,omitempty"`
 }
 
-type LOLMVersionDetailData struct {
+type VersionDetailData struct {
 	ChangeCount string `json:"change_count,omitempty"`
 	List        []List `json:"list,omitempty"`
 	VersionKey  string `json:"version_key,omitempty"`
+}
+
+type VersionInfo struct {
+	Code    int             `json:"code,omitempty"`
+	Data    VersionInfoData `json:"data,omitempty"`
+	ErrMsg  string          `json:"errMsg,omitempty"`
+	Err_Msg string          `json:"err_msg,omitempty"`
+	Msg     string          `json:"msg,omitempty"`
+	Result  int             `json:"result,omitempty"`
+}
+
+type Tabs struct {
+	Title        string `json:"title,omitempty"`
+	SchemeUrl    string `json:"schemeUrl,omitempty"`
+	IsDefaultTab int    `json:"is_default_tab,omitempty"`
+	Key          string `json:"key,omitempty"`
+}
+
+type VersionInfoData struct {
+	ImgUrl  string `json:"imgUrl,omitempty"`
+	Title   string `json:"title,omitempty"`
+	Content string `json:"content,omitempty"`
+	Tabs    []Tabs `json:"tabs,omitempty"`
 }

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	redis2 "github.com/redis/go-redis/v9"
+	"time"
 	"whisper/internal/dto"
 	"whisper/internal/logic/common"
 	"whisper/internal/service"
@@ -13,90 +13,104 @@ import (
 	"whisper/pkg/redis"
 )
 
-func GetLOLMVersionList(ctx *context.Context) ([]dto.LOLMVersionListData, error) {
+func GetVersionList(ctx *context.Context, platform int) ([]dto.VersionListData, error) {
 	var queryFromUrl = false
-	var vl []dto.LOLMVersionListData
-	vd := make(map[string]*dto.LOLMVersionDetail)
+	var vl []dto.VersionListData
 
-	data := redis.RDB.Get(ctx, redis.KeyCacheVersionList)
+	key := fmt.Sprintf(redis.KeyCacheVersionList, platform)
+	data := redis.RDB.Get(ctx, key)
 	result, err := data.Result()
 	if err != nil {
 		queryFromUrl = true
 		log.Logger.Error(ctx, err)
-	}
-	err = json.Unmarshal([]byte(result), &vl)
-	if err != nil {
-		queryFromUrl = true
-		log.Logger.Error(ctx, err)
+	} else {
+		err = json.Unmarshal([]byte(result), &vl)
+		if err != nil {
+			queryFromUrl = true
+			log.Logger.Error(ctx, err)
+		}
 	}
 
 	if queryFromUrl {
-		versionList, versionDetail, err2 := service.LOLMVersionList(ctx)
+		versionList, err2 := service.VersionList(ctx, platform)
 		if err2 != nil {
 			return nil, err2
 		}
 
-		vd = versionDetail
 		vl = versionList.Data
 
 		// cache
-		// version list
 		s, _ := json.Marshal(versionList.Data)
-		redis.RDB.Set(ctx, redis.KeyCacheVersionList, s, redis2.KeepTTL)
-
-		// version detail
-		for k, detail := range vd {
-			key := fmt.Sprintf(redis.KeyCacheVersionDetail, k)
-			v, _ := json.Marshal(detail)
-			redis.RDB.Set(ctx, key, v, redis2.KeepTTL)
-		}
+		redis.RDB.Set(ctx, key, s, time.Hour*24)
 	}
 
 	return vl, err
 }
-func VersionDetail(ctx *context.Context, version string) (map[string]dto.LOLMVersionDetail, error) {
-	data := make(map[string]dto.LOLMVersionDetail)
-	//var keys []string // cache:version:detail:lolm:4.3c_hero
-	keys := map[string]string{
-		"hero":   fmt.Sprintf(redis.KeyCacheVersionDetail, version+"_hero"),
-		"prop":   fmt.Sprintf(redis.KeyCacheVersionDetail, version+"_prop"),
-		"rune":   fmt.Sprintf(redis.KeyCacheVersionDetail, version+"_rune"),
-		"system": fmt.Sprintf(redis.KeyCacheVersionDetail, version+"_system"),
+
+func VersionDetail(ctx *context.Context, platform int, vkey, id string) (map[string]*dto.VersionDetail, error) {
+
+	// 获取该版本下更新的类别
+	cates, err := GetUpdateCates(ctx, platform, vkey, id)
+	if err != nil {
+		return nil, err
 	}
 
-	queryFromUrl := false
-	// 尝试从redis获取
-	for k, rk := range keys {
-		d := redis.RDB.Get(ctx, rk)
-		result, err := d.Result()
-		if err != nil {
-			queryFromUrl = true
-			log.Logger.Warn(ctx, err)
-			break
-		} else {
-			vd := dto.LOLMVersionDetail{}
-			_ = json.Unmarshal([]byte(result), &vd)
-			data[k] = vd
-		}
-	}
-
-	if queryFromUrl {
-		detail, err := service.VersionDetail(ctx, common.PlatformForLOLM, version)
-		if err != nil {
-			log.Logger.Error(ctx, err)
-			return nil, err
-		}
-
-		for k, rk := range keys {
-			// lgame_%s_hero
-			key := fmt.Sprintf("lgame_%s_%s", version, k)
-			if d, ok := detail[key]; ok {
-				s, _ := json.Marshal(d)
-				redis.RDB.Set(ctx, rk, s, redis2.KeepTTL)
-			}
-		}
-		return nil, errors.New("try again")
+	var keys []string
+	keyTpl := ""
+	if platform == common.PlatformForLOL {
+		// lol_20230830_rune_157
+		keyTpl = "lol_" + vkey + "_%s_" + id
 	} else {
-		return data, nil
+		// lgame_4.3c_hero
+		keyTpl = "lgame_" + vkey + "_%s"
 	}
+
+	keyCateName := make(map[string]string)
+	for cate, cateName := range cates {
+		key := fmt.Sprintf(keyTpl, cate)
+		keyCateName[key] = cateName
+		keys = append(keys, key)
+	}
+
+	log.Logger.Info(ctx, keys)
+
+	details, err := service.VersionDetail(ctx, platform, keys)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := make(map[string]*dto.VersionDetail)
+	for key, detail := range details {
+		resp[keyCateName[key]] = detail
+	}
+	return resp, nil
+}
+
+// GetUpdateCates 获取更新类别
+func GetUpdateCates(ctx *context.Context, platform int, vkey, id string) (map[string]string, error) {
+	info, err := service.VersionInfo(ctx, platform, vkey, id)
+	if err != nil {
+		return nil, err
+	}
+	if info.Code != 0 {
+		return nil, errors.New(info.Msg)
+	}
+
+	cates := make(map[string]string)
+	for _, tab := range info.Data.Tabs {
+		/*
+			"tabs": [
+			      {
+			        "title": "英雄",
+			        "schemeUrl": "qtpage://version/detail/list?key=lgame_4.3c_hero\u0026textColor=%232896F5",
+			        "is_default_tab": 1,
+			        "key": "hero"
+			      }
+			    ]
+		*/
+		// {"hero":"英雄"}
+		cates[tab.Key] = tab.Title
+	}
+
+	return cates, nil
 }

@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 	"whisper/internal/dto"
+	"whisper/internal/service/common"
 	header "whisper/internal/service/common"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
@@ -335,55 +336,53 @@ func HeroSuit(ctx *context.Context, heroID string) (*dto.HeroTech, map[string]*d
 	return &heroTech, met, nil
 }
 
-// LOLMVersionList 手游版本列表
-func LOLMVersionList(ctx *context.Context) (*dto.LOLMVersionList, map[string]*dto.LOLMVersionDetail, error) {
-	versionListUrl := config.LOLConfig.LolM.VersionList
+// VersionList 手游版本列表
+func VersionList(ctx *context.Context, platform int) (*dto.VersionList, error) {
+	versionListUrl := ""
+	if platform == common.PlatformForLOL {
+		versionListUrl = config.LOLConfig.Lol.VersionList
+	} else {
+		versionListUrl = config.LOLConfig.LolM.VersionList
+	}
 	log.Logger.Info(ctx, "versionListUrl="+versionListUrl)
 
 	// 发送 GetForm 请求
-	versionList := dto.LOLMVersionList{}
-	// -----------------------------
-	body, err := http.GetForm(ctx, versionListUrl, header.CommonHeaders()...)
+	versionList := dto.VersionList{}
+	body, err := http.GetForm(ctx, versionListUrl, header.Cookie...)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	err = json.Unmarshal(body, &versionList)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if versionList.Result != 0 {
-		return nil, nil, errors.New(versionList.Msg, versionList.ErrMsg)
+		return nil, errors.New(versionList.Msg, versionList.ErrMsg)
 	}
 
-	vd, err := VersionDetail(ctx, 1, versionList.Data[0].Vkey)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return &versionList, vd, nil
+	return &versionList, nil
 }
 
 // VersionDetail 版本更新详情
-func VersionDetail(ctx *context.Context, platform int, version string) (map[string]*dto.LOLMVersionDetail, error) {
-	// -----------------------------
+func VersionDetail(ctx *context.Context, platform int, keys []string) (map[string]*dto.VersionDetail, error) {
 	wg := sync.WaitGroup{}
-
-	keys := []string{
-		fmt.Sprintf("lgame_%s_hero", version),
-		fmt.Sprintf("lgame_%s_prop", version),
-		fmt.Sprintf("lgame_%s_system", version),
-		fmt.Sprintf("lgame_%s_rune", version),
+	versionDetailUrl := ""
+	if platform == common.PlatformForLOL {
+		// https://mlol.qt.qq.com/go/database/versiondetail?key=%s
+		versionDetailUrl = config.LOLConfig.Lol.VersionDetail
+	} else {
+		// https://mlol.qt.qq.com/go/database/versionlist?zone=lgame
+		versionDetailUrl = config.LOLConfig.LolM.VersionDetail
 	}
+
 	syncMap := sync.Map{}
 	for _, k := range keys {
 		wg.Add(1)
 		go func(k string) {
 			defer wg.Done()
 
-			// https://mlol.qt.qq.com/go/database/versiondetail?key=%s
-			versionDetailUrl := config.LOLConfig.LolM.VersionDetail
 			detailUrl := fmt.Sprintf(versionDetailUrl, k)
 			log.Logger.Info(ctx, "detailUrl="+detailUrl)
 			body, err := http.GetForm(ctx, detailUrl, header.CommonHeaders()...)
@@ -392,7 +391,7 @@ func VersionDetail(ctx *context.Context, platform int, version string) (map[stri
 				return
 			}
 
-			detail := dto.LOLMVersionDetail{}
+			detail := dto.VersionDetail{}
 			err = json.Unmarshal(body, &detail)
 			if err != nil {
 				log.Logger.Error(ctx, err)
@@ -404,12 +403,39 @@ func VersionDetail(ctx *context.Context, platform int, version string) (map[stri
 	}
 	wg.Wait()
 
-	vd := make(map[string]*dto.LOLMVersionDetail)
+	vd := make(map[string]*dto.VersionDetail)
 	syncMap.Range(func(key, value interface{}) bool {
-		vd[key.(string)] = value.(*dto.LOLMVersionDetail)
+		vd[key.(string)] = value.(*dto.VersionDetail)
 		return true
 	})
 
 	return vd, nil
 
+}
+
+// VersionInfo 版本更新了哪些类别
+func VersionInfo(ctx *context.Context, platform int, vkey, id string) (*dto.VersionInfo, error) {
+	versionInfoUrl := ""
+	if platform == common.PlatformForLOL {
+		// https://mlol.qt.qq.com/go/database/versioninfo?key=%s # lol_20170111_10
+		versionInfoUrl = fmt.Sprintf(config.LOLConfig.Lol.VersionInfo, "lol_"+vkey+"_"+id)
+	} else {
+		// https://mlol.qt.qq.com/go/database/versioninfo?key=%s # lgame_4.3c
+		versionInfoUrl = fmt.Sprintf(config.LOLConfig.LolM.VersionInfo, "lgame_"+vkey)
+	}
+	log.Logger.Info(ctx, "versionInfoUrl="+versionInfoUrl)
+
+	// 发送 GetForm 请求
+	versionInfo := dto.VersionInfo{}
+	body, err := http.GetForm(ctx, versionInfoUrl, header.CommonHeaders()...)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &versionInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	return &versionInfo, nil
 }

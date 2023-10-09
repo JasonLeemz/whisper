@@ -3,6 +3,13 @@ package common
 import "whisper/pkg/http"
 
 var (
+	Cookie []http.Header = []http.Header{
+		http.Header{
+			Key:   "Cookie",
+			Value: "userId=6dc2cfe8-ec3d-46b8-b839-fe3e585cfd49;",
+		},
+	}
+
 	Referer []http.Header = []http.Header{
 		http.Header{
 			Key:   "Referer",

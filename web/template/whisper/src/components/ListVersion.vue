@@ -9,25 +9,41 @@ export default {
   },
   data() {
     return {
+      loadingImgs: new Map(),
       drawer: {
         show: 0,
         isLoading: false,
         title: '',
+        introduction: '',
         data: {},
       },
     }
   },
-  watch: {},
+  watch: {
+    versionResult: {
+      handler() {
+        for (let idx in this.versionResult.data) {
+          this.loadingImgs.set("load_" + idx, true);
+        }
+      },
+      immediate: true,// 这个属性是重点啦
+    },
+  },
   methods: {
-    showDrawer(platform, version, desc) {
+    stopLoading(idx) {
+      this.loadingImgs.set("load_" + idx, false);
+    },
+    showDrawer(platform, version, id, desc, introduction) {
       this.drawer.show++
       this.drawer.isLoading = true
       this.drawer.title = desc
+      this.drawer.introduction = introduction
 
 
       axios.post('/version/detail', {
             'platform': platform,
             'version': version,
+            'id': id,
           }
       ).then(response => {
             this.drawer.data = response.data.data
@@ -48,12 +64,17 @@ export default {
 </script>
 
 <template>
-  <p class="result-tips"></p>
   <div class="result-card" v-for="(item,i) in versionResult.data" :key="i">
     <a-space direction="vertical">
-      <a-card hoverable @click="showDrawer(item.platform,item.vkey,item.name)" style="max-width: 500px">
+      <a-card hoverable
+              :loading="loadingImgs.get('load_'+i)"
+              @click="showDrawer(item.platform,item.vkey,item.id,item.title,item.introduction)"
+              style="max-width: 500px">
         <template #cover>
-          <img :alt="item.name" :src="item.image"/>
+          <img
+              @load="stopLoading(i)"
+              :alt="item.name"
+              :src="item.image"/>
         </template>
         <div class="version-title">
           {{ item.title }}

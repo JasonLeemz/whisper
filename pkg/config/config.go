@@ -34,13 +34,16 @@ type CronCfg struct {
 	ReBuild bool   `yaml:"rebuild"`
 }
 type LolCfg struct {
-	Equipment   string `yaml:"equipment"`
-	Heroes      string `yaml:"heroes"`
-	Hero        string `yaml:"hero"`
-	Rune        string `yaml:"rune"`
-	Skill       string `yaml:"skill"`
-	SuitEquip   string `yaml:"suitEquip"`
-	ChampDetail string `yaml:"champDetail"`
+	Equipment     string `yaml:"equipment"`
+	Heroes        string `yaml:"heroes"`
+	Hero          string `yaml:"hero"`
+	Rune          string `yaml:"rune"`
+	Skill         string `yaml:"skill"`
+	SuitEquip     string `yaml:"suitEquip"`
+	ChampDetail   string `yaml:"champDetail"`
+	VersionList   string `yaml:"versionList"`
+	VersionInfo   string `yaml:"versionInfo"`
+	VersionDetail string `yaml:"versionDetail"`
 }
 type LolmCfg struct {
 	Equipment       string `yaml:"equipment"`
@@ -54,6 +57,7 @@ type LolmCfg struct {
 	HeroSuit        string `yaml:"heroSuit"`
 	HeroEquip       string `yaml:"heroEquip"`
 	VersionList     string `yaml:"versionList"`
+	VersionInfo     string `yaml:"versionInfo"`
 	VersionDetail   string `yaml:"versionDetail"`
 }
 

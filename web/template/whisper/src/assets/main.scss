@@ -1,21 +1,18 @@
 @import './base.scss';
 
-//.ant-carousel-wrap {
-//  text-align: center;
-//  padding-top: 5px;
-//
-//  .carousel-border-radius {
-//    display: inline-block;
-//    width: 100%;
-//    padding: 0 5px;
-//    height: 100%;
-//    background: #FFF;
-//
-//    .ant-carousel {
-//    }
-//  }
-//
-//}
+.version-platform-switch{
+  width: 100%;
+  //background: #0C0C0C;
+  padding: 15px 15px 10px 15px ;
+
+  .ant-radio-group{
+    width: 100%;
+    .ant-radio-button-wrapper{
+      width: 50%;
+      text-align: center;
+    }
+  }
+}
 
 .carousel-wrap {
   //border-radius: 20px;
@@ -567,8 +564,16 @@
       height: 30px;
       border-radius: 50%;
     }
+    .version-skin{
+      width: 100%;
+    }
     .version-title{
+      font-weight: 600;
       margin-left: 5px;
+      em{
+        font-style: normal;
+        color: #ff5722;
+      }
     }
     .version-attach-content{
       line-height: 15px;
@@ -584,8 +589,8 @@
         height: 25px;
       }
       .version-spell-desc{
-        white-space: pre-line;
         padding-left:30px;
+        font-weight: 500;
       }
     }
 
@@ -599,6 +604,10 @@
 
 .ant-drawer-body {
   position: relative;
+
+  .version-subtitle{
+    font-size: 12px;
+  }
 
   .ant-collapse {
     margin-bottom: 20px;
