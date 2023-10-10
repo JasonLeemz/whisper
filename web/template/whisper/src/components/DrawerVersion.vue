@@ -36,6 +36,7 @@ export default {
       root-class-name="root-class-name"
       :title="versionResult.title"
       placement="right"
+      width="100%"
   >
 
     <a-typography-text type="secondary" class="version-subtitle">{{versionResult.introduction}}</a-typography-text>

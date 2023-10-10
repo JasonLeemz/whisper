@@ -89,6 +89,7 @@ export default {
       v-model:open="sideDrawer.show"
       :title="sideDrawer.title"
       placement="right"
+      width="100%"
   >
     <template v-if="sideDrawer.isLoading">
       <a-skeleton active/>
