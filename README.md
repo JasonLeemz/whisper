@@ -1,6 +1,6 @@
 <h1 align="center"> ✯ 一个英雄联盟攻略助手 ✯ </h1>
 
-<h3 align="center">🔕 版本更新 英雄介绍 技能解析 装备推荐 符文解读 装备备战挑选 更多功能持续更新中... 🔕</h3>
+<h3 align="center">🧩 版本更新 英雄介绍 技能解析 装备推荐 符文解读 装备备战挑选 更多功能持续更新中... 🧩</h3>
 
 <p align="center">
 <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/JasonLeemz/whisper">
