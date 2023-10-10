@@ -31,6 +31,4 @@
 
 ## ☕捐赠
 - 支持项目，赋予更多流量，共创更好体验，让服务更强大！
-
-<img alt="Sponsor" src="https://xiaolee.xyz/upload/2023/01/wxpay-1675087783042.png" width="300px">
-<img alt="Sponsor" src="https://xiaolee.xyz/upload/2023/10/zsm.gif" width="300px" style="border: 1px solid #000" />
+> <img alt="Sponsor" src="https://cdn.jsdelivr.net/gh/JasonLeemz/ImageHostingService/images/wxpay-1675087783042.png" width="200px"> <img src="https://cdn.jsdelivr.net/gh/JasonLeemz/ImageHostingService/images/zsm.gif" width="200px"/>
