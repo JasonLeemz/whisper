@@ -1,6 +1,9 @@
 package model
 
-import "sync"
+import (
+	"sync"
+	"whisper/internal/model/common"
+)
 
 type ESHeroes struct {
 	ID          string `json:"id"`
@@ -98,5 +101,5 @@ func (e *ESHeroes) GetMapping() string {
 }
 
 func (e *ESHeroes) GetIndexName() string {
-	return "lol_heroes"
+	return common.IndexHeroes
 }

@@ -1,6 +1,9 @@
 package model
 
-import "sync"
+import (
+	"sync"
+	"whisper/internal/model/common"
+)
 
 type ESRune struct {
 	ID          string `json:"id"`
@@ -113,5 +116,5 @@ func (e *ESRune) GetMapping() string {
 }
 
 func (e *ESRune) GetIndexName() string {
-	return "lol_rune"
+	return common.IndexRune
 }

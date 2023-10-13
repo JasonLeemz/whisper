@@ -55,48 +55,48 @@ func AutoComplete(ctx *context.Context) {
 
 	switch req.Category {
 	case model.NewModelESEquipment().GetIndexName():
-		esd := dao.NewESEquipmentDAO()
-		esEquipments, err := esd.Find(ctx, cond)
+		d := dao.CreateEsDao(model.NewModelESEquipment().GetIndexName()).(*dao.ESEquipmentDAO)
+		data, err := d.Find(ctx, cond)
 		if err != nil {
 			ctx.Reply(keywords, errors.New(err))
 		}
 
-		for _, item := range esEquipments {
+		for _, item := range data {
 			if item.Maps == "召唤师峡谷" {
 				name := strings.TrimSpace(item.Name)
 				mk[name] = struct{}{}
 			}
 		}
 	case model.NewModelESHeroes().GetIndexName():
-		esd := dao.NewESHeroesDAO()
-		esHeroes, err := esd.Find(ctx, cond)
+		d := dao.CreateEsDao(model.NewModelESHeroes().GetIndexName()).(*dao.ESHeroesDAO)
+		data, err := d.Find(ctx, cond)
 		if err != nil {
 			ctx.Reply(keywords, errors.New(err))
 		}
 
-		for _, item := range esHeroes {
+		for _, item := range data {
 			name := strings.TrimSpace(item.Name)
 			mk[name] = struct{}{}
 		}
 	case model.NewModelESRune().GetIndexName():
-		esd := dao.NewESRuneDAO()
-		esRune, err := esd.Find(ctx, cond)
+		d := dao.CreateEsDao(model.NewModelESRune().GetIndexName()).(*dao.ESRuneDAO)
+		data, err := d.Find(ctx, cond)
 		if err != nil {
 			ctx.Reply(keywords, errors.New(err))
 		}
 
-		for _, item := range esRune {
+		for _, item := range data {
 			name := strings.TrimSpace(item.Name)
 			mk[name] = struct{}{}
 		}
 	case model.NewModelESSkill().GetIndexName():
-		esd := dao.NewESSkillDAO()
-		esSkill, err := esd.Find(ctx, cond)
+		d := dao.CreateEsDao(model.NewModelESSkill().GetIndexName()).(*dao.ESSkillDAO)
+		data, err := d.Find(ctx, cond)
 		if err != nil {
 			ctx.Reply(keywords, errors.New(err))
 		}
 
-		for _, item := range esSkill {
+		for _, item := range data {
 			name := strings.TrimSpace(item.Name)
 			mk[name] = struct{}{}
 		}

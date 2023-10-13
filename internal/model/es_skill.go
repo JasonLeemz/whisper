@@ -1,6 +1,9 @@
 package model
 
-import "sync"
+import (
+	"sync"
+	"whisper/internal/model/common"
+)
 
 type ESSkill struct {
 	ID          string `json:"id"`
@@ -75,5 +78,5 @@ func (e *ESSkill) GetMapping() string {
 }
 
 func (e *ESSkill) GetIndexName() string {
-	return "lol_skill"
+	return common.IndexSkill
 }
