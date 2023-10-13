@@ -2,7 +2,7 @@ package model
 
 import (
 	"sync"
-	"whisper/internal/model/common"
+	. "whisper/internal/model/common"
 )
 
 type ESSkill struct {
@@ -78,5 +78,5 @@ func (e *ESSkill) GetMapping() string {
 }
 
 func (e *ESSkill) GetIndexName() string {
-	return common.IndexSkill
+	return IndexSkill
 }

@@ -1,12 +1,12 @@
 package dao
 
-import "whisper/internal/model/common"
+import . "whisper/internal/model/common"
 
 const (
-	ESIndexEquipment = common.IndexEquipment
-	ESIndexHeroes    = common.IndexHeroes
-	ESIndexRune      = common.IndexRune
-	ESIndexSkill     = common.IndexSkill
+	ESIndexEquipment = IndexEquipment
+	ESIndexHeroes    = IndexHeroes
+	ESIndexRune      = IndexRune
+	ESIndexSkill     = IndexSkill
 )
 
 func CreateEsDao(t string) interface{} {

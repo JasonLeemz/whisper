@@ -2,7 +2,7 @@ package model
 
 import (
 	"sync"
-	"whisper/internal/model/common"
+	. "whisper/internal/model/common"
 )
 
 type ESEquipment struct {
@@ -96,5 +96,5 @@ func (e *ESEquipment) GetMapping() string {
 }
 
 func (e *ESEquipment) GetIndexName() string {
-	return common.IndexEquipment
+	return IndexEquipment
 }

@@ -55,8 +55,7 @@ func AutoComplete(ctx *context.Context) {
 
 	switch req.Category {
 	case model.NewModelESEquipment().GetIndexName():
-		d := dao.CreateEsDao(model.NewModelESEquipment().GetIndexName()).(*dao.ESEquipmentDAO)
-		data, err := d.Find(ctx, cond)
+		data, err := dao.CreateEsDao(model.NewModelESEquipment().GetIndexName()).(*dao.ESEquipmentDAO).Find(ctx, cond)
 		if err != nil {
 			ctx.Reply(keywords, errors.New(err))
 		}
@@ -68,8 +67,7 @@ func AutoComplete(ctx *context.Context) {
 			}
 		}
 	case model.NewModelESHeroes().GetIndexName():
-		d := dao.CreateEsDao(model.NewModelESHeroes().GetIndexName()).(*dao.ESHeroesDAO)
-		data, err := d.Find(ctx, cond)
+		data, err := dao.CreateEsDao(model.NewModelESHeroes().GetIndexName()).(*dao.ESHeroesDAO).Find(ctx, cond)
 		if err != nil {
 			ctx.Reply(keywords, errors.New(err))
 		}
@@ -79,8 +77,7 @@ func AutoComplete(ctx *context.Context) {
 			mk[name] = struct{}{}
 		}
 	case model.NewModelESRune().GetIndexName():
-		d := dao.CreateEsDao(model.NewModelESRune().GetIndexName()).(*dao.ESRuneDAO)
-		data, err := d.Find(ctx, cond)
+		data, err := dao.CreateEsDao(model.NewModelESRune().GetIndexName()).(*dao.ESRuneDAO).Find(ctx, cond)
 		if err != nil {
 			ctx.Reply(keywords, errors.New(err))
 		}
@@ -90,8 +87,7 @@ func AutoComplete(ctx *context.Context) {
 			mk[name] = struct{}{}
 		}
 	case model.NewModelESSkill().GetIndexName():
-		d := dao.CreateEsDao(model.NewModelESSkill().GetIndexName()).(*dao.ESSkillDAO)
-		data, err := d.Find(ctx, cond)
+		data, err := dao.CreateEsDao(model.NewModelESSkill().GetIndexName()).(*dao.ESSkillDAO).Find(ctx, cond)
 		if err != nil {
 			ctx.Reply(keywords, errors.New(err))
 		}

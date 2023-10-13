@@ -2,7 +2,7 @@ package model
 
 import (
 	"sync"
-	"whisper/internal/model/common"
+	. "whisper/internal/model/common"
 )
 
 type ESRune struct {
@@ -116,5 +116,5 @@ func (e *ESRune) GetMapping() string {
 }
 
 func (e *ESRune) GetIndexName() string {
-	return common.IndexRune
+	return IndexRune
 }
