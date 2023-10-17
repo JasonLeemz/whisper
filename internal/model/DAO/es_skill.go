@@ -13,19 +13,11 @@ import (
 	"whisper/pkg/es"
 )
 
-type ESSkill interface {
-	CreateIndex(ctx *context.Context) error
-	DeleteIndex(ctx *context.Context) error
-	Skill2ES(ctx *context.Context, data []*model.ESSkill) error
-	Find(ctx *context.Context, cond *common.QueryCond) ([]*model.ESSkill, error)
-}
-
 type ESSkillDAO struct {
 	esClient *elastic.Client
 }
 
 func (dao *ESSkillDAO) CreateIndex(ctx *context.Context) error {
-
 	// 索引是否存在
 	var esModel model.ESSkill
 	idxName := esModel.GetIndexName()
@@ -48,7 +40,6 @@ func (dao *ESSkillDAO) CreateIndex(ctx *context.Context) error {
 }
 
 func (dao *ESSkillDAO) DeleteIndex(ctx *context.Context) error {
-
 	// 索引是否存在
 	var esModel model.ESSkill
 	idxName := esModel.GetIndexName()
@@ -70,11 +61,11 @@ func (dao *ESSkillDAO) DeleteIndex(ctx *context.Context) error {
 	return nil
 }
 
-func (dao *ESSkillDAO) Skill2ES(ctx *context.Context, data []*model.ESSkill) error {
+func (dao *ESSkillDAO) Data2ES(ctx *context.Context, data interface{}) error {
 	var esModel model.ESSkill
 	idxName := esModel.GetIndexName()
 	// 导入数据
-	for _, e := range data {
+	for _, e := range data.([]*model.ESSkill) {
 		_, err := es.ESClient.Index().Index(idxName).BodyJson(e).Id(e.ID).Do(ctx)
 		if err != nil {
 			return err
@@ -84,7 +75,7 @@ func (dao *ESSkillDAO) Skill2ES(ctx *context.Context, data []*model.ESSkill) err
 	return nil
 }
 
-func (dao *ESSkillDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]*model.ESSkill, error) {
+func (dao *ESSkillDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]map[string]interface{}, error) {
 	var esModel model.ESSkill
 	idxName := esModel.GetIndexName()
 	query := elastic.NewBoolQuery()
@@ -119,29 +110,31 @@ func (dao *ESSkillDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]*mo
 		return nil, err
 	}
 
-	var heroes []*model.ESSkill
+	var skills []map[string]interface{}
 	for _, hit := range resp.Hits {
 		sourceStr, _ := json.Marshal(hit.TmpSource)
-		hitData := &model.ESSkill{}
-		err = json.Unmarshal(sourceStr, hitData)
+		var hitData map[string]interface{}
+		err = json.Unmarshal(sourceStr, &hitData)
 		if err != nil {
 			return nil, err
 		}
-		heroes = append(heroes, hitData)
+		skills = append(skills, hitData)
 	}
-	return heroes, nil
+	return skills, nil
 }
 
 var (
-	esKDao  *ESSkillDAO
-	esKOnce sync.Once
+	esKDao     *ESSkillDAO
+	onceEsKDao sync.Once
 )
 
-func NewESSkillDAO() *ESSkillDAO {
-	esKOnce.Do(func() {
-		esKDao = &ESSkillDAO{
-			esClient: es.ESClient,
-		}
-	})
-	return esKDao
+func NewESSkillDAO() EsDaoFunc {
+	return func() ESIndex {
+		onceEsKDao.Do(func() {
+			esKDao = &ESSkillDAO{
+				esClient: es.ESClient,
+			}
+		})
+		return esKDao
+	}
 }

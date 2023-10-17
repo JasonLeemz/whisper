@@ -55,45 +55,45 @@ func AutoComplete(ctx *context.Context) {
 
 	switch req.Category {
 	case model.NewModelESEquipment().GetIndexName():
-		data, err := dao.CreateEsDao(model.NewModelESEquipment().GetIndexName()).(*dao.ESEquipmentDAO).Find(ctx, cond)
+		data, err := dao.CreateEsDao(model.NewModelESEquipment().GetIndexName())().(*dao.ESEquipmentDAO).Find(ctx, cond)
 		if err != nil {
 			ctx.Reply(keywords, errors.New(err))
 		}
 
 		for _, item := range data {
-			if item.Maps == "召唤师峡谷" {
-				name := strings.TrimSpace(item.Name)
+			if item["maps"].(string) == "召唤师峡谷" {
+				name := strings.TrimSpace(item["name"].(string))
 				mk[name] = struct{}{}
 			}
 		}
 	case model.NewModelESHeroes().GetIndexName():
-		data, err := dao.CreateEsDao(model.NewModelESHeroes().GetIndexName()).(*dao.ESHeroesDAO).Find(ctx, cond)
+		data, err := dao.CreateEsDao(model.NewModelESHeroes().GetIndexName())().(*dao.ESHeroesDAO).Find(ctx, cond)
 		if err != nil {
 			ctx.Reply(keywords, errors.New(err))
 		}
 
 		for _, item := range data {
-			name := strings.TrimSpace(item.Name)
+			name := strings.TrimSpace(item["name"].(string))
 			mk[name] = struct{}{}
 		}
 	case model.NewModelESRune().GetIndexName():
-		data, err := dao.CreateEsDao(model.NewModelESRune().GetIndexName()).(*dao.ESRuneDAO).Find(ctx, cond)
+		data, err := dao.CreateEsDao(model.NewModelESRune().GetIndexName())().(*dao.ESRuneDAO).Find(ctx, cond)
 		if err != nil {
 			ctx.Reply(keywords, errors.New(err))
 		}
 
 		for _, item := range data {
-			name := strings.TrimSpace(item.Name)
+			name := strings.TrimSpace(item["name"].(string))
 			mk[name] = struct{}{}
 		}
 	case model.NewModelESSkill().GetIndexName():
-		data, err := dao.CreateEsDao(model.NewModelESSkill().GetIndexName()).(*dao.ESSkillDAO).Find(ctx, cond)
+		data, err := dao.CreateEsDao(model.NewModelESSkill().GetIndexName())().(*dao.ESSkillDAO).Find(ctx, cond)
 		if err != nil {
 			ctx.Reply(keywords, errors.New(err))
 		}
 
 		for _, item := range data {
-			name := strings.TrimSpace(item.Name)
+			name := strings.TrimSpace(item["name"].(string))
 			mk[name] = struct{}{}
 		}
 	}

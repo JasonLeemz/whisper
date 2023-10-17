@@ -13,19 +13,11 @@ import (
 	"whisper/pkg/es"
 )
 
-type ESHeroes interface {
-	CreateIndex(ctx *context.Context) error
-	DeleteIndex(ctx *context.Context) error
-	Heroes2ES(ctx *context.Context, data []*model.ESHeroes) error
-	Find(ctx *context.Context, cond *common.QueryCond) ([]*model.ESHeroes, error)
-}
-
 type ESHeroesDAO struct {
 	esClient *elastic.Client
 }
 
 func (dao *ESHeroesDAO) CreateIndex(ctx *context.Context) error {
-
 	// 索引是否存在
 	var esModel model.ESHeroes
 	idxName := esModel.GetIndexName()
@@ -48,7 +40,6 @@ func (dao *ESHeroesDAO) CreateIndex(ctx *context.Context) error {
 }
 
 func (dao *ESHeroesDAO) DeleteIndex(ctx *context.Context) error {
-
 	// 索引是否存在
 	var esModel model.ESHeroes
 	idxName := esModel.GetIndexName()
@@ -70,11 +61,11 @@ func (dao *ESHeroesDAO) DeleteIndex(ctx *context.Context) error {
 	return nil
 }
 
-func (dao *ESHeroesDAO) Heroes2ES(ctx *context.Context, data []*model.ESHeroes) error {
+func (dao *ESHeroesDAO) Data2ES(ctx *context.Context, data interface{}) error {
 	var esModel model.ESHeroes
 	idxName := esModel.GetIndexName()
 	// 导入数据
-	for _, e := range data {
+	for _, e := range data.([]*model.ESHeroes) {
 		_, err := es.ESClient.Index().Index(idxName).BodyJson(e).Id(e.ID).Do(ctx)
 		if err != nil {
 			return err
@@ -84,7 +75,7 @@ func (dao *ESHeroesDAO) Heroes2ES(ctx *context.Context, data []*model.ESHeroes) 
 	return nil
 }
 
-func (dao *ESHeroesDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]*model.ESHeroes, error) {
+func (dao *ESHeroesDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]map[string]interface{}, error) {
 	var esModel model.ESHeroes
 	idxName := esModel.GetIndexName()
 	query := elastic.NewBoolQuery()
@@ -119,11 +110,11 @@ func (dao *ESHeroesDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]*m
 		return nil, err
 	}
 
-	var heroes []*model.ESHeroes
+	var heroes []map[string]interface{}
 	for _, hit := range resp.Hits {
 		sourceStr, _ := json.Marshal(hit.TmpSource)
-		hitData := &model.ESHeroes{}
-		err = json.Unmarshal(sourceStr, hitData)
+		var hitData map[string]interface{}
+		err = json.Unmarshal(sourceStr, &hitData)
 		if err != nil {
 			return nil, err
 		}
@@ -133,16 +124,17 @@ func (dao *ESHeroesDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]*m
 }
 
 var (
-	esHDao  *ESHeroesDAO
-	esHOnce sync.Once
+	esHDao     *ESHeroesDAO
+	onceEsHDao sync.Once
 )
 
-func NewESHeroesDAO() *ESHeroesDAO {
-
-	esHOnce.Do(func() {
-		esHDao = &ESHeroesDAO{
-			esClient: es.ESClient,
-		}
-	})
-	return esHDao
+func NewESHeroesDAO() EsDaoFunc {
+	return func() ESIndex {
+		onceEsHDao.Do(func() {
+			esHDao = &ESHeroesDAO{
+				esClient: es.ESClient,
+			}
+		})
+		return esHDao
+	}
 }

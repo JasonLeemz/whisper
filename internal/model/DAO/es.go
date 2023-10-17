@@ -1,6 +1,9 @@
 package dao
 
-import . "whisper/internal/model/common"
+import (
+	. "whisper/internal/model/common"
+	"whisper/pkg/context"
+)
 
 const (
 	ESIndexEquipment = IndexEquipment
@@ -9,7 +12,9 @@ const (
 	ESIndexSkill     = IndexSkill
 )
 
-func CreateEsDao(t string) interface{} {
+type EsDaoFunc func() ESIndex
+
+func CreateEsDao(t string) EsDaoFunc {
 	switch t {
 	case ESIndexEquipment:
 		return NewESEquipmentDAO()
@@ -22,4 +27,11 @@ func CreateEsDao(t string) interface{} {
 
 	}
 	return nil
+}
+
+type ESIndex interface {
+	CreateIndex(ctx *context.Context) error
+	DeleteIndex(ctx *context.Context) error
+	Data2ES(ctx *context.Context, data interface{}) error
+	Find(ctx *context.Context, cond *QueryCond) ([]map[string]interface{}, error)
 }

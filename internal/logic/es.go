@@ -332,7 +332,7 @@ func buildHeroesIndex(ctx *context.Context) error {
 		break
 	default:
 		spellDao := dao.NewHeroSpellDAO()
-		hd := dao.NewESHeroesDAO()
+		hd := dao.CreateEsDao(dao.ESIndexHeroes)().(*dao.ESHeroesDAO)
 		for _, row := range data {
 			wg.Add(1)
 
@@ -384,7 +384,7 @@ func buildHeroesIndex(ctx *context.Context) error {
 				esHero.Description = string(s)
 				esData = append(esData, &esHero)
 
-				err3 := hd.Heroes2ES(ctx, esData)
+				err3 := hd.Data2ES(ctx, esData)
 				if err3 != nil {
 					log.Logger.Error(ctx, err3)
 					atomic.AddInt32(&failTask, 1)
@@ -429,7 +429,7 @@ func buildMHeroesIndex(ctx *context.Context) error {
 		break
 	default:
 		spellDao := dao.NewHeroSpellDAO()
-		hd := dao.NewESHeroesDAO()
+		hd := dao.CreateEsDao(dao.ESIndexHeroes)().(*dao.ESHeroesDAO)
 
 		for _, row := range data {
 			wg.Add(1)
@@ -484,7 +484,7 @@ func buildMHeroesIndex(ctx *context.Context) error {
 				esHero.Description = string(s)
 				esData = append(esData, &esHero)
 
-				err3 := hd.Heroes2ES(ctx, esData)
+				err3 := hd.Data2ES(ctx, esData)
 				if err3 != nil {
 					log.Logger.Error(ctx, err3)
 					atomic.AddInt32(&failTask, 1)
@@ -529,7 +529,7 @@ func buildEquipIndex(ctx *context.Context) error {
 	case <-cancelCtx.Done():
 		break
 	default:
-		ed := dao.NewESEquipmentDAO()
+		ed := dao.CreateEsDao(dao.ESIndexEquipment)().(*dao.ESEquipmentDAO)
 
 		for _, row := range data {
 			wg.Add(1)
@@ -568,7 +568,7 @@ func buildEquipIndex(ctx *context.Context) error {
 					Platform: strconv.Itoa(common.PlatformForLOL),
 				})
 
-				err2 := ed.Equipment2ES(ctx, esEquip)
+				err2 := ed.Data2ES(ctx, esEquip)
 				if err2 != nil {
 					log.Logger.Error(ctx, err2)
 					atomic.AddInt32(&failTask, 1)
@@ -611,7 +611,7 @@ func buildMEquipIndex(ctx *context.Context) error {
 	case <-cancelCtx.Done():
 		break
 	default:
-		ed := dao.NewESEquipmentDAO()
+		ed := dao.CreateEsDao(dao.ESIndexEquipment)().(*dao.ESEquipmentDAO)
 
 		for _, row := range data {
 			wg.Add(1)
@@ -651,7 +651,7 @@ func buildMEquipIndex(ctx *context.Context) error {
 					Platform: strconv.Itoa(common.PlatformForLOLM),
 				})
 
-				err2 := ed.Equipment2ES(ctx, esEquip)
+				err2 := ed.Data2ES(ctx, esEquip)
 				if err2 != nil {
 					log.Logger.Error(ctx, err2)
 					atomic.AddInt32(&failTask, 1)
@@ -696,8 +696,7 @@ func buildRuneIndex(ctx *context.Context) error {
 	case <-cancelCtx.Done():
 		break
 	default:
-		rd := dao.NewESRuneDAO()
-
+		rd := dao.CreateEsDao(dao.ESIndexRune)().(*dao.ESRuneDAO)
 		for _, row := range data {
 			wg.Add(1)
 			go func(row *model.LOLRune) {
@@ -725,7 +724,7 @@ func buildRuneIndex(ctx *context.Context) error {
 					Platform:    strconv.Itoa(common.PlatformForLOL),
 				})
 
-				err := rd.Rune2ES(ctx, esData)
+				err := rd.Data2ES(ctx, esData)
 				if err != nil {
 					log.Logger.Error(ctx, err)
 					atomic.AddInt32(&failTask, 1)
@@ -768,7 +767,7 @@ func buildMRuneIndex(ctx *context.Context) error {
 	case <-cancelCtx.Done():
 		break
 	default:
-		rd := dao.NewESRuneDAO()
+		rd := dao.CreateEsDao(dao.ESIndexRune)().(*dao.ESRuneDAO)
 		for _, row := range data {
 			wg.Add(1)
 
@@ -801,7 +800,7 @@ func buildMRuneIndex(ctx *context.Context) error {
 					Platform: strconv.Itoa(common.PlatformForLOLM),
 				})
 
-				err := rd.Rune2ES(ctx, esData)
+				err := rd.Data2ES(ctx, esData)
 				if err != nil {
 					log.Logger.Error(ctx, err)
 					atomic.AddInt32(&failTask, 1)
@@ -846,8 +845,7 @@ func buildSkillIndex(ctx *context.Context) error {
 	case <-cancelCtx.Done():
 		break
 	default:
-		sd := dao.NewESSkillDAO()
-
+		sd := dao.CreateEsDao(dao.ESIndexSkill)().(*dao.ESSkillDAO)
 		for _, row := range data {
 			wg.Add(1)
 
@@ -875,7 +873,7 @@ func buildSkillIndex(ctx *context.Context) error {
 					Platform:    strconv.Itoa(common.PlatformForLOL),
 				})
 
-				err := sd.Skill2ES(ctx, esData)
+				err := sd.Data2ES(ctx, esData)
 				if err != nil {
 					log.Logger.Error(ctx, err)
 					atomic.AddInt32(&failTask, 1)
@@ -918,7 +916,7 @@ func buildMSkillIndex(ctx *context.Context) error {
 	case <-cancelCtx.Done():
 		break
 	default:
-		sd := dao.NewESSkillDAO()
+		sd := dao.CreateEsDao(dao.ESIndexSkill)().(*dao.ESSkillDAO)
 
 		for _, row := range data {
 			wg.Add(1)
@@ -947,7 +945,7 @@ func buildMSkillIndex(ctx *context.Context) error {
 					Platform:    strconv.Itoa(common.PlatformForLOLM),
 				})
 
-				err := sd.Skill2ES(ctx, esData)
+				err := sd.Data2ES(ctx, esData)
 				if err != nil {
 					log.Logger.Error(ctx, err)
 					atomic.AddInt32(&failTask, 1)
@@ -968,20 +966,20 @@ func buildMSkillIndex(ctx *context.Context) error {
 // 创建索引
 func createIndex(ctx *context.Context) error {
 	// equipment
-	if err := dao.NewESEquipmentDAO().CreateIndex(ctx); err != nil {
+	if err := dao.NewESEquipmentDAO()().CreateIndex(ctx); err != nil {
 		return err
 	}
 	// heroes
-	if err := dao.NewESHeroesDAO().CreateIndex(ctx); err != nil {
+	if err := dao.NewESHeroesDAO()().CreateIndex(ctx); err != nil {
 		return err
 	}
 	// rune
-	if err := dao.NewESRuneDAO().CreateIndex(ctx); err != nil {
+	if err := dao.NewESRuneDAO()().CreateIndex(ctx); err != nil {
 		return err
 	}
 
 	// skill
-	if err := dao.NewESSkillDAO().CreateIndex(ctx); err != nil {
+	if err := dao.NewESSkillDAO()().CreateIndex(ctx); err != nil {
 		return err
 	}
 
@@ -990,20 +988,20 @@ func createIndex(ctx *context.Context) error {
 
 func deleteIndex(ctx *context.Context) error {
 	// equipment
-	if err := dao.NewESEquipmentDAO().DeleteIndex(ctx); err != nil {
+	if err := dao.NewESEquipmentDAO()().DeleteIndex(ctx); err != nil {
 		return err
 	}
 	// heroes
-	if err := dao.NewESHeroesDAO().DeleteIndex(ctx); err != nil {
+	if err := dao.NewESHeroesDAO()().DeleteIndex(ctx); err != nil {
 		return err
 	}
 	// rune
-	if err := dao.NewESRuneDAO().DeleteIndex(ctx); err != nil {
+	if err := dao.NewESRuneDAO()().DeleteIndex(ctx); err != nil {
 		return err
 	}
 
 	// skill
-	if err := dao.NewESSkillDAO().DeleteIndex(ctx); err != nil {
+	if err := dao.NewESSkillDAO()().DeleteIndex(ctx); err != nil {
 		return err
 	}
 

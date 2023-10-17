@@ -13,13 +13,6 @@ import (
 	"whisper/pkg/es"
 )
 
-type ESRune interface {
-	CreateIndex(ctx *context.Context) error
-	DeleteIndex(ctx *context.Context) error
-	Rune2ES(ctx *context.Context, data []*model.ESRune) error
-	Find(ctx *context.Context, cond *common.QueryCond) ([]*model.ESRune, error)
-}
-
 type ESRuneDAO struct {
 	esClient *elastic.Client
 }
@@ -48,7 +41,6 @@ func (dao *ESRuneDAO) CreateIndex(ctx *context.Context) error {
 }
 
 func (dao *ESRuneDAO) DeleteIndex(ctx *context.Context) error {
-
 	// 索引是否存在
 	var esModel model.ESRune
 	idxName := esModel.GetIndexName()
@@ -70,11 +62,11 @@ func (dao *ESRuneDAO) DeleteIndex(ctx *context.Context) error {
 	return nil
 }
 
-func (dao *ESRuneDAO) Rune2ES(ctx *context.Context, data []*model.ESRune) error {
+func (dao *ESRuneDAO) Data2ES(ctx *context.Context, data interface{}) error {
 	var esModel model.ESRune
 	idxName := esModel.GetIndexName()
 	// 导入数据
-	for _, e := range data {
+	for _, e := range data.([]*model.ESRune) {
 		_, err := es.ESClient.Index().Index(idxName).BodyJson(e).Id(e.ID).Do(ctx)
 		if err != nil {
 			return err
@@ -84,7 +76,7 @@ func (dao *ESRuneDAO) Rune2ES(ctx *context.Context, data []*model.ESRune) error 
 	return nil
 }
 
-func (dao *ESRuneDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]*model.ESRune, error) {
+func (dao *ESRuneDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]map[string]interface{}, error) {
 	var esModel model.ESRune
 	idxName := esModel.GetIndexName()
 	query := elastic.NewBoolQuery()
@@ -119,11 +111,11 @@ func (dao *ESRuneDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]*mod
 		return nil, err
 	}
 
-	var heroes []*model.ESRune
+	var heroes []map[string]interface{}
 	for _, hit := range resp.Hits {
 		sourceStr, _ := json.Marshal(hit.TmpSource)
-		hitData := &model.ESRune{}
-		err = json.Unmarshal(sourceStr, hitData)
+		var hitData map[string]interface{}
+		err = json.Unmarshal(sourceStr, &hitData)
 		if err != nil {
 			return nil, err
 		}
@@ -133,15 +125,17 @@ func (dao *ESRuneDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]*mod
 }
 
 var (
-	esRDao  *ESRuneDAO
-	esROnce sync.Once
+	esRDao     *ESRuneDAO
+	onceEsRDao sync.Once
 )
 
-func NewESRuneDAO() *ESRuneDAO {
-	esROnce.Do(func() {
-		esRDao = &ESRuneDAO{
-			esClient: es.ESClient,
-		}
-	})
-	return esRDao
+func NewESRuneDAO() EsDaoFunc {
+	return func() ESIndex {
+		onceEsRDao.Do(func() {
+			esRDao = &ESRuneDAO{
+				esClient: es.ESClient,
+			}
+		})
+		return esRDao
+	}
 }

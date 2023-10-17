@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/olivere/elastic/v7"
 	"sync"
+
+	"github.com/olivere/elastic/v7"
 	"whisper/internal/dto"
 	"whisper/internal/model"
 	"whisper/internal/model/common"
@@ -13,19 +14,11 @@ import (
 	"whisper/pkg/es"
 )
 
-type ESEquipment interface {
-	CreateIndex(ctx *context.Context) error
-	DeleteIndex(ctx *context.Context) error
-	Equipment2ES(ctx *context.Context, data []*model.ESEquipment) error
-	Find(ctx *context.Context, cond *common.QueryCond) ([]*model.ESEquipment, error)
-}
-
 type ESEquipmentDAO struct {
 	esClient *elastic.Client
 }
 
 func (dao *ESEquipmentDAO) CreateIndex(ctx *context.Context) error {
-
 	// 索引是否存在
 	var esModel model.ESEquipment
 	idxName := esModel.GetIndexName()
@@ -48,7 +41,6 @@ func (dao *ESEquipmentDAO) CreateIndex(ctx *context.Context) error {
 }
 
 func (dao *ESEquipmentDAO) DeleteIndex(ctx *context.Context) error {
-
 	// 索引是否存在
 	var esModel model.ESEquipment
 	idxName := esModel.GetIndexName()
@@ -70,12 +62,15 @@ func (dao *ESEquipmentDAO) DeleteIndex(ctx *context.Context) error {
 	return nil
 }
 
-func (dao *ESEquipmentDAO) Equipment2ES(ctx *context.Context, data []*model.ESEquipment) error {
+func (dao *ESEquipmentDAO) Data2ES(ctx *context.Context, data interface{}) error {
 	var esModel model.ESEquipment
 	idxName := esModel.GetIndexName()
 	// 导入数据
-	for _, e := range data {
-		_, err := es.ESClient.Index().Index(idxName).BodyJson(e).Id(e.ID).Do(ctx)
+	for _, e := range data.([]*model.ESEquipment) {
+		_, err := es.ESClient.Index().
+			Index(idxName).BodyJson(e).
+			Id(e.ID).
+			Do(ctx)
 		if err != nil {
 			return err
 		}
@@ -83,7 +78,8 @@ func (dao *ESEquipmentDAO) Equipment2ES(ctx *context.Context, data []*model.ESEq
 
 	return nil
 }
-func (dao *ESEquipmentDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]*model.ESEquipment, error) {
+
+func (dao *ESEquipmentDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]map[string]interface{}, error) {
 	var esModel model.ESEquipment
 	idxName := esModel.GetIndexName()
 	query := elastic.NewBoolQuery()
@@ -123,11 +119,11 @@ func (dao *ESEquipmentDAO) Find(ctx *context.Context, cond *common.QueryCond) ([
 		return nil, err
 	}
 
-	var equips []*model.ESEquipment
+	var equips []map[string]interface{}
 	for _, hit := range resp.Hits {
 		sourceStr, _ := json.Marshal(hit.TmpSource)
-		hitData := &model.ESEquipment{}
-		err = json.Unmarshal(sourceStr, hitData)
+		var hitData map[string]interface{}
+		err = json.Unmarshal(sourceStr, &hitData)
 		if err != nil {
 			return nil, err
 		}
@@ -137,15 +133,17 @@ func (dao *ESEquipmentDAO) Find(ctx *context.Context, cond *common.QueryCond) ([
 }
 
 var (
-	esEDao  *ESEquipmentDAO
-	esEOnce sync.Once
+	esEDao     *ESEquipmentDAO
+	onceEsEDao sync.Once
 )
 
-func NewESEquipmentDAO() *ESEquipmentDAO {
-	esEOnce.Do(func() {
-		esEDao = &ESEquipmentDAO{
-			esClient: es.ESClient,
-		}
-	})
-	return esEDao
+func NewESEquipmentDAO() EsDaoFunc {
+	return func() ESIndex {
+		onceEsEDao.Do(func() {
+			esEDao = &ESEquipmentDAO{
+				esClient: es.ESClient,
+			}
+		})
+		return esEDao
+	}
 }
