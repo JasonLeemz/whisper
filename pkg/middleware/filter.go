@@ -52,7 +52,10 @@ func Params() gin.HandlerFunc {
 
 		data += "|http_code=" + strconv.Itoa(c.Writer.Status()) + "|resp=" + response
 
-		log.Logger.Info(c, data)
+		ctx := context.Context{
+			Context: c,
+		}
+		log.Logger.Info(&ctx, data)
 	}
 }
 
