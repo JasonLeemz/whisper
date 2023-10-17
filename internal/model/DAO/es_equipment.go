@@ -98,13 +98,19 @@ func (dao *ESEquipmentDAO) Find(ctx *context.Context, cond *common.QueryCond) ([
 		}
 	}
 
-	//if cond.FieldSort != nil {
-	//	sortByScore := elastic.NewFieldSort(cond.FieldSort.Field).Desc()
-	//}
+	sortByScore := elastic.NewFieldSort("_score").Desc()
+	if cond.FieldSort != nil {
+		if cond.FieldSort.Direction == "asc" {
+			sortByScore = elastic.NewFieldSort(cond.FieldSort.Field).Asc()
+		} else {
+			sortByScore = elastic.NewFieldSort(cond.FieldSort.Field).Desc()
+		}
+	}
 
 	res, err := es.ESClient.Search().
 		Index(idxName).
 		Query(query).
+		SortBy(sortByScore).
 		From(0).Size(10000).
 		Pretty(true).
 		Do(ctx)

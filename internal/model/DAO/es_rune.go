@@ -94,9 +94,19 @@ func (dao *ESRuneDAO) Find(ctx *context.Context, cond *common.QueryCond) ([]map[
 		}
 	}
 
+	sortByScore := elastic.NewFieldSort("_score").Desc()
+	if cond.FieldSort != nil {
+		if cond.FieldSort.Direction == "desc" {
+			sortByScore = elastic.NewFieldSort(cond.FieldSort.Field).Desc()
+		} else {
+			sortByScore = elastic.NewFieldSort(cond.FieldSort.Field).Asc()
+		}
+	}
+
 	res, err := es.ESClient.Search().
 		Index(idxName).
 		Query(query).
+		SortBy(sortByScore).
 		From(0).Size(10000).
 		Pretty(true).
 		Do(ctx)

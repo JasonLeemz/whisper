@@ -12,14 +12,13 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/olivere/elastic/v7"
 	"whisper/internal/dto"
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
 	dao "whisper/internal/model/DAO"
+	mCommon "whisper/internal/model/common"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
-	"whisper/pkg/es"
 	"whisper/pkg/log"
 )
 
@@ -38,61 +37,49 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) 
 		return nil, errors2.New("indexName is nil")
 	}
 
-	query := elastic.NewBoolQuery()
-
-	// 高亮搜索结果
-	hl := elastic.NewHighlight()
-	fields := make([]*elastic.HighlighterField, 0, len(p.Way))
-
-	// 按名字介绍
-	way := make([]string, 0)
-	for _, w := range p.Way {
-		way = append(way, w)
-		fields = append(fields, elastic.NewHighlighterField(w))
+	cond := &mCommon.QueryCond{
+		// 按名字介绍
+		MultiMatchQuery: &mCommon.MultiMatchQuery{
+			Text:   p.KeyWords,
+			Fields: p.Way,
+		},
+		//TermsQuery: &mCommon.TermsQuery{
+		//	Name:   "",
+		//	Values: nil,
+		//},
+		// 端游or手游
+		TermQuery: []*mCommon.TermQuery{
+			&mCommon.TermQuery{
+				Name:  "platform",
+				Value: p.Platform,
+			},
+		},
+		FieldSort: &mCommon.FieldSort{
+			Field:     "_score",
+			Direction: "desc",
+		},
 	}
-	query = query.Must(elastic.NewMultiMatchQuery(p.KeyWords, way...))
-	hl = hl.Fields(fields...)
-	hl = hl.PreTags("<em>").PostTags("</em>")
 
-	equipModel := new(model.ESEquipment)
 	// 按地图
-	if indexName == equipModel.GetIndexName() {
-		maps := make([]interface{}, 0)
+	if indexName == new(model.ESEquipment).GetIndexName() {
+		var maps []interface{}
 		for _, m := range p.Map {
-			maps = append(maps, m)
+			maps = append(maps, interface{}(m))
 		}
-		query = query.Must(elastic.NewTermsQuery("maps", maps...))
+		cond.TermsQuery = &mCommon.TermsQuery{
+			Name:   "maps",
+			Values: maps,
+		}
 	}
 
-	// 端游or手游
-	query = query.Must(elastic.NewTermQuery("platform", p.Platform))
-
-	//query = query.Filter(elastic.NewRangeQuery("id").Gte(0))
-	//query = query.Filter(elastic.NewRangeQuery("id").Lte(9999999))
-
-	sortByScore := elastic.NewFieldSort("_score").Desc()
-
-	res, err := es.ESClient.Search().
-		Index(indexName).
-		Highlight(hl).
-		Query(query).
-		SortBy(sortByScore).
-		From(0).Size(20).
-		Pretty(true).
-		Do(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := dto.EsResultHits{}
-	data, _ := json.Marshal(res.Hits)
-	err = json.Unmarshal(data, &resp)
-	if err != nil {
-		return nil, err
-	}
-
+	resp := &dto.EsResultHits{}
+	var err error
 	switch indexName {
-	case equipModel.GetIndexName():
+	case dao.ESIndexEquipment:
+		resp, err = dao.ESQuery(ctx, dao.ESIndexEquipment, cond)
+		if err != nil {
+			return nil, err
+		}
 		for i, hit := range resp.Hits {
 			sourceStr, _ := json.Marshal(hit.TmpSource)
 			hitData := model.ESEquipment{}
@@ -121,7 +108,11 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) 
 				resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("%s", hitData.Maps))
 			}
 		}
-	case new(model.ESHeroes).GetIndexName():
+	case dao.ESIndexHeroes:
+		resp, err = dao.ESQuery(ctx, dao.ESIndexHeroes, cond)
+		if err != nil {
+			return nil, err
+		}
 		for i, hit := range resp.Hits {
 			sourceStr, _ := json.Marshal(hit.TmpSource)
 			hitData := model.ESHeroes{}
@@ -141,7 +132,11 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) 
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, strings.Split(hitData.Roles, ",")...)
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
 		}
-	case new(model.ESRune).GetIndexName():
+	case dao.ESIndexRune:
+		resp, err = dao.ESQuery(ctx, dao.ESIndexRune, cond)
+		if err != nil {
+			return nil, err
+		}
 		for i, hit := range resp.Hits {
 			sourceStr, _ := json.Marshal(hit.TmpSource)
 			hitData := model.ESRune{}
@@ -168,7 +163,11 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) 
 			}
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
 		}
-	case new(model.ESSkill).GetIndexName():
+	case dao.ESIndexSkill:
+		resp, err = dao.ESQuery(ctx, dao.ESIndexSkill, cond)
+		if err != nil {
+			return nil, err
+		}
 		for i, hit := range resp.Hits {
 			sourceStr, _ := json.Marshal(hit.TmpSource)
 			hitData := model.ESSkill{}
@@ -191,7 +190,7 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) 
 		}
 	}
 
-	return &resp, nil
+	return resp, nil
 }
 
 // BuildIndex 重建索引
