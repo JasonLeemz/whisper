@@ -1,23 +1,11 @@
 package log
 
 import (
-	"context"
-	"strconv"
-	"time"
 	"whisper/pkg/config"
-
-	context2 "whisper/pkg/context"
-	errors2 "whisper/pkg/errors"
 
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-)
-
-const (
-	LoggerTypeGorm  = "gorm"
-	LoggerTypeES    = "es"
-	LoggerTypeMongo = "mongo"
 )
 
 // Logger 声明日志类全局变量
@@ -26,47 +14,8 @@ var (
 	GLogger *GormLogger
 	ELogger *ESLogger
 	MLogger *MongoLogger
+	//Xlogger *XXXLogger
 )
-
-var (
-	whisperTplStr = "%s\t "
-
-	infoStr      = "INFO "
-	warnStr      = "WARN "
-	errStr       = "ERROR "
-	traceStr     = "[%.3fms] [rows:%v] %s"
-	traceWarnStr = "%s %s\t[%.3fms] [rows:%v] %s"
-	traceErrStr  = "%s %s\t[%.3fms] [rows:%v] %s"
-)
-
-// func genLogTpl(traceID string, startTime time.Time, data []interface{}) string {
-func genLogTpl(ctx context.Context, msg string, data []interface{}) string {
-	traceID := ""
-	if tid, ok := ctx.Value(context2.TraceID).(string); ok {
-		traceID = tid
-	}
-	proc := ""
-	if st, ok := ctx.Value(context2.StartTime).(time.Time); ok {
-		proc = strconv.FormatFloat(time.Since(st).Seconds(), 'f', -1, 64)
-	}
-	tpl := whisperTplStr + msg +
-		"|trace_id=" + traceID +
-		"|proc=" + proc
-	for _, v := range data {
-		switch v.(type) {
-		case string:
-			tpl += "|%s"
-		case error:
-			tpl += "|%+v"
-		case errors2.Error:
-			tpl += "|%+v"
-		default:
-			tpl += "|%#v"
-		}
-	}
-
-	return tpl
-}
 
 // 日志记录地址
 func getLogWriter(logPath string) zapcore.WriteSyncer {
@@ -107,12 +56,14 @@ type CreateLoggerFunc func(logger *zap.SugaredLogger) interface{}
 
 func CreateLogger(loggerType loggerType) CreateLoggerFunc {
 	switch loggerType {
-	case LoggerTypeGorm:
+	case loggerTypeGorm:
 		return newGormLogger()
-	case LoggerTypeES:
+	case loggerTypeES:
 		return newESLogger()
-	case LoggerTypeMongo:
+	case loggerTypeMongo:
 		return newMongoLogger()
+	//case loggerTypeXXX:
+	//	return newXXXLogger()
 	default:
 		return newZapLogger()
 	}
@@ -129,7 +80,7 @@ func Init() {
 	).(*WhisperLogger)
 
 	// gorm logger
-	GLogger = CreateLogger(LoggerTypeGorm)(
+	GLogger = CreateLogger(loggerTypeGorm)(
 		createSugarLogger(
 			getEncoder(),
 			getLogWriter(config.GlobalConfig.Log.MongoLog),
@@ -137,7 +88,7 @@ func Init() {
 		),
 	).(*GormLogger)
 	// es logger
-	ELogger = CreateLogger(LoggerTypeES)(
+	ELogger = CreateLogger(loggerTypeES)(
 		createSugarLogger(
 			getEncoder(),
 			getLogWriter(config.GlobalConfig.Log.EsLog),
@@ -145,11 +96,20 @@ func Init() {
 		),
 	).(*ESLogger)
 	// mongo logger
-	MLogger = CreateLogger(LoggerTypeMongo)(
+	MLogger = CreateLogger(loggerTypeMongo)(
 		createSugarLogger(
 			getEncoder(),
 			getLogWriter(config.GlobalConfig.Log.MongoLog),
 			zapcore.Level(config.GlobalConfig.Log.LogLevel),
 		),
 	).(*MongoLogger)
+
+	//// XXX logger
+	//XLogger = CreateLogger(loggerTypeXXX)(
+	//	createSugarLogger(
+	//		getEncoder(),
+	//		getLogWriter(config.GlobalConfig.Log.MongoLog),
+	//		zapcore.Level(config.GlobalConfig.Log.LogLevel),
+	//	),
+	//).(*XXXLogger)
 }

@@ -5,12 +5,12 @@ import (
 	"go.uber.org/zap"
 )
 
-type ESLogger struct {
+type XXXLogger struct {
 	logger *zap.SugaredLogger
 }
 
 // newESLogger ESLogger 初始化
-func newESLogger() CreateLoggerFunc {
+func newXXXLogger() CreateLoggerFunc {
 	return func(logger *zap.SugaredLogger) interface{} {
 		return &ESLogger{
 			logger: logger,
@@ -18,6 +18,6 @@ func newESLogger() CreateLoggerFunc {
 	}
 }
 
-func (lg ESLogger) Printf(format string, v ...interface{}) {
+func (lg XXXLogger) Printf(format string, v ...interface{}) {
 	lg.logger.Info(fmt.Sprintf(format, v...))
 }

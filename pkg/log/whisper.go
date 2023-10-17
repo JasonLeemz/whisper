@@ -18,22 +18,22 @@ func newZapLogger() CreateLoggerFunc {
 	}
 }
 
-func (log *WhisperLogger) Debug(ctx *context.Context, data ...interface{}) {
+func (lg *WhisperLogger) Debug(ctx *context.Context, data ...interface{}) {
 	tpl := genLogTpl(ctx, "", data)
-	log.Debugf(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+	lg.Debugf(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
 }
 
-func (log *WhisperLogger) Info(ctx *context.Context, data ...interface{}) {
+func (lg *WhisperLogger) Info(ctx *context.Context, data ...interface{}) {
 	tpl := genLogTpl(ctx, "", data)
-	log.Infof(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+	lg.Infof(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
 }
 
-func (log *WhisperLogger) Warn(ctx *context.Context, data ...interface{}) {
+func (lg *WhisperLogger) Warn(ctx *context.Context, data ...interface{}) {
 	tpl := genLogTpl(ctx, "", data)
-	log.Warnf(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+	lg.Warnf(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
 }
 
-func (log *WhisperLogger) Error(ctx *context.Context, data ...interface{}) {
+func (lg *WhisperLogger) Error(ctx *context.Context, data ...interface{}) {
 	tpl := genLogTpl(ctx, "", data)
-	log.Errorf(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+	lg.Errorf(tpl, append([]interface{}{utils.FileWithLineNum()}, data...)...)
 }

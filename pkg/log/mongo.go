@@ -20,10 +20,10 @@ func newMongoLogger() CreateLoggerFunc {
 	}
 }
 
-func (log *MongoLogger) Info(level int, message string, keysAndValues ...interface{}) {
-	log.logger.Infof("level=%d msg=%s keysAndValues:%v", level, message, keysAndValues)
+func (lg *MongoLogger) Info(level int, message string, keysAndValues ...interface{}) {
+	lg.logger.Infof("level=%d msg=%s keysAndValues:%v", level, message, keysAndValues)
 }
 
-func (log *MongoLogger) Error(err error, message string, keysAndValues ...interface{}) {
-	log.logger.Errorf("err=%d msg=%s keysAndValues:%v", err, message, keysAndValues)
+func (lg *MongoLogger) Error(err error, message string, keysAndValues ...interface{}) {
+	lg.logger.Errorf("err=%d msg=%s keysAndValues:%v", err, message, keysAndValues)
 }
