@@ -33,5 +33,4 @@ type ESIndex interface {
 	CreateIndex(ctx *context.Context) error
 	DeleteIndex(ctx *context.Context) error
 	Data2ES(ctx *context.Context, data interface{}) error
-	Find(ctx *context.Context, cond *QueryCond) ([]map[string]interface{}, error)
 }
