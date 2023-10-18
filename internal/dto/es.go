@@ -17,8 +17,8 @@ type Hits struct {
 	Type      string              `json:"_type,omitempty"`
 	Id        string              `json:"_id,omitempty"`
 	TmpSource interface{}         `json:"_source,omitempty"`
+	Source    Source              `json:"source,omitempty"` // 冗余的结构，用于存放_source字符串解析出的内容
 	Highlight map[string][]string `json:"highlight,omitempty"`
-	Source    Source              `json:"source,omitempty"`
 }
 
 type Source struct {

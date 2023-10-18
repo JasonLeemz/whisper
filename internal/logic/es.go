@@ -3,7 +3,6 @@ package logic
 import (
 	context2 "context"
 	"encoding/json"
-	errors2 "errors"
 	"fmt"
 	"github.com/spf13/cast"
 	"html"
@@ -11,12 +10,12 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"whisper/internal/model/es"
 
 	"whisper/internal/dto"
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
 	dao "whisper/internal/model/DAO"
-	mCommon "whisper/internal/model/common"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
 	"whisper/pkg/log"
@@ -32,54 +31,47 @@ type SearchParams struct {
 }
 
 func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) {
-	indexName := p.Category
-	if indexName == "" {
-		return nil, errors2.New("indexName is nil")
-	}
-
-	cond := &mCommon.QueryCond{
-		// 按名字介绍
-		MultiMatchQuery: &mCommon.MultiMatchQuery{
+	esBuilder := new(es.Instance).Builder(p.Category).
+		// 按名字/介绍
+		SetMultiMatchQuery(&es.MultiMatchQuery{
 			Text:   p.KeyWords,
 			Fields: p.Way,
-		},
-		//TermsQuery: &mCommon.TermsQuery{
-		//	Name:   "",
-		//	Values: nil,
-		//},
+		}).
 		// 端游or手游
-		TermQuery: []*mCommon.TermQuery{
-			&mCommon.TermQuery{
+		SetTermQuery([]*es.TermQuery{
+			&es.TermQuery{
 				Name:  "platform",
 				Value: p.Platform,
 			},
-		},
-		FieldSort: &mCommon.FieldSort{
+		}).
+		SetFieldSort(&es.FieldSort{
 			Field:     "_score",
 			Direction: "desc",
-		},
-	}
-
+		})
+	indexName := p.Category
 	// 按地图
 	if indexName == new(model.ESEquipment).GetIndexName() {
 		var maps []interface{}
 		for _, m := range p.Map {
 			maps = append(maps, interface{}(m))
 		}
-		cond.TermsQuery = &mCommon.TermsQuery{
+		esBuilder = esBuilder.SetTermsQuery(&es.TermsQuery{
 			Name:   "maps",
 			Values: maps,
-		}
+		})
+	}
+	esInstance, err := esBuilder.Build()
+	if err != nil {
+		return nil, err
 	}
 
-	resp := &dto.EsResultHits{}
-	var err error
+	resp, err := esInstance.Query(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	switch indexName {
 	case dao.ESIndexEquipment:
-		resp, err = dao.ESQuery(ctx, dao.ESIndexEquipment, cond)
-		if err != nil {
-			return nil, err
-		}
 		for i, hit := range resp.Hits {
 			sourceStr, _ := json.Marshal(hit.TmpSource)
 			hitData := model.ESEquipment{}
@@ -109,10 +101,6 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) 
 			}
 		}
 	case dao.ESIndexHeroes:
-		resp, err = dao.ESQuery(ctx, dao.ESIndexHeroes, cond)
-		if err != nil {
-			return nil, err
-		}
 		for i, hit := range resp.Hits {
 			sourceStr, _ := json.Marshal(hit.TmpSource)
 			hitData := model.ESHeroes{}
@@ -133,10 +121,6 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) 
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
 		}
 	case dao.ESIndexRune:
-		resp, err = dao.ESQuery(ctx, dao.ESIndexRune, cond)
-		if err != nil {
-			return nil, err
-		}
 		for i, hit := range resp.Hits {
 			sourceStr, _ := json.Marshal(hit.TmpSource)
 			hitData := model.ESRune{}
@@ -164,10 +148,6 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) 
 			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
 		}
 	case dao.ESIndexSkill:
-		resp, err = dao.ESQuery(ctx, dao.ESIndexSkill, cond)
-		if err != nil {
-			return nil, err
-		}
 		for i, hit := range resp.Hits {
 			sourceStr, _ := json.Marshal(hit.TmpSource)
 			hitData := model.ESSkill{}
@@ -191,6 +171,43 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) 
 	}
 
 	return resp, nil
+}
+func AutoComplete(ctx *context.Context, p *SearchParams) ([]map[string]interface{}, error) {
+	esBuilder := new(es.Instance).Builder(p.Category).
+		// 端游or手游
+		SetTermQuery([]*es.TermQuery{
+			&es.TermQuery{
+				Name:  "platform",
+				Value: p.Platform,
+			},
+		})
+	if p.KeyWords != "" {
+		// 按名字/介绍
+		esBuilder = esBuilder.SetMultiMatchQuery(&es.MultiMatchQuery{
+			Text:   p.KeyWords,
+			Fields: p.Way,
+		})
+	}
+	esIns, err := esBuilder.Build()
+	if err != nil {
+		return nil, err
+	}
+	resp, err := esIns.Query(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var datas []map[string]interface{}
+	for _, hit := range resp.Hits {
+		sourceStr, _ := json.Marshal(hit.TmpSource)
+		var hitData map[string]interface{}
+		err = json.Unmarshal(sourceStr, &hitData)
+		if err != nil {
+			return nil, err
+		}
+		datas = append(datas, hitData)
+	}
+	return datas, nil
 }
 
 // BuildIndex 重建索引

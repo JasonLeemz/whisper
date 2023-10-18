@@ -8,6 +8,7 @@ import (
 	"strings"
 	"whisper/internal/dto"
 	"whisper/internal/logic"
+	"whisper/internal/model"
 	"whisper/internal/service/mq"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
@@ -195,4 +196,73 @@ func prettyHeroDesc(ctx *context.Context, desc, platform, category string) []*dt
 	}
 
 	return sDesc
+}
+
+func AutoComplete(ctx *context.Context) {
+	req := &ReqQuery{}
+	if err := ctx.Bind(req); err != nil {
+		return
+	}
+
+	way := make([]string, 0, 4)
+	if req.Switch.Way.Name {
+		way = append(way, "name", "keywords")
+	}
+	if req.Switch.Way.Description {
+		way = append(way, "description", "plaintext")
+	}
+
+	maps := make([]string, 0, 3)
+	if req.Switch.Maps.M5v5 {
+		maps = append(maps, "召唤师峡谷")
+	}
+	if req.Switch.Maps.Mdld {
+		maps = append(maps, "嚎哭深渊")
+	}
+	if req.Switch.Maps.M2v2 {
+		maps = append(maps, "斗魂竞技场")
+	}
+
+	params := logic.SearchParams{
+		KeyWords: req.KeyWords,
+		Platform: req.Platform,
+		Category: req.Category,
+		Way:      way,
+		Map:      maps,
+	}
+
+	data, err := logic.AutoComplete(ctx, &params)
+	if err != nil {
+		ctx.Reply(nil, errors.New(err))
+		return
+	}
+
+	var (
+		keywords []string
+		mk       = make(map[string]struct{})
+	)
+
+	if req.Category == model.NewModelESEquipment().GetIndexName() {
+		for _, item := range data {
+			if item["maps"] == nil {
+				continue
+			}
+			if item["maps"].(string) == "召唤师峡谷" {
+				name := strings.TrimSpace(item["name"].(string))
+				mk[name] = struct{}{}
+			}
+		}
+	} else {
+		for _, item := range data {
+			name := strings.TrimSpace(item["name"].(string))
+			mk[name] = struct{}{}
+		}
+	}
+
+	// 去重
+	for name, _ := range mk {
+		keywords = append(keywords, name)
+	}
+
+	ctx.Reply(keywords, nil)
 }
