@@ -13,6 +13,26 @@ import (
 	"whisper/pkg/redis"
 )
 
+//Decorator
+
+type GetVersionListFunc func(ctx *context.Context, platform int) ([]dto.VersionListData, error)
+
+// DecorateGetVersionList 装饰结果
+func DecorateGetVersionList(fn GetVersionListFunc) GetVersionListFunc {
+	return func(ctx *context.Context, platform int) ([]dto.VersionListData, error) {
+		list, err := fn(ctx, platform)
+		if err != nil {
+			return list, err
+		}
+
+		for k, _ := range list {
+			list[k].PublicDate = "更新时间: " + list[k].PublicDate
+		}
+
+		return list, nil
+	}
+}
+
 func GetVersionList(ctx *context.Context, platform int) ([]dto.VersionListData, error) {
 	var queryFromUrl = false
 	var vl []dto.VersionListData

@@ -89,7 +89,7 @@ func Query(ctx *context.Context) {
 		Map:      maps,
 	}
 
-	result, err := logic.EsSearch(ctx, &params)
+	result, err := logic.DecoratorSearchData(logic.EsSearch)(ctx, &params)
 	if err != nil {
 		ctx.Reply(nil, errors.New(err))
 	}

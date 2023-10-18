@@ -43,7 +43,7 @@ func VersionList(ctx *context.Context) {
 	}
 
 	platform := cast.ToInt(req.Platform)
-	versionList, err := logic.GetVersionList(ctx, platform)
+	versionList, err := logic.DecorateGetVersionList(logic.GetVersionList)(ctx, platform)
 	pvl := make([]dto.PageVersionList, 0, len(versionList))
 	for _, item := range versionList {
 		pvl = append(pvl, dto.PageVersionList{

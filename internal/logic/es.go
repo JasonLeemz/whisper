@@ -30,14 +30,119 @@ type SearchParams struct {
 	Map      []string `json:"map,omitempty"`
 }
 
+type EsSearchFunc func(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error)
+
+func DecoratorSearchData(fn EsSearchFunc) EsSearchFunc {
+	return func(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) {
+		result, err := fn(ctx, p)
+
+		switch p.Category {
+		case dao.ESIndexEquipment:
+			for i, hit := range result.Hits {
+				sourceStr, _ := json.Marshal(hit.TmpSource)
+				hitData := model.ESEquipment{}
+				err = json.Unmarshal(sourceStr, &hitData)
+				if err != nil {
+					return nil, err
+				}
+				result.Hits[i].Source.ID = hitData.ID
+				result.Hits[i].Source.Name = hitData.Name
+				result.Hits[i].Source.IconPath = hitData.IconPath
+				result.Hits[i].Source.Description = hitData.Description
+				result.Hits[i].Source.Plaintext = hitData.Plaintext
+				result.Hits[i].Source.Version = hitData.Version
+				result.Hits[i].Source.ItemId = hitData.ItemId
+				result.Hits[i].Source.Platform = hitData.Platform
+				result.Hits[i].Source.Maps = hitData.Maps
+
+				if hitData.Plaintext != "" && !strings.EqualFold(hitData.Plaintext, hitData.Description) {
+					result.Hits[i].Source.Tags = append(result.Hits[i].Source.Tags, fmt.Sprintf("%s", hitData.Plaintext))
+				}
+				//result.Hits[i].Source.Tags = append(result.Hits[i].Source.Tags, fmt.Sprintf("Price:%s", hitData.Price))
+				//result.Hits[i].Source.Tags = append(result.Hits[i].Source.Tags, fmt.Sprintf("Sell:%s", hitData.Sell))
+				result.Hits[i].Source.Tags = append(result.Hits[i].Source.Tags, fmt.Sprintf("价格:%s", hitData.Total))
+				result.Hits[i].Source.Tags = append(result.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
+				if hitData.Platform != cast.ToString(common.PlatformForLOLM) {
+					result.Hits[i].Source.Tags = append(result.Hits[i].Source.Tags, fmt.Sprintf("%s", hitData.Maps))
+				}
+			}
+		case dao.ESIndexHeroes:
+			for i, hit := range result.Hits {
+				sourceStr, _ := json.Marshal(hit.TmpSource)
+				hitData := model.ESHeroes{}
+				err = json.Unmarshal(sourceStr, &hitData)
+				if err != nil {
+					return nil, err
+				}
+				result.Hits[i].Source.ID = hitData.ID
+				result.Hits[i].Source.Name = hitData.Name
+				result.Hits[i].Source.IconPath = hitData.IconPath
+				result.Hits[i].Source.MainImg = hitData.MainImg
+				result.Hits[i].Source.Description = hitData.Description
+				result.Hits[i].Source.Plaintext = hitData.Plaintext
+				result.Hits[i].Source.Version = hitData.Version
+				result.Hits[i].Source.Platform = hitData.Platform
+
+				result.Hits[i].Source.Tags = append(result.Hits[i].Source.Tags, strings.Split(hitData.Roles, ",")...)
+				result.Hits[i].Source.Tags = append(result.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
+			}
+		case dao.ESIndexRune:
+			for i, hit := range result.Hits {
+				sourceStr, _ := json.Marshal(hit.TmpSource)
+				hitData := model.ESRune{}
+				err = json.Unmarshal(sourceStr, &hitData)
+				if err != nil {
+					return nil, err
+				}
+				result.Hits[i].Source.ID = hitData.ID
+				result.Hits[i].Source.Name = hitData.Name + "(" + hitData.StyleName + ")"
+				result.Hits[i].Source.IconPath = hitData.IconPath
+				result.Hits[i].Source.Description = strings.Replace(hitData.Description, "<hr>", "", -1)
+				result.Hits[i].Source.Plaintext = hitData.Plaintext
+				result.Hits[i].Source.Version = hitData.Version
+				result.Hits[i].Source.Platform = hitData.Platform
+
+				//result.Hits[i].Source.Tags = append(result.Hits[i].Source.Tags, fmt.Sprintf("Type:%s", hitData.StyleName))
+				if hitData.Tooltip != "" && len(hitData.Tooltip) <= 10 {
+					tooltip := html.UnescapeString(hitData.Tooltip)
+					//tooltip = strings.Replace(hitData.Tooltip, "&lt;br&gt;", "", -1)
+					//tooltip = strings.Replace(tooltip, "&lt;hr&gt;", "", -1)
+					tooltip = strings.Replace(tooltip, "<br>", "", -1)
+					tooltip = strings.Replace(tooltip, "<hr>", "", -1)
+					result.Hits[i].Source.Tags = append(result.Hits[i].Source.Tags, tooltip)
+				}
+				result.Hits[i].Source.Tags = append(result.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
+			}
+		case dao.ESIndexSkill:
+			for i, hit := range result.Hits {
+				sourceStr, _ := json.Marshal(hit.TmpSource)
+				hitData := model.ESSkill{}
+				err = json.Unmarshal(sourceStr, &hitData)
+				if err != nil {
+					return nil, err
+				}
+				result.Hits[i].Source.ID = hitData.ID
+				result.Hits[i].Source.Name = hitData.Name
+				result.Hits[i].Source.IconPath = hitData.IconPath
+				result.Hits[i].Source.Description = hitData.Description
+				result.Hits[i].Source.Plaintext = hitData.Plaintext
+				result.Hits[i].Source.Version = hitData.Version
+				result.Hits[i].Source.Platform = hitData.Platform
+
+				if hitData.CoolDown != "" {
+					result.Hits[i].Source.Tags = append(result.Hits[i].Source.Tags, fmt.Sprintf("冷却:%s", hitData.CoolDown))
+				}
+				result.Hits[i].Source.Tags = append(result.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
+			}
+		}
+
+		return result, err
+	}
+}
+
+// EsSearch 从es查询数据
 func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) {
 	esBuilder := new(es.Instance).Builder(p.Category).
-		// 按名字/介绍
-		SetMultiMatchQuery(&es.MultiMatchQuery{
-			Text:   p.KeyWords,
-			Fields: p.Way,
-		}).
-		// 端游or手游
 		SetTermQuery([]*es.TermQuery{
 			&es.TermQuery{
 				Name:  "platform",
@@ -48,6 +153,14 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) 
 			Field:     "_score",
 			Direction: "desc",
 		})
+	if p.KeyWords != "" {
+		// 按名字/介绍
+		esBuilder = esBuilder.SetMultiMatchQuery(&es.MultiMatchQuery{
+			Text:   p.KeyWords,
+			Fields: p.Way,
+		})
+	}
+
 	indexName := p.Category
 	// 按地图
 	if indexName == new(model.ESEquipment).GetIndexName() {
@@ -70,129 +183,12 @@ func EsSearch(ctx *context.Context, p *SearchParams) (*dto.EsResultHits, error) 
 		return nil, err
 	}
 
-	switch indexName {
-	case dao.ESIndexEquipment:
-		for i, hit := range resp.Hits {
-			sourceStr, _ := json.Marshal(hit.TmpSource)
-			hitData := model.ESEquipment{}
-			err = json.Unmarshal(sourceStr, &hitData)
-			if err != nil {
-				return nil, err
-			}
-			resp.Hits[i].Source.ID = hitData.ID
-			resp.Hits[i].Source.Name = hitData.Name
-			resp.Hits[i].Source.IconPath = hitData.IconPath
-			resp.Hits[i].Source.Description = hitData.Description
-			resp.Hits[i].Source.Plaintext = hitData.Plaintext
-			resp.Hits[i].Source.Version = hitData.Version
-			resp.Hits[i].Source.ItemId = hitData.ItemId
-			resp.Hits[i].Source.Platform = hitData.Platform
-			resp.Hits[i].Source.Maps = hitData.Maps
-
-			if hitData.Plaintext != "" && !strings.EqualFold(hitData.Plaintext, hitData.Description) {
-				resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("%s", hitData.Plaintext))
-			}
-			//resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Price:%s", hitData.Price))
-			//resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Sell:%s", hitData.Sell))
-			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("价格:%s", hitData.Total))
-			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
-			if hitData.Platform != cast.ToString(common.PlatformForLOLM) {
-				resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("%s", hitData.Maps))
-			}
-		}
-	case dao.ESIndexHeroes:
-		for i, hit := range resp.Hits {
-			sourceStr, _ := json.Marshal(hit.TmpSource)
-			hitData := model.ESHeroes{}
-			err = json.Unmarshal(sourceStr, &hitData)
-			if err != nil {
-				return nil, err
-			}
-			resp.Hits[i].Source.ID = hitData.ID
-			resp.Hits[i].Source.Name = hitData.Name
-			resp.Hits[i].Source.IconPath = hitData.IconPath
-			resp.Hits[i].Source.MainImg = hitData.MainImg
-			resp.Hits[i].Source.Description = hitData.Description
-			resp.Hits[i].Source.Plaintext = hitData.Plaintext
-			resp.Hits[i].Source.Version = hitData.Version
-			resp.Hits[i].Source.Platform = hitData.Platform
-
-			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, strings.Split(hitData.Roles, ",")...)
-			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
-		}
-	case dao.ESIndexRune:
-		for i, hit := range resp.Hits {
-			sourceStr, _ := json.Marshal(hit.TmpSource)
-			hitData := model.ESRune{}
-			err = json.Unmarshal(sourceStr, &hitData)
-			if err != nil {
-				return nil, err
-			}
-			resp.Hits[i].Source.ID = hitData.ID
-			resp.Hits[i].Source.Name = hitData.Name + "(" + hitData.StyleName + ")"
-			resp.Hits[i].Source.IconPath = hitData.IconPath
-			resp.Hits[i].Source.Description = strings.Replace(hitData.Description, "<hr>", "", -1)
-			resp.Hits[i].Source.Plaintext = hitData.Plaintext
-			resp.Hits[i].Source.Version = hitData.Version
-			resp.Hits[i].Source.Platform = hitData.Platform
-
-			//resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Type:%s", hitData.StyleName))
-			if hitData.Tooltip != "" && len(hitData.Tooltip) <= 10 {
-				tooltip := html.UnescapeString(hitData.Tooltip)
-				//tooltip = strings.Replace(hitData.Tooltip, "&lt;br&gt;", "", -1)
-				//tooltip = strings.Replace(tooltip, "&lt;hr&gt;", "", -1)
-				tooltip = strings.Replace(tooltip, "<br>", "", -1)
-				tooltip = strings.Replace(tooltip, "<hr>", "", -1)
-				resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, tooltip)
-			}
-			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
-		}
-	case dao.ESIndexSkill:
-		for i, hit := range resp.Hits {
-			sourceStr, _ := json.Marshal(hit.TmpSource)
-			hitData := model.ESSkill{}
-			err = json.Unmarshal(sourceStr, &hitData)
-			if err != nil {
-				return nil, err
-			}
-			resp.Hits[i].Source.ID = hitData.ID
-			resp.Hits[i].Source.Name = hitData.Name
-			resp.Hits[i].Source.IconPath = hitData.IconPath
-			resp.Hits[i].Source.Description = hitData.Description
-			resp.Hits[i].Source.Plaintext = hitData.Plaintext
-			resp.Hits[i].Source.Version = hitData.Version
-			resp.Hits[i].Source.Platform = hitData.Platform
-
-			if hitData.CoolDown != "" {
-				resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("冷却:%s", hitData.CoolDown))
-			}
-			resp.Hits[i].Source.Tags = append(resp.Hits[i].Source.Tags, fmt.Sprintf("Version:%s", hitData.Version))
-		}
-	}
-
 	return resp, nil
 }
+
+// AutoComplete 搜索框提示"自动填充"
 func AutoComplete(ctx *context.Context, p *SearchParams) ([]map[string]interface{}, error) {
-	esBuilder := new(es.Instance).Builder(p.Category).
-		// 端游or手游
-		SetTermQuery([]*es.TermQuery{
-			&es.TermQuery{
-				Name:  "platform",
-				Value: p.Platform,
-			},
-		})
-	if p.KeyWords != "" {
-		// 按名字/介绍
-		esBuilder = esBuilder.SetMultiMatchQuery(&es.MultiMatchQuery{
-			Text:   p.KeyWords,
-			Fields: p.Way,
-		})
-	}
-	esIns, err := esBuilder.Build()
-	if err != nil {
-		return nil, err
-	}
-	resp, err := esIns.Query(ctx)
+	resp, err := EsSearch(ctx, p)
 	if err != nil {
 		return nil, err
 	}
