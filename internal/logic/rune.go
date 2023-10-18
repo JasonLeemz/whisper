@@ -1,7 +1,6 @@
 package logic
 
 import (
-	errors2 "errors"
 	"fmt"
 	"time"
 	"whisper/internal/dto"
@@ -11,30 +10,25 @@ import (
 	"whisper/pkg/log"
 	"whisper/pkg/pinyin"
 
-	"whisper/internal/service"
+	lol "whisper/internal/service/lol"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
 )
 
-func QueryRune(ctx *context.Context, platform int) (any, *errors.Error) {
-
-	if platform == common.PlatformForLOL {
-		runes, err := service.QueryRuneForLOL(ctx)
-		if err != nil {
-			log.Logger.Warn(ctx, err)
-		}
-		reloadRuneForLOL(ctx, runes)
-		return runes, nil
-	} else if platform == common.PlatformForLOLM {
-		runes, err := service.QueryRuneForLOLM(ctx)
-		if err != nil {
-			log.Logger.Warn(ctx, err)
-		}
-		reloadRuneForLOLM(ctx, runes)
-		return runes, nil
+func QueryRune(ctx *context.Context, platform int) (any, error) {
+	runes, err := lol.CreateLOLProduct(platform)().QueryRune(ctx)
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return nil, err
 	}
 
-	return nil, errors.New(errors2.New("请指定游戏平台"), errors.ErrNoInvalidInput)
+	if platform == common.PlatformForLOL {
+		reloadRuneForLOL(ctx, runes.(*dto.LOLRune))
+	} else if platform == common.PlatformForLOLM {
+		reloadRuneForLOLM(ctx, runes.(*dto.LOLMRune))
+
+	}
+	return runes, nil
 }
 
 func reloadRuneForLOL(ctx *context.Context, r *dto.LOLRune) {
@@ -193,20 +187,17 @@ func reloadRuneForLOLM(ctx *context.Context, r *dto.LOLMRune) {
 	log.Logger.Info(ctx, fmt.Sprintf("finish record LOLM rune data. Since:%fs", time.Since(startT).Seconds()))
 }
 
-func QueryRuneType(ctx *context.Context, platform int) (any, *errors.Error) {
-
-	if platform == common.PlatformForLOL {
-		return nil, errors.New(errors2.New("暂不支持"), errors.ErrNoInvalidInput)
-	} else if platform == common.PlatformForLOLM {
-		runes, err := service.QueryRuneTypeForLOLM(ctx)
-		if err != nil {
-			log.Logger.Warn(ctx, err)
-		}
-		reloadRuneTypeForLOLM(ctx, runes)
-		return runes, nil
+func QueryRuneType(ctx *context.Context, platform int) (any, error) {
+	runeType, err := lol.CreateLOLProduct(platform)().QueryRuneType(ctx)
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return nil, err
+	}
+	if platform == common.PlatformForLOLM {
+		reloadRuneTypeForLOLM(ctx, runeType.(*dto.LOLMRuneType))
 	}
 
-	return nil, errors.New(errors2.New("请指定游戏平台"), errors.ErrNoInvalidInput)
+	return runeType, nil
 }
 
 func reloadRuneTypeForLOLM(ctx *context.Context, rt *dto.LOLMRuneType) {

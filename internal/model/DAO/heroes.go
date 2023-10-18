@@ -196,7 +196,7 @@ SELECT
 	hero.heroId,
 	hero.title,
 	hero.name,
-	hero.alias,
+	attr.alias,
 	attr.avatar,
 	hero.card,
 	hero.poster,

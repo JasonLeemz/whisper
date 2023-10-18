@@ -7,7 +7,7 @@ import (
 	"time"
 	"whisper/internal/dto"
 	"whisper/internal/logic/common"
-	"whisper/internal/service"
+	lol "whisper/internal/service/lol"
 	"whisper/pkg/context"
 	"whisper/pkg/log"
 	"whisper/pkg/redis"
@@ -22,7 +22,7 @@ func GetVersionList(ctx *context.Context, platform int) ([]dto.VersionListData, 
 	result, err := data.Result()
 	if err != nil {
 		queryFromUrl = true
-		log.Logger.Error(ctx, err)
+		log.Logger.Warn(ctx, err)
 	} else {
 		err = json.Unmarshal([]byte(result), &vl)
 		if err != nil {
@@ -32,9 +32,10 @@ func GetVersionList(ctx *context.Context, platform int) ([]dto.VersionListData, 
 	}
 
 	if queryFromUrl {
-		versionList, err2 := service.VersionList(ctx, platform)
-		if err2 != nil {
-			return nil, err2
+		list, err := lol.CreateLOLProduct(platform)().VersionList(ctx)
+		versionList := list.(*dto.VersionList)
+		if err != nil {
+			return nil, err
 		}
 
 		vl = versionList.Data
@@ -47,10 +48,10 @@ func GetVersionList(ctx *context.Context, platform int) ([]dto.VersionListData, 
 	return vl, err
 }
 
-func VersionDetail(ctx *context.Context, platform int, vkey, id string) (map[string]*dto.VersionDetail, error) {
+func VersionDetail(ctx *context.Context, platform int, vKey, id string) (map[string]*dto.VersionDetail, error) {
 
 	// 获取该版本下更新的类别
-	cates, err := GetUpdateCates(ctx, platform, vkey, id)
+	cates, err := GetUpdateCats(ctx, platform, vKey, id)
 	if err != nil {
 		return nil, err
 	}
@@ -59,10 +60,10 @@ func VersionDetail(ctx *context.Context, platform int, vkey, id string) (map[str
 	keyTpl := ""
 	if platform == common.PlatformForLOL {
 		// lol_20230830_rune_157
-		keyTpl = "lol_" + vkey + "_%s_" + id
+		keyTpl = "lol_" + vKey + "_%s_" + id
 	} else {
 		// lgame_4.3c_hero
-		keyTpl = "lgame_" + vkey + "_%s"
+		keyTpl = "lgame_" + vKey + "_%s"
 	}
 
 	keyCateName := make(map[string]string)
@@ -74,30 +75,31 @@ func VersionDetail(ctx *context.Context, platform int, vkey, id string) (map[str
 
 	log.Logger.Info(ctx, keys)
 
-	details, err := service.VersionDetail(ctx, platform, keys)
+	details, err := lol.CreateLOLProduct(platform)().VersionDetail(ctx, keys)
 	if err != nil {
 		return nil, err
 	}
 
 	resp := make(map[string]*dto.VersionDetail)
-	for key, detail := range details {
+	for key, detail := range details.(map[string]*dto.VersionDetail) {
 		resp[keyCateName[key]] = detail
 	}
 	return resp, nil
 }
 
-// GetUpdateCates 获取更新类别
-func GetUpdateCates(ctx *context.Context, platform int, vkey, id string) (map[string]string, error) {
-	info, err := service.VersionInfo(ctx, platform, vkey, id)
+// GetUpdateCats 获取更新类别
+func GetUpdateCats(ctx *context.Context, platform int, vKey, id string) (map[string]string, error) {
+	info, err := lol.CreateLOLProduct(platform)().VersionInfo(ctx, vKey, id)
 	if err != nil {
 		return nil, err
 	}
-	if info.Code != 0 {
-		return nil, errors.New(info.Msg)
+	versionInfo := info.(*dto.VersionInfo)
+	if versionInfo.Code != 0 {
+		return nil, errors.New(versionInfo.Msg)
 	}
 
 	cates := make(map[string]string)
-	for _, tab := range info.Data.Tabs {
+	for _, tab := range versionInfo.Data.Tabs {
 		/*
 			"tabs": [
 			      {

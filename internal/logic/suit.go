@@ -17,7 +17,7 @@ import (
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
 	dao "whisper/internal/model/DAO"
-	"whisper/internal/service"
+	lol "whisper/internal/service/lol"
 	"whisper/pkg/context"
 	"whisper/pkg/log"
 	"whisper/pkg/redis"
@@ -109,28 +109,28 @@ func QuerySuitEquip(ctx *context.Context, platform int, heroId string) (any, err
 		return fightData, nil
 	} else {
 		// common.PlatformForLOLM
-		heroTech, equipTechs, err := service.HeroSuit(ctx, heroId)
+		equips, err := lol.CreateLOLProduct(platform)().QuerySuitEquip(ctx, heroId)
 		if err != nil {
-			return nil, errors.New("service.HeroSuit:" + err.Error())
+			return nil, err
 		}
 		// reload heroes_suit 表
-		err = updateLOLMHeroesSuit(ctx, heroId, heroTech, equipTechs)
+		err = updateLOLMHeroesSuit(ctx, heroId, equips.(*dto.HeroTech))
 		if err != nil {
 			return nil, errors.New("updateLOLMHeroesSuit:" + err.Error())
 		}
 
-		return []any{
-			heroTech, equipTechs,
-		}, nil
+		return equips, nil
 	}
 }
 
 // LOL英雄的rank数据
 func getFightData(ctx *context.Context, heroId string) (*dto.ChampionFightData, error) {
-	fightData, err := service.ChampionFightData(ctx, heroId)
+	data, err := lol.CreateLOLProduct(common.PlatformForLOL)().HeroRankData(ctx, heroId)
 	if err != nil {
 		return nil, err
 	}
+
+	fightData := data.(*dto.ChampionFightData)
 	for pos, posData := range fightData.List.ChampionLane {
 		equipData := map[string]dto.Itemjson{}
 		tmp := dto.ChampionLaneItem{}
@@ -297,7 +297,7 @@ func updateLOLHeroesSuit(ctx *context.Context, heroId string, fightData *dto.Cha
 	log.Logger.Info(ctx, "Add LOLM HeroesSuit:", heroId)
 	return nil
 }
-func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.HeroTech, equipTech map[string]*dto.EquipTech) error {
+func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.HeroTech) error {
 	platform := common.PlatformForLOLM
 	now := time.Now().Format("2006-01-02 15:04:05")
 	hpd := dao.NewHeroesSuitDAO()
@@ -306,7 +306,7 @@ func updateLOLMHeroesSuit(ctx *context.Context, heroId string, heroTech *dto.Her
 	// 构建入库数据
 	hsdata := make([]*model.HeroesSuit, 0)
 	for _, eqs := range heroTech.Data.AnchorRecommend.List {
-		et := equipTech[eqs.Head.Id]
+		et := heroTech.EquipData[eqs.Head.Id]
 		desc := make([]string, 0)
 		desc = append(desc, fmt.Sprintf("<h4>%s</h4>", eqs.Body.Desc.Title))
 		desc = append(desc, fmt.Sprintf("<p>%s</p>", eqs.Body.Desc.Content))
@@ -1088,11 +1088,13 @@ func GetHeroSuit(ctx *context.Context, heroID string) (dto.HeroSuit, error) {
 }
 
 func HeroesPosition(ctx *context.Context, platform int) (*dto.HeroRankList, error) {
-	rankList, err := service.HeroRankList(ctx)
+	list, err := lol.CreateLOLProduct(platform)().HeroRankList(ctx)
 	if err != nil {
 		log.Logger.Error(ctx, err)
 		return nil, err
 	}
+
+	rankList := list.(*dto.HeroRankList)
 
 	hpd := dao.NewHeroesPositionDAO()
 	// 删除旧数据

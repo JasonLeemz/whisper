@@ -38,7 +38,7 @@ func (c *Context) Reply(obj interface{}, err *errors.Error) {
 		c.Set("err", err)
 	}
 
-	resp, _ := json.Marshal(obj)
+	resp, _ := json.Marshal(r)
 	c.Set("response", string(resp))
 	c.PureJSON(http.StatusOK, r)
 }

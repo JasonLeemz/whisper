@@ -61,6 +61,9 @@ func AutoComplete(ctx *context.Context) {
 		}
 
 		for _, item := range data {
+			if item["maps"] == nil {
+				continue
+			}
 			if item["maps"].(string) == "召唤师峡谷" {
 				name := strings.TrimSpace(item["name"].(string))
 				mk[name] = struct{}{}

@@ -1,38 +1,32 @@
 package logic
 
 import (
-	"errors"
 	"fmt"
 	"time"
 	"whisper/internal/dto"
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
 	dao "whisper/internal/model/DAO"
-	"whisper/internal/service"
+	lol "whisper/internal/service/lol"
 	"whisper/pkg/context"
 	"whisper/pkg/log"
 	"whisper/pkg/pinyin"
 )
 
 func QueryHeroes(ctx *context.Context, platform int) (any, error) {
-
-	if platform == common.PlatformForLOL {
-		heroList, err := service.QueryHeroesForLOL(ctx)
-		if err != nil {
-			log.Logger.Warn(ctx, err)
-		}
-		reloadHeroesForLOL(ctx, heroList)
-		return heroList, nil
-	} else if platform == common.PlatformForLOLM {
-		heroList, err := service.QueryHeroesForLOLM(ctx)
-		if err != nil {
-			log.Logger.Warn(ctx, err)
-		}
-		reloadHeroesForLOLM(ctx, heroList)
-		return heroList, nil
+	heroes, err := lol.CreateLOLProduct(platform)().QueryHeroes(ctx)
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return nil, err
 	}
 
-	return nil, errors.New("请指定platform")
+	if platform == common.PlatformForLOL {
+		reloadHeroesForLOL(ctx, heroes.(*dto.LOLHeroes))
+	} else if platform == common.PlatformForLOLM {
+		reloadHeroesForLOLM(ctx, heroes.(*dto.LOLMHeroes))
+	}
+
+	return heroes, nil
 
 }
 

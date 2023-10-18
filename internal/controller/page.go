@@ -22,7 +22,7 @@ func QueryEquipTypes(ctx *context.Context) {
 type ReqGetRoadmap struct {
 	ID       string   `form:"id" json:"id" binding:"required"`
 	Version  string   `form:"version" json:"version" binding:"required"`
-	Maps     []string `json:"map,omitempty" form:"map,omitempty"`
+	Maps     []string `json:"map,omitempty" form:"map,omitempty" binding:"required"`
 	Platform int      `form:"platform" json:"platform" binding:"-"`
 }
 

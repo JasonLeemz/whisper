@@ -83,7 +83,7 @@ func Init() {
 	GLogger = CreateLogger(loggerTypeGorm)(
 		createSugarLogger(
 			getEncoder(),
-			getLogWriter(config.GlobalConfig.Log.MongoLog),
+			getLogWriter(config.GlobalConfig.Log.SqlLog),
 			zapcore.Level(config.GlobalConfig.Log.LogLevel),
 		),
 	).(*GormLogger)

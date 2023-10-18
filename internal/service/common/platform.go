@@ -1,6 +1,6 @@
 package common
 
 const (
-	PlatformForLOL  = 0
-	PlatformForLOLM = 1
+	PlatformForLOL = iota
+	PlatformForLOLM
 )

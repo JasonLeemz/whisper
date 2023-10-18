@@ -1,7 +1,6 @@
 package logic
 
 import (
-	errors2 "errors"
 	"fmt"
 	"time"
 	"whisper/internal/dto"
@@ -11,30 +10,24 @@ import (
 	"whisper/pkg/log"
 	"whisper/pkg/pinyin"
 
-	"whisper/internal/service"
+	lol "whisper/internal/service/lol"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
 )
 
-func QuerySkill(ctx *context.Context, platform int) (any, *errors.Error) {
-
+func QuerySkill(ctx *context.Context, platform int) (any, error) {
+	skills, err := lol.CreateLOLProduct(platform)().QuerySkill(ctx)
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return nil, err
+	}
 	if platform == common.PlatformForLOL {
-		skills, err := service.QuerySkillForLOL(ctx)
-		if err != nil {
-			log.Logger.Warn(ctx, err)
-		}
-		reloadSkillForLOL(ctx, skills)
-		return skills, nil
+		reloadSkillForLOL(ctx, skills.(*dto.LOLSkill))
 	} else if platform == common.PlatformForLOLM {
-		skills, err := service.QuerySkillForLOLM(ctx)
-		if err != nil {
-			log.Logger.Warn(ctx, err)
-		}
-		reloadSkillForLOLM(ctx, skills)
-		return skills, nil
+		reloadSkillForLOLM(ctx, skills.(*dto.LOLMSkill))
 	}
 
-	return nil, errors.New(errors2.New("请指定游戏平台"), errors.ErrNoInvalidInput)
+	return skills, nil
 }
 
 func reloadSkillForLOL(ctx *context.Context, s *dto.LOLSkill) {

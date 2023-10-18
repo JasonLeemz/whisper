@@ -2,7 +2,6 @@ package logic
 
 import (
 	"encoding/json"
-	errors2 "errors"
 	"fmt"
 	"github.com/spf13/cast"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,7 +13,7 @@ import (
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
 	dao "whisper/internal/model/DAO"
-	"whisper/internal/service"
+	lol "whisper/internal/service/lol"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
@@ -23,25 +22,20 @@ import (
 	"whisper/pkg/utils"
 )
 
-func QueryEquipments(ctx *context.Context, platform int) (any, *errors.Error) {
-
-	if platform == common.PlatformForLOL {
-		equip, err := service.QueryEquipmentsForLOL(ctx)
-		if err != nil {
-			log.Logger.Warn(ctx, err)
-		}
-		reloadEquipmentForLOL(ctx, equip)
-		return equip, nil
-	} else if platform == common.PlatformForLOLM {
-		equip, err := service.QueryEquipmentsForLOLM(ctx)
-		if err != nil {
-			log.Logger.Warn(ctx, err)
-		}
-		reloadEquipmentForLOLM(ctx, equip)
-		return equip, nil
+func QueryEquipments(ctx *context.Context, platform int) (any, error) {
+	equipments, err := lol.CreateLOLProduct(platform)().QueryEquipments(ctx)
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return nil, err
 	}
 
-	return nil, errors.New(errors2.New("请指定游戏平台"), errors.ErrNoInvalidInput)
+	if platform == common.PlatformForLOL {
+		reloadEquipmentForLOL(ctx, equipments.(*dto.LOLEquipment))
+	} else {
+		reloadEquipmentForLOLM(ctx, equipments.(*dto.LOLMEquipment))
+	}
+
+	return equipments, nil
 }
 
 func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {

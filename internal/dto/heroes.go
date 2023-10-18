@@ -325,10 +325,11 @@ type HeroRankInfo struct {
 // --------------------------------------------------------
 
 type HeroTech struct {
-	Result int          `json:"result"`
-	Msg    string       `json:"msg"`
-	ErrMsg string       `json:"err_msg"`
-	Data   HeroTechData `json:"data"`
+	Result    int                   `json:"result"`
+	Msg       string                `json:"msg"`
+	ErrMsg    string                `json:"err_msg"`
+	Data      HeroTechData          `json:"data"`
+	EquipData map[string]*EquipTech `json:"equip_data"`
 }
 
 type HeroTechData struct {

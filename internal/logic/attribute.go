@@ -9,7 +9,7 @@ import (
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
 	dao "whisper/internal/model/DAO"
-	"whisper/internal/service"
+	lol "whisper/internal/service/lol"
 	"whisper/pkg/context"
 	"whisper/pkg/log"
 )
@@ -103,11 +103,8 @@ func HeroAttribute(ctx *context.Context, heroID string, platform int) (*dto.Hero
 }
 
 func QueryHeroAttribute(ctx *context.Context, heroID string, platform int) (*dto.HeroAttribute, error) {
-	if platform == common.PlatformForLOL {
-		return service.GetLOLHeroAttribute(ctx, heroID)
-	} else {
-		return service.GetLOLMHeroAttribute(ctx, heroID)
-	}
+	attribute, err := lol.CreateLOLProduct(platform)().GetHeroAttribute(ctx, heroID)
+	return attribute.(*dto.HeroAttribute), err
 }
 
 func recordHeroRoleAndSpellAndSkin(ctx *context.Context, data *dto.HeroAttribute, platform int) error {
