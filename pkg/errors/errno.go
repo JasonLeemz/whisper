@@ -3,19 +3,19 @@ package errors
 type ErrorDesc = string
 
 const (
-	ErrNoUnclassified = "Unclassified error"
+	ErrNoUnclassified = "unclassified error"
 
 	// 参数错误
-	ErrNoInvalidInput  = "Invalid input"
-	ErrNoMissingField  = "Missing field"
-	ErrNoOutOfRange    = "Out of range"
-	ErrNoUnknownParams = "Unknown parameter error"
+	ErrNoInvalidInput  = "invalid input"
+	ErrNoMissingField  = "missing field"
+	ErrNoOutOfRange    = "out of range"
+	ErrNoUnknownParams = "unknown parameter error"
 
 	// 认证和权限错误
-	ErrNoUnauthorized = "Unauthorized"
+	ErrNoUnauthorized = "unauthorized"
 )
 
-var errorMessages = map[ErrorDesc]int32{
+var errorMessages = map[ErrorDesc]int{
 	// 未分类错误
 	ErrNoUnclassified: 1000,
 

@@ -25,8 +25,10 @@ func DecorateGetVersionList(fn GetVersionListFunc) GetVersionListFunc {
 			return list, err
 		}
 
-		for k, _ := range list {
-			list[k].PublicDate = "更新时间: " + list[k].PublicDate
+		if platform == common.PlatformForLOL {
+			for k, _ := range list {
+				list[k].PublicDate = "更新时间: " + list[k].PublicDate
+			}
 		}
 
 		return list, nil
@@ -34,37 +36,48 @@ func DecorateGetVersionList(fn GetVersionListFunc) GetVersionListFunc {
 }
 
 func GetVersionList(ctx *context.Context, platform int) ([]dto.VersionListData, error) {
-	var queryFromUrl = false
-	var vl []dto.VersionListData
+	return getVLProxy(getVersionList)(ctx, platform)
+}
 
-	key := fmt.Sprintf(redis.KeyCacheVersionList, platform)
-	data := redis.RDB.Get(ctx, key)
-	result, err := data.Result()
-	if err != nil {
-		queryFromUrl = true
-		log.Logger.Warn(ctx, err)
-	} else {
-		err = json.Unmarshal([]byte(result), &vl)
+type getVersionListFunc func(ctx *context.Context, platform int) ([]dto.VersionListData, error)
+
+func getVLProxy(fn getVersionListFunc) getVersionListFunc {
+	return func(ctx *context.Context, platform int) ([]dto.VersionListData, error) {
+		data, err := fn(ctx, platform)
 		if err != nil {
-			queryFromUrl = true
 			log.Logger.Error(ctx, err)
 		}
-	}
+		if len(data) > 0 {
+			return data, nil
+		}
 
-	if queryFromUrl {
+		// 从外部获取
 		list, err := lol.CreateLOLProduct(platform)().VersionList(ctx)
 		versionList := list.(*dto.VersionList)
 		if err != nil {
 			return nil, err
 		}
 
-		vl = versionList.Data
-
 		// cache
+		key := fmt.Sprintf(redis.KeyCacheVersionList, platform)
 		s, _ := json.Marshal(versionList.Data)
 		redis.RDB.Set(ctx, key, s, time.Hour*24)
-	}
 
+		return versionList.Data, nil
+	}
+}
+
+func getVersionList(ctx *context.Context, platform int) ([]dto.VersionListData, error) {
+	var vl []dto.VersionListData
+
+	key := fmt.Sprintf(redis.KeyCacheVersionList, platform)
+	data := redis.RDB.Get(ctx, key)
+	result, err := data.Result()
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return nil, err
+	}
+	err = json.Unmarshal([]byte(result), &vl)
 	return vl, err
 }
 

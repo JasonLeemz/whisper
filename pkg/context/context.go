@@ -22,7 +22,7 @@ type Context struct {
 type reply struct {
 	TraceID string      `json:"trace_id"`
 	ErrMsg  string      `json:"err_msg"`
-	ErrNo   int32       `json:"err_no"`
+	ErrNo   int         `json:"err_no"`
 	Data    interface{} `json:"data"`
 }
 
@@ -33,8 +33,8 @@ func (c *Context) Reply(obj interface{}, err *errors.Error) {
 		Data:    obj,
 	}
 	if err != nil {
-		r.ErrNo = err.ErrNo()
-		r.ErrMsg = err.Error()
+		r.ErrNo = err.No()
+		r.ErrMsg = err.Msg()
 		c.Set("err", err)
 	}
 
@@ -62,7 +62,7 @@ func Handle(h HandlerFunc) gin.HandlerFunc {
 // Bind is a shortcut for c.ShouldBindWith(obj, binding.JSON).
 func (c *Context) Bind(obj any) error {
 	if err := c.Context.ShouldBindJSON(obj); err != nil {
-		c.Reply(nil, errors.New(err, errors.ErrNoInvalidInput))
+		c.Reply(nil, errors.New(err, errors.WithMsg(errors.ErrNoInvalidInput)))
 		return err
 	}
 	return nil

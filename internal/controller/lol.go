@@ -2,9 +2,8 @@ package controller
 
 import (
 	"whisper/internal/logic"
-	"whisper/pkg/errors"
-
 	"whisper/pkg/context"
+	"whisper/pkg/errors"
 )
 
 type ReqHeroes struct {

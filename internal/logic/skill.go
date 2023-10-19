@@ -12,7 +12,6 @@ import (
 
 	lol "whisper/internal/service/lol"
 	"whisper/pkg/context"
-	"whisper/pkg/errors"
 )
 
 func QuerySkill(ctx *context.Context, platform int) (any, error) {
@@ -36,7 +35,7 @@ func reloadSkillForLOL(ctx *context.Context, s *dto.LOLSkill) {
 	skillDAO := dao.NewLOLSkillDAO()
 	result, err := skillDAO.GetLOLSkillMaxVersion()
 	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
+		log.Logger.Error(ctx, err)
 		return
 	}
 
@@ -46,7 +45,7 @@ func reloadSkillForLOL(ctx *context.Context, s *dto.LOLSkill) {
 		)
 		x, err := common.CompareTime(result.FileTime, s.FileTime)
 		if err != nil {
-			log.Logger.Error(ctx, errors.New(err))
+			log.Logger.Error(ctx, err)
 			return
 		}
 		if x != "<" {
@@ -104,7 +103,7 @@ func reloadSkillForLOL(ctx *context.Context, s *dto.LOLSkill) {
 	// 记录英雄列表信息
 	_, err = skillDAO.Add(sss)
 	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
+		log.Logger.Error(ctx, err)
 	}
 
 	log.Logger.Info(ctx, fmt.Sprintf("finish record LOL skill data. Since:%fs", time.Since(startT).Seconds()))
@@ -114,7 +113,7 @@ func reloadSkillForLOLM(ctx *context.Context, s *dto.LOLMSkill) {
 	skillDAO := dao.NewLOLMSkillDAO()
 	result, err := skillDAO.GetLOLMSkillMaxVersion()
 	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
+		log.Logger.Error(ctx, err)
 		return
 	}
 
@@ -124,7 +123,7 @@ func reloadSkillForLOLM(ctx *context.Context, s *dto.LOLMSkill) {
 		)
 		x, err := common.CompareTime(result.FileTime, s.FileTime)
 		if err != nil {
-			log.Logger.Error(ctx, errors.New(err))
+			log.Logger.Error(ctx, err)
 			return
 		}
 		if x != "<" {
@@ -181,7 +180,7 @@ func reloadSkillForLOLM(ctx *context.Context, s *dto.LOLMSkill) {
 	// 记录英雄列表信息
 	_, err = skillDAO.Add(ssl)
 	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
+		log.Logger.Error(ctx, err)
 	}
 
 	log.Logger.Info(ctx, fmt.Sprintf("finish record LOLM skill data. Since:%fs", time.Since(startT).Seconds()))

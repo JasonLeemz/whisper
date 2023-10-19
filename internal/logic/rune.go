@@ -12,7 +12,6 @@ import (
 
 	lol "whisper/internal/service/lol"
 	"whisper/pkg/context"
-	"whisper/pkg/errors"
 )
 
 func QueryRune(ctx *context.Context, platform int) (any, error) {
@@ -36,7 +35,7 @@ func reloadRuneForLOL(ctx *context.Context, r *dto.LOLRune) {
 	runeDAO := dao.NewLOLRuneDAO()
 	result, err := runeDAO.GetLOLRuneMaxVersion()
 	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
+		log.Logger.Error(ctx, err)
 		return
 	}
 
@@ -46,7 +45,7 @@ func reloadRuneForLOL(ctx *context.Context, r *dto.LOLRune) {
 		)
 		x, err := common.CompareTime(result.FileTime, r.FileTime)
 		if err != nil {
-			log.Logger.Error(ctx, errors.New(err))
+			log.Logger.Error(ctx, err)
 			return
 		}
 		if x != "<" {
@@ -101,7 +100,7 @@ func reloadRuneForLOL(ctx *context.Context, r *dto.LOLRune) {
 	// 记录英雄列表信息
 	_, err = runeDAO.Add(rs)
 	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
+		log.Logger.Error(ctx, err)
 	}
 
 	log.Logger.Info(ctx, fmt.Sprintf("finish record LOL rune data. Since:%fs", time.Since(startT).Seconds()))
@@ -112,7 +111,7 @@ func reloadRuneForLOLM(ctx *context.Context, r *dto.LOLMRune) {
 	runeDAO := dao.NewLOLMRuneDAO()
 	result, err := runeDAO.GetLOLMRuneMaxVersion()
 	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
+		log.Logger.Error(ctx, err)
 		return
 	}
 
@@ -122,7 +121,7 @@ func reloadRuneForLOLM(ctx *context.Context, r *dto.LOLMRune) {
 		)
 		x, err := common.CompareTime(result.FileTime, r.FileTime)
 		if err != nil {
-			log.Logger.Error(ctx, errors.New(err))
+			log.Logger.Error(ctx, err)
 			return
 		}
 		if x != "<" {
@@ -181,7 +180,7 @@ func reloadRuneForLOLM(ctx *context.Context, r *dto.LOLMRune) {
 	// 记录英雄列表信息
 	_, err = runeDAO.Add(rs)
 	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
+		log.Logger.Error(ctx, err)
 	}
 
 	log.Logger.Info(ctx, fmt.Sprintf("finish record LOLM rune data. Since:%fs", time.Since(startT).Seconds()))
@@ -207,7 +206,7 @@ func reloadRuneTypeForLOLM(ctx *context.Context, rt *dto.LOLMRuneType) {
 		"platform": common.PlatformForLOLM,
 	})
 	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
+		log.Logger.Error(ctx, err)
 		return
 	}
 
@@ -226,6 +225,6 @@ func reloadRuneTypeForLOLM(ctx *context.Context, rt *dto.LOLMRuneType) {
 
 	_, err = rtDAO.Add(rs)
 	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
+		log.Logger.Error(ctx, err)
 	}
 }

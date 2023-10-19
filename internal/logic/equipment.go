@@ -2,6 +2,7 @@ package logic
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/spf13/cast"
 	"go.mongodb.org/mongo-driver/bson"
@@ -16,7 +17,6 @@ import (
 	lol "whisper/internal/service/lol"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
-	"whisper/pkg/errors"
 	"whisper/pkg/log"
 	"whisper/pkg/pinyin"
 	"whisper/pkg/utils"
@@ -45,7 +45,7 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 	// 判断库中是否存在最新版本，如果存在就不更新
 	result, err := equipDao.GetLOLEquipmentMaxVersion()
 	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
+		log.Logger.Error(ctx, err)
 		return
 	}
 
@@ -55,7 +55,7 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 		)
 		x, err := common.CompareTime(result.FileTime, equip.FileTime)
 		if err != nil {
-			log.Logger.Error(ctx, errors.New(err))
+			log.Logger.Error(ctx, err)
 			return
 		}
 		if x != "<" {
@@ -121,7 +121,7 @@ func reloadEquipmentForLOL(ctx *context.Context, equip *dto.LOLEquipment) {
 	// 记录装备信息
 	_, err = equipDao.Add(equips)
 	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
+		log.Logger.Error(ctx, err)
 	}
 
 	log.Logger.Info(ctx, fmt.Sprintf("finish record LOL equipment data. Since:%fs", time.Since(startT).Seconds()))
@@ -133,7 +133,7 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 	// 判断库中是否存在最新版本，如果存在就不更新
 	result, err := equipDao.GetLOLMEquipmentMaxVersion()
 	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
+		log.Logger.Error(ctx, err)
 		return
 	}
 
@@ -143,7 +143,7 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 		)
 		x, err := common.CompareTime(result.FileTime, equip.FileTime)
 		if err != nil {
-			log.Logger.Error(ctx, errors.New(err))
+			log.Logger.Error(ctx, err)
 			return
 		}
 		if x != "<" {
@@ -234,7 +234,7 @@ func reloadEquipmentForLOLM(ctx *context.Context, equip *dto.LOLMEquipment) {
 	// 记录装备信息
 	_, err = equipDao.Add(equips)
 	if err != nil {
-		log.Logger.Error(ctx, errors.New(err))
+		log.Logger.Error(ctx, err)
 	}
 
 	updatesInto, err := equipDao.UpdatesInto(equip.FileTime, equip.Version, into)

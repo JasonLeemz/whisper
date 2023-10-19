@@ -58,7 +58,7 @@ func EquipExtract(ctx *context.Context) {
 
 	words := logic.ExtractKeyWords(ctx, req.Platform)
 
-	ctx.Reply(words, errors.New(nil))
+	ctx.Reply(words, nil)
 }
 
 type ReqEquipFilter struct {
@@ -87,7 +87,7 @@ func EquipFilter(ctx *context.Context) {
 
 	platform, err := strconv.Atoi(req.Platform)
 	if err != nil {
-		ctx.Reply(nil, errors.New(err, errors.ErrNoInvalidInput))
+		ctx.Reply(err, errors.New(err, errors.WithMsg(errors.ErrNoInvalidInput)))
 	}
 	equips, err := logic.FilterKeyWords(ctx, words, platform)
 

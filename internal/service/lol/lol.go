@@ -2,13 +2,13 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"regexp"
 	"sync"
 	"whisper/internal/dto"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
-	"whisper/pkg/errors"
 	"whisper/pkg/http"
 	"whisper/pkg/log"
 )
@@ -181,7 +181,7 @@ func (lol *LOL) VersionList(ctx *context.Context) (interface{}, error) {
 	}
 
 	if versionList.Result != 0 {
-		return nil, errors.New(versionList.Msg, versionList.ErrMsg)
+		return nil, errors.New(versionList.Msg + "|" + versionList.ErrMsg)
 	}
 
 	return &versionList, nil
