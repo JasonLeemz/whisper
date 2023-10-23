@@ -9,7 +9,7 @@ import (
 	"whisper/pkg/mysql"
 	"whisper/pkg/redis"
 
-	mq2 "whisper/internal/service/mq"
+	serviceMQ "whisper/internal/service/mq"
 )
 
 func Init() {
@@ -25,9 +25,17 @@ func Init() {
 }
 
 func consumerInit() {
-	for _, f := range mq2.ConsumerFunc {
-		if err := f(); err != nil {
-			panic(err)
-		}
-	}
+	//for _, f := range serviceMQ.ConsumerFunc {
+	//	if err := f(); err != nil {
+	//		panic(err)
+	//	}
+	//}
+
+	equipBoxCmd := serviceMQ.NewConsumeEquipBoxMsgCMD(new(serviceMQ.EquipBoxSvc))
+	scoreBoxCmd := serviceMQ.NewConsumeSearchBoxMsgCMD(new(serviceMQ.SearchBoxSvc))
+
+	invoker := new(serviceMQ.Invoker)
+	invoker.AddCommand(equipBoxCmd, scoreBoxCmd)
+	invoker.NonBlockRun()
+
 }

@@ -8,12 +8,6 @@ import (
 	"whisper/pkg/redis"
 )
 
-// ProduceMessage ...
-func ProduceMessage(exchange, routingKey string, message []byte) {
-	mqd := dao.NewMQDao()
-	mqd.ProduceMessage(exchange, routingKey, message)
-}
-
 func ConsumeSearchKeyMsg() error {
 	ctx := context.NewContext()
 	var msgs <-chan amqp.Delivery

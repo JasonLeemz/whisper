@@ -2,6 +2,7 @@ package controller
 
 import (
 	"whisper/internal/logic"
+	"whisper/internal/logic/equipment"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
 )
@@ -12,7 +13,7 @@ func SearchBox(ctx *context.Context) {
 
 func QueryEquipTypes(ctx *context.Context) {
 
-	types, _ := logic.GetEquipTypes(ctx)
+	types, _ := equipment.GetEquipTypes(ctx)
 
 	ctx.Reply(map[string]interface{}{
 		"types": types,

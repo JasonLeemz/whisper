@@ -7,6 +7,7 @@ import (
 	"strings"
 	"whisper/internal/dto"
 	"whisper/internal/logic"
+	"whisper/internal/logic/equipment"
 	"whisper/internal/service/mq"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
@@ -24,7 +25,7 @@ func Equipment(ctx *context.Context) {
 		return
 	}
 
-	equip, err := logic.QueryEquipments(ctx, req.Platform)
+	equip, err := equipment.QueryEquipments(ctx, req.Platform)
 
 	ctx.Reply(equip, errors.New(err))
 }
@@ -56,7 +57,7 @@ func EquipExtract(ctx *context.Context) {
 		return
 	}
 
-	words := logic.ExtractKeyWords(ctx, req.Platform)
+	words := equipment.ExtractKeyWords(ctx, req.Platform)
 
 	ctx.Reply(words, nil)
 }
@@ -89,7 +90,7 @@ func EquipFilter(ctx *context.Context) {
 	if err != nil {
 		ctx.Reply(err, errors.New(err, errors.WithMsg(errors.ErrNoInvalidInput)))
 	}
-	equips, err := logic.FilterKeyWords(ctx, words, platform)
+	equips, err := equipment.FilterKeyWords(ctx, words, platform)
 
 	resp := dto.SearchResult{}
 	total := len(equips)

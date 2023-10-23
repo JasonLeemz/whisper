@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 	"whisper/internal/logic/common"
+	"whisper/internal/logic/equipment"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
 	"whisper/pkg/log"
@@ -26,13 +27,13 @@ func Cron(ctx *context.Context) {
 		}()
 
 		log.Logger.Info(ctx, "start QueryEquipments PlatformForLOL...")
-		_, err := QueryEquipments(ctx, common.PlatformForLOL)
+		_, err := equipment.QueryEquipments(ctx, common.PlatformForLOL)
 		if err != nil {
 			log.Logger.Error(ctx, err)
 		}
 
 		log.Logger.Info(ctx, "start QueryEquipments PlatformForLOLM...")
-		_, err = QueryEquipments(ctx, common.PlatformForLOLM)
+		_, err = equipment.QueryEquipments(ctx, common.PlatformForLOLM)
 		if err != nil {
 			log.Logger.Error(ctx, err)
 		}
@@ -176,12 +177,15 @@ func Cron(ctx *context.Context) {
 
 	go func() {
 		defer wg.Done()
-
+		log.Logger.Info(ctx, "mongo ExtractKeyWords START...")
 		// mongo
-		log.Logger.Info(ctx, "start mongo ExtractKeyWords PlatformForLOL...")
-		ExtractKeyWords(ctx, common.PlatformForLOL)
-		log.Logger.Info(ctx, "start mongo ExtractKeyWords PlatformForLOLM...")
-		ExtractKeyWords(ctx, common.PlatformForLOLM)
+		invoker := new(equipment.EquipInvoker)
+		equipForLOLCmd := equipment.NewInnerEquip(ctx, common.PlatformForLOL).NewExtractKeyWordsCmd()
+		equipForLOLMCmd := equipment.NewInnerEquip(ctx, common.PlatformForLOLM).NewExtractKeyWordsCmd()
+		invoker.AddCommand(equipForLOLCmd, equipForLOLMCmd)
+		invoker.NonBlockRun()
+
+		log.Logger.Info(ctx, "mongo ExtractKeyWords END")
 	}()
 	wg.Wait()
 

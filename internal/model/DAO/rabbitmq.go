@@ -9,12 +9,12 @@ import (
 )
 
 var (
-	mqDao  *MQDao
-	mqOnce sync.Once
+	mqDao     *MQDao
+	onceMQDao sync.Once
 )
 
 func NewMQDao() *MQDao {
-	mqOnce.Do(func() {
+	onceMQDao.Do(func() {
 		mqDao = &MQDao{
 			Conn: mq.Conn,
 		}
