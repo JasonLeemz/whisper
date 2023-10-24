@@ -57,7 +57,7 @@ func EquipExtract(ctx *context.Context) {
 		return
 	}
 
-	words := equipment.ExtractKeyWords(ctx, req.Platform)
+	words := equipment.NewInnerEquip(ctx, req.Platform).ExtractKeyWords()
 
 	ctx.Reply(words, nil)
 }

@@ -4,6 +4,7 @@ import (
 	context2 "context"
 	"sync"
 	"time"
+	"whisper/internal/logic/command"
 	"whisper/internal/logic/common"
 	"whisper/internal/logic/equipment"
 	"whisper/pkg/config"
@@ -179,7 +180,7 @@ func Cron(ctx *context.Context) {
 		defer wg.Done()
 		log.Logger.Info(ctx, "mongo ExtractKeyWords START...")
 		// mongo
-		invoker := new(equipment.EquipInvoker)
+		invoker := new(command.Invoker)
 		equipForLOLCmd := equipment.NewInnerEquip(ctx, common.PlatformForLOL).NewExtractKeyWordsCmd()
 		equipForLOLMCmd := equipment.NewInnerEquip(ctx, common.PlatformForLOLM).NewExtractKeyWordsCmd()
 		invoker.AddCommand(equipForLOLCmd, equipForLOLMCmd)

@@ -24,33 +24,12 @@ func NewInnerEquip(ctx *context.Context, platform int) *InnerEquip {
 }
 
 func (e *InnerEquip) ExtractKeyWords() map[string]model.EquipIntro {
-	result := extractEquipKeywords(e.ctx, e.platform)
-	recordMongo(e.ctx, result, e.platform)
+	result := e.extractEquipKeywords()
+	e.recordMongo(result)
 	return result
 }
 
-type InnerEquipCommand struct {
-	*InnerEquip
-}
-
-func (e *InnerEquip) NewExtractKeyWordsCmd() *InnerEquipCommand {
-	return &InnerEquipCommand{
-		e,
-	}
-}
-
-func (cmd InnerEquipCommand) Exec() error {
-	cmd.ExtractKeyWords()
-	return nil
-}
-
-func ExtractKeyWords(ctx *context.Context, platform int) map[string]model.EquipIntro {
-	result := extractEquipKeywords(ctx, platform)
-	recordMongo(ctx, result, platform)
-	return result
-}
-
-func recordMongo(ctx *context.Context, data map[string]model.EquipIntro, platform int) {
+func (e *InnerEquip) recordMongo(data map[string]model.EquipIntro) {
 
 	md := dao.NewMongoEquipmentDAO()
 	equips := make([]*model.EquipIntro, 0, len(data))
@@ -60,34 +39,34 @@ func recordMongo(ctx *context.Context, data map[string]model.EquipIntro, platfor
 	}
 
 	cond := map[string]interface{}{
-		"platform": platform,
+		"platform": e.platform,
 	}
-	err := md.Delete(ctx, cond)
+	err := md.Delete(e.ctx, cond)
 	if err != nil {
-		log.Logger.Error(ctx, err)
+		log.Logger.Error(e.ctx, err)
 		return
 	}
-	err = md.Add(ctx, equips)
+	err = md.Add(e.ctx, equips)
 	if err != nil {
-		log.Logger.Error(ctx, err)
+		log.Logger.Error(e.ctx, err)
 	}
 }
 
-func extractEquipKeywords(ctx *context.Context, platform int) map[string]model.EquipIntro {
-	_, dict := GetEquipTypes(ctx)
+func (e *InnerEquip) extractEquipKeywords() map[string]model.EquipIntro {
+	_, dict := e.GetEquipTypes()
 	re := utils.CompileKeywordsRegex(dict)
 
 	result := make(map[string]model.EquipIntro)
-	if platform == common.PlatformForLOL {
+	if e.platform == common.PlatformForLOL {
 		ed := dao.NewLOLEquipmentDAO()
 		v, err := ed.GetLOLEquipmentMaxVersion()
 		if err != nil {
-			log.Logger.Error(ctx, err)
+			log.Logger.Error(e.ctx, err)
 			return nil
 		}
 		equips, err := ed.GetLOLEquipment(v.Version)
 		if err != nil {
-			log.Logger.Error(ctx, err)
+			log.Logger.Error(e.ctx, err)
 			return nil
 		}
 
@@ -110,12 +89,12 @@ func extractEquipKeywords(ctx *context.Context, platform int) map[string]model.E
 		ed := dao.NewLOLMEquipmentDAO()
 		v, err := ed.GetLOLMEquipmentMaxVersion()
 		if err != nil {
-			log.Logger.Error(ctx, err)
+			log.Logger.Error(e.ctx, err)
 			return nil
 		}
 		equips, err := ed.GetLOLMEquipment(v.Version)
 		if err != nil {
-			log.Logger.Error(ctx, err)
+			log.Logger.Error(e.ctx, err)
 			return nil
 		}
 
@@ -138,7 +117,7 @@ func extractEquipKeywords(ctx *context.Context, platform int) map[string]model.E
 	return result
 }
 
-func GetEquipTypes(ctx *context.Context) ([]*dto.EquipType, []string) {
+func (e *InnerEquip) GetEquipTypes() ([]*dto.EquipType, []string) {
 	equipTypes := make([]*dto.EquipType, 0)
 	dict := make([]string, 0)
 

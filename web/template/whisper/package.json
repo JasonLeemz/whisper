@@ -10,7 +10,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "ant-design-vue": "^4.0.1",
+    "ant-design-vue": "^4.0.6",
     "axios": "^1.4.0",
     "highlight.js": "^11.8.0",
     "lodash": "^4.17.21",
