@@ -2,6 +2,8 @@ package controller
 
 import (
 	"whisper/internal/logic"
+	"whisper/internal/logic/common"
+	"whisper/internal/logic/suit"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
 )
@@ -97,13 +99,14 @@ func SuitEquip(ctx *context.Context) {
 	if err := ctx.Bind(req); err != nil {
 		return
 	}
-	equips, err := logic.QuerySuitEquip(ctx, req.Platform, req.HeroId)
+	equips, err := suit.NewSuit()(ctx, req.Platform).QuerySuitEquip(req.HeroId)
 	ctx.Reply(equips, errors.New(err))
 }
 
 func BatchUpdateSuitEquip(ctx *context.Context) {
-	err := logic.BatchUpdateSuitEquip(ctx)
-	ctx.Reply(nil, errors.New(err))
+	suit.NewSuit()(ctx, common.PlatformForLOL).BatchUpdateSuitEquip()
+	suit.NewSuit()(ctx, common.PlatformForLOLM).BatchUpdateSuitEquip()
+	ctx.Reply(nil, errors.New(nil))
 }
 
 func SuitData2Redis(ctx *context.Context) {
@@ -129,18 +132,4 @@ func GetHeroSuit(ctx *context.Context) {
 
 	suit, err := logic.GetHeroSuit(ctx, req.HeroId)
 	ctx.Reply(suit, errors.New(err))
-}
-
-type ReqHeroesPosition struct {
-	Platform int `form:"platform" json:"platform" binding:"-"`
-}
-
-func HeroesPosition(ctx *context.Context) {
-	req := &ReqHeroesPosition{}
-	if err := ctx.Bind(req); err != nil {
-		return
-	}
-
-	data, err := logic.HeroesPosition(ctx, req.Platform)
-	ctx.Reply(data, errors.New(err))
 }

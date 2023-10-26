@@ -1,7 +1,7 @@
 package equipment
 
 type InnerEquipCommand struct {
-	*InnerEquip
+	*Inner
 }
 
 func (cmd *InnerEquipCommand) ExecEXT() (interface{}, error) {
@@ -17,7 +17,7 @@ func (cmd *InnerEquipCommand) Exec() {
 	cmd.ExtractKeyWords()
 }
 
-func (e *InnerEquip) NewExtractKeyWordsCmd() *InnerEquipCommand {
+func (e *Inner) NewExtractKeyWordsCmd() *InnerEquipCommand {
 	return &InnerEquipCommand{
 		e,
 	}

@@ -2,23 +2,12 @@ package controller
 
 import (
 	"whisper/internal/logic"
-	"whisper/internal/logic/common"
-	"whisper/internal/logic/equipment"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
 )
 
 func SearchBox(ctx *context.Context) {
 	ctx.Render("index.html", nil)
-}
-
-func QueryEquipTypes(ctx *context.Context) {
-
-	types, _ := equipment.NewInnerEquip(ctx, common.PlatformForLOL).GetEquipTypes()
-
-	ctx.Reply(map[string]interface{}{
-		"types": types,
-	}, nil)
 }
 
 type ReqGetRoadmap struct {

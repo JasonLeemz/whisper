@@ -7,6 +7,7 @@ import (
 	"whisper/internal/logic/command"
 	"whisper/internal/logic/common"
 	"whisper/internal/logic/equipment"
+	"whisper/internal/logic/suit"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
 	"whisper/pkg/log"
@@ -151,20 +152,12 @@ func Cron(ctx *context.Context) {
 	go func() {
 		defer wg.Done()
 
-		log.Logger.Info(ctx, "start HeroesPosition PlatformForLOLM...")
-		_, err := HeroesPosition(ctx, common.PlatformForLOLM)
-		if err != nil {
-			log.Logger.Error(ctx, err)
-		}
-
 		log.Logger.Info(ctx, "start BatchUpdateSuitEquip...")
-		err = BatchUpdateSuitEquip(ctx)
-		if err != nil {
-			log.Logger.Error(ctx, err)
-		}
+		suit.NewSuit()(ctx, common.PlatformForLOL).BatchUpdateSuitEquip()
+		suit.NewSuit()(ctx, common.PlatformForLOLM).BatchUpdateSuitEquip()
 
 		log.Logger.Info(ctx, "start SuitData2Redis...")
-		err = SuitData2Redis(ctx)
+		err := SuitData2Redis(ctx)
 		if err != nil {
 			log.Logger.Error(ctx, err)
 		}

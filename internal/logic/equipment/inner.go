@@ -14,22 +14,22 @@ import (
 	"whisper/pkg/utils"
 )
 
-type InnerEquip struct {
+type Inner struct {
 	ctx      *context.Context
 	platform int
 }
 
-func NewInnerEquip(ctx *context.Context, platform int) *InnerEquip {
-	return &InnerEquip{ctx: ctx, platform: platform}
+func NewInnerEquip(ctx *context.Context, platform int) *Inner {
+	return &Inner{ctx: ctx, platform: platform}
 }
 
-func (e *InnerEquip) ExtractKeyWords() map[string]model.EquipIntro {
+func (e *Inner) ExtractKeyWords() map[string]model.EquipIntro {
 	result := e.extractEquipKeywords()
 	e.recordMongo(result)
 	return result
 }
 
-func (e *InnerEquip) recordMongo(data map[string]model.EquipIntro) {
+func (e *Inner) recordMongo(data map[string]model.EquipIntro) {
 
 	md := dao.NewMongoEquipmentDAO()
 	equips := make([]*model.EquipIntro, 0, len(data))
@@ -52,7 +52,7 @@ func (e *InnerEquip) recordMongo(data map[string]model.EquipIntro) {
 	}
 }
 
-func (e *InnerEquip) extractEquipKeywords() map[string]model.EquipIntro {
+func (e *Inner) extractEquipKeywords() map[string]model.EquipIntro {
 	_, dict := e.GetEquipTypes()
 	re := utils.CompileKeywordsRegex(dict)
 
@@ -117,7 +117,7 @@ func (e *InnerEquip) extractEquipKeywords() map[string]model.EquipIntro {
 	return result
 }
 
-func (e *InnerEquip) GetEquipTypes() ([]*dto.EquipType, []string) {
+func (e *Inner) GetEquipTypes() ([]*dto.EquipType, []string) {
 	equipTypes := make([]*dto.EquipType, 0)
 	dict := make([]string, 0)
 
@@ -159,4 +159,32 @@ func (e *InnerEquip) GetEquipTypes() ([]*dto.EquipType, []string) {
 	}
 
 	return equipTypes, dict
+}
+
+func (e *Inner) GetAll(platform int) (interface{}, error) {
+	// 获取全部装备
+	if platform == common.PlatformForLOL {
+		d := dao.NewLOLEquipmentDAO()
+		eVersion, err := d.GetLOLEquipmentMaxVersion()
+		if err != nil {
+			return nil, err
+		}
+		data, err := d.GetLOLEquipment(eVersion.Version)
+		if err != nil {
+			return nil, err
+		}
+		return data, nil
+	} else {
+		d := dao.NewLOLMEquipmentDAO()
+		v, err := d.GetLOLMEquipmentMaxVersion()
+		if err != nil {
+			return nil, err
+		}
+		data, err := d.GetLOLMEquipment(v.Version)
+		if err != nil {
+			return nil, err
+		}
+		return data, nil
+	}
+
 }

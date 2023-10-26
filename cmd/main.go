@@ -121,15 +121,21 @@ func main() {
 		inner.POST("/alias/heroes", context.Handle(controller.AliasHeroes))
 		inner.POST("/alias/equip", context.Handle(controller.AliasEquip))
 
-		// LOLM将英雄适合的位置写入heroes_position（批量执行）
-		inner.POST("/heroes/position", context.Handle(controller.HeroesPosition))
-		// 1. LOL将英雄适合的位置写入heroes_position
-		// 2. LOL将英雄适合的装备写入heroes_suit
-		// 3. LOLM将英雄适合的装备写入heroes_suit
-		inner.POST("/equip/suit/batch", context.Handle(controller.BatchUpdateSuitEquip))
-		// 页面查询英雄合适的装备是从redis中获取的,要提前执行这个才能拿到数据
-		// 这个接口依赖/equip/suit/batch，需要先执行/equip/suit/batch
-		inner.POST("/suit/hero/cache", context.Handle(controller.SuitData2Redis))
+		{
+			// 英雄的适配装备
+
+			// 写DB
+			// 1. LOLM将英雄适合的位置写入heroes_position（批量执行）
+			// 2. LOL将英雄适合的位置写入heroes_position
+			// 3. LOL将英雄适合的装备写入heroes_suit
+			// 4. LOLM将英雄适合的装备写入heroes_suit
+			inner.POST("/equip/suit/batch", context.Handle(controller.BatchUpdateSuitEquip))
+
+			// 写Cache
+			// 页面查询英雄合适的装备是从redis中获取的,要提前执行这个才能拿到数据
+			// 这个接口依赖/equip/suit/batch，需要先执行/equip/suit/batch
+			inner.POST("/suit/hero/cache", context.Handle(controller.SuitData2Redis))
+		}
 
 		// 装备、符文、技能适配英雄列表，汇总db然后写入redis
 		// 页面查询：1.根据装备id获取适配的英雄

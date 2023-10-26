@@ -7,6 +7,7 @@ import (
 	"strings"
 	"whisper/internal/dto"
 	"whisper/internal/logic"
+	"whisper/internal/logic/common"
 	"whisper/internal/logic/equipment"
 	"whisper/internal/service/mq"
 	"whisper/pkg/context"
@@ -124,4 +125,13 @@ func EquipFilter(ctx *context.Context) {
 	}
 
 	ctx.Reply(resp, errors.New(err))
+}
+
+func QueryEquipTypes(ctx *context.Context) {
+
+	types, _ := equipment.NewInnerEquip(ctx, common.PlatformForLOL).GetEquipTypes()
+
+	ctx.Reply(map[string]interface{}{
+		"types": types,
+	}, nil)
 }
