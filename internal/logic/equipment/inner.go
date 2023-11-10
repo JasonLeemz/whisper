@@ -1,8 +1,10 @@
 package equipment
 
 import (
+	"fmt"
 	"github.com/spf13/cast"
 	"sort"
+	"strconv"
 	"strings"
 	"whisper/internal/dto"
 	"whisper/internal/logic/common"
@@ -11,6 +13,7 @@ import (
 	"whisper/pkg/config"
 	"whisper/pkg/context"
 	"whisper/pkg/log"
+	"whisper/pkg/redis"
 	"whisper/pkg/utils"
 )
 
@@ -19,8 +22,13 @@ type Inner struct {
 	platform int
 }
 
-func NewInnerEquip(ctx *context.Context, platform int) *Inner {
-	return &Inner{ctx: ctx, platform: platform}
+func NewInnerIns(ctx *context.Context) *Inner {
+	return &Inner{ctx: ctx}
+}
+
+func (e *Inner) WithPlatform(platform int) *Inner {
+	e.platform = platform
+	return e
 }
 
 func (e *Inner) ExtractKeyWords() map[string]model.EquipIntro {
@@ -161,30 +169,29 @@ func (e *Inner) GetEquipTypes() ([]*dto.EquipType, []string) {
 	return equipTypes, dict
 }
 
-func (e *Inner) GetAll(platform int) (interface{}, error) {
+// GetAll return map[string]*model.LOLEquipment|map[string]*model.LOLMEquipment
+func (e *Inner) GetAll(platform int) interface{} {
 	// 获取全部装备
 	if platform == common.PlatformForLOL {
 		d := dao.NewLOLEquipmentDAO()
-		eVersion, err := d.GetLOLEquipmentMaxVersion()
-		if err != nil {
-			return nil, err
+		eVersion, _ := d.GetLOLEquipmentMaxVersion()
+		data, _ := d.GetLOLEquipment(eVersion.Version)
+		mequip := make(map[string]*model.LOLEquipment)
+		for _, equip := range data {
+			key := fmt.Sprintf(redis.KeyCacheEquip, equip.Maps, strconv.Itoa(common.PlatformForLOL), equip.ItemId)
+			mequip[key] = equip
 		}
-		data, err := d.GetLOLEquipment(eVersion.Version)
-		if err != nil {
-			return nil, err
-		}
-		return data, nil
+		return mequip
 	} else {
 		d := dao.NewLOLMEquipmentDAO()
-		v, err := d.GetLOLMEquipmentMaxVersion()
-		if err != nil {
-			return nil, err
+		v, _ := d.GetLOLMEquipmentMaxVersion()
+		data, _ := d.GetLOLMEquipment(v.Version)
+		mequip := make(map[string]*model.LOLMEquipment)
+		for _, equip := range data {
+			key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), equip.EquipId) // todo
+			mequip[key] = equip
 		}
-		data, err := d.GetLOLMEquipment(v.Version)
-		if err != nil {
-			return nil, err
-		}
-		return data, nil
+		return mequip
 	}
 
 }

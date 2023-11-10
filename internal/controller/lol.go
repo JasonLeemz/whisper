@@ -110,7 +110,7 @@ func BatchUpdateSuitEquip(ctx *context.Context) {
 }
 
 func SuitData2Redis(ctx *context.Context) {
-	err := logic.SuitData2Redis(ctx)
+	err := suit.SuitData2Redis(ctx)
 	ctx.Reply(nil, errors.New(err))
 }
 

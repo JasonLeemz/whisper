@@ -5,18 +5,25 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/spf13/cast"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 	"whisper/internal/dto"
+	"whisper/internal/logic/attribute"
 	"whisper/internal/logic/common"
+	"whisper/internal/logic/equipment"
 	"whisper/internal/logic/position"
+	rune2 "whisper/internal/logic/rune"
+	"whisper/internal/logic/skill"
 	"whisper/internal/model"
 	dao "whisper/internal/model/DAO"
 	lol "whisper/internal/service/lol"
 	"whisper/pkg/context"
 	"whisper/pkg/log"
+	"whisper/pkg/redis"
 )
 
 type task struct {
@@ -455,4 +462,474 @@ func inArray(id string, ids []string) bool {
 		}
 	}
 	return false
+}
+
+// SuitData2Redis 批量更新英雄适配的装备、天赋、技能到redis
+func SuitData2Redis(ctx *context.Context) error {
+	attrs := attribute.NewInnerIns(ctx).GetAll()
+	mEquip4LOL := equipment.NewInnerIns(ctx).GetAll(common.PlatformForLOL).(map[string]*model.LOLEquipment)
+	mEquip4LOLM := equipment.NewInnerIns(ctx).GetAll(common.PlatformForLOLM).(map[string]*model.LOLMEquipment)
+	mRune4LOL := rune2.NewInnerIns(ctx).GetAll(common.PlatformForLOL).(map[string]*model.LOLRune)
+	mRune4LOLM := rune2.NewInnerIns(ctx).GetAll(common.PlatformForLOLM).(map[string]*model.LOLMRune)
+	mSkill4LOL := skill.NewInnerIns(ctx).GetAll(common.PlatformForLOL).(map[string]*model.LOLSkill)
+	mSkill4LOLM := skill.NewInnerIns(ctx).GetAll(common.PlatformForLOLM).(map[string]*model.LOLMSkill)
+
+	log.Logger.Info(ctx,
+		"attrs", len(attrs),
+		"mEquip4LOL", len(mEquip4LOL),
+		"mEquip4LOLM", len(mEquip4LOLM),
+		"mRune4LOL", len(mRune4LOL),
+		"mRune4LOLM", len(mRune4LOLM),
+		"mSkill4LOL", len(mSkill4LOL),
+		"mSkill4LOLM", len(mSkill4LOLM),
+	)
+
+	// --------------------------------
+	sd := dao.NewHeroesSuitDAO()
+
+	cancelCtx, cancelFunc := context2.WithCancel(ctx)
+	defer cancelFunc()
+
+	t := newTask(int32(len(attrs)), &sync.WaitGroup{}, make(chan struct{}, 10))
+
+	for i, hero := range attrs {
+		select {
+		case <-cancelCtx.Done():
+			break
+		default:
+			log.Logger.Info(ctx, ">>>>>>>>>>开始处理 hero:<<<<<<<<<<<", i, "/", hero.HeroId)
+			t.ch <- struct{}{}
+			t.wg.Add(1)
+
+			go func(hero *model.HeroAttribute) {
+				defer func() {
+					<-t.ch
+					t.wg.Done()
+					atomic.AddInt32(&t.done, 1)
+				}()
+
+				equipForHero, err2 := sd.GetSuitForHero(hero.Platform, hero.HeroId)
+				if err2 != nil {
+					atomic.AddInt32(&t.fail, 1)
+					cancelFunc()
+					log.Logger.Error(ctx, err2)
+					return
+				} else {
+
+					hsm := make(map[string][]*model.HeroesSuit)
+					for idx, equip := range equipForHero {
+						hsm[equip.Pos] = append(hsm[equip.Pos], equipForHero[idx])
+					}
+					mhs := model.HeroesSuit{}
+
+					eqs := make(map[string]dto.RecommendSuitEquip)
+					for pos, posdata := range hsm {
+						out := make([][]*dto.SuitData, 0)   // 出门装
+						shoe := make([][]*dto.SuitData, 0)  // 鞋子
+						core := make([][]*dto.SuitData, 0)  // 核心套件
+						other := make([][]*dto.SuitData, 0) // 其他适配
+
+						var (
+							rrune [][]*dto.SuitData // 符文
+							skill [][]*dto.SuitData // 召唤师技能
+						)
+
+						for _, data := range posdata {
+							// 符文 和 召唤师技能 在同一个posdata下是一样的，这里随机取一个有值的
+							if rrune == nil {
+								ids := strings.Split(data.Runeids, ",")
+								rune2 := make([]*dto.SuitData, 0)
+								for _, id := range ids {
+									if data.Platform == common.PlatformForLOL {
+										// 端游
+										key := fmt.Sprintf(redis.KeyCacheRune, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+										if _, ok := mRune4LOL[key]; ok {
+											rune2 = append(rune2, &dto.SuitData{
+												ID:        cast.ToInt(id),
+												Name:      mRune4LOL[key].Name,
+												Icon:      mRune4LOL[key].Icon,
+												Maps:      "召唤师峡谷",
+												Plaintext: mRune4LOL[key].Tooltip,
+												Desc:      fmt.Sprintf("<short>%s</short><long>%s</long>", mRune4LOL[key].Shortdesc, mRune4LOL[key].Longdesc),
+												Version:   mRune4LOL[key].Version,
+												RuneType:  mRune4LOL[key].StyleName,
+
+												Igamecnt: data.Igamecnt,
+												Wincnt:   data.Wincnt,
+												Winrate:  data.Winrate,
+												Allcnt:   data.Allcnt,
+												Showrate: data.Showrate,
+
+												Platform: data.Platform,
+											})
+										}
+									} else {
+										// 手游
+										key := fmt.Sprintf(redis.KeyCacheRune, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+										if _, ok := mRune4LOLM[key]; ok {
+											rune2 = append(rune2, &dto.SuitData{
+												ID:           cast.ToInt(id),
+												Name:         mRune4LOLM[key].Name,
+												Icon:         mRune4LOLM[key].IconPath,
+												Plaintext:    fmt.Sprintf("<short>%s</short><long>%s</long>", mRune4LOLM[key].AttrName, mRune4LOLM[key].Description),
+												Desc:         mRune4LOLM[key].DetailInfo,
+												Version:      mRune4LOLM[key].Version,
+												Igamecnt:     data.Igamecnt,
+												Wincnt:       data.Wincnt,
+												Winrate:      data.Winrate,
+												Allcnt:       data.Allcnt,
+												Showrate:     data.Showrate,
+												Title:        data.Title,
+												Author:       data.Author,
+												AuthorIcon:   data.AuthorIcon,
+												RecommendID:  data.RecommendId,
+												ThinkingInfo: data.Desc,
+												RuneType:     mRune4LOLM[key].StyleName,
+
+												Platform: data.Platform,
+											})
+										}
+									}
+								}
+
+								if len(rune2) > 0 {
+									if rune2[0].Platform == common.PlatformForLOLM && len(rune2) == 5 {
+										rrune = append(rrune, []*dto.SuitData{rune2[0]})
+										rrune = append(rrune, []*dto.SuitData{rune2[1], rune2[2], rune2[3]})
+										rrune = append(rrune, []*dto.SuitData{rune2[4]})
+									} else {
+										rrune = append(rrune, rune2)
+									}
+								}
+							}
+							if skill == nil {
+								ids := strings.Split(data.Skillids, ",")
+								skill2 := make([]*dto.SuitData, 0)
+								for _, id := range ids {
+									if data.Platform == common.PlatformForLOL {
+										// 端游
+										key := fmt.Sprintf(redis.KeyCacheSkill, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+										if _, ok := mSkill4LOL[key]; ok {
+											skill2 = append(skill2, &dto.SuitData{
+												ID:        cast.ToInt(id),
+												Name:      mSkill4LOL[key].Name,
+												Icon:      mSkill4LOL[key].Icon,
+												Maps:      "召唤师峡谷",
+												CD:        cast.ToInt(mSkill4LOL[key].Cooldown),
+												Plaintext: mSkill4LOL[key].Description,
+												Desc:      mSkill4LOL[key].Description,
+												Version:   mSkill4LOL[key].Version,
+
+												Igamecnt: data.Igamecnt,
+												Wincnt:   data.Wincnt,
+												Winrate:  data.Winrate,
+												Allcnt:   data.Allcnt,
+												Showrate: data.Showrate,
+											})
+										}
+									} else {
+										// 手游
+										key := fmt.Sprintf(redis.KeyCacheSkill, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+										if _, ok := mSkill4LOLM[key]; ok {
+											skill2 = append(skill2, &dto.SuitData{
+												ID:           cast.ToInt(id),
+												Name:         mSkill4LOLM[key].Name,
+												Icon:         mSkill4LOLM[key].IconPath,
+												Desc:         mSkill4LOLM[key].FuncDesc,
+												CD:           cast.ToInt(mSkill4LOLM[key].Cd),
+												Version:      mSkill4LOLM[key].Version,
+												Igamecnt:     data.Igamecnt,
+												Wincnt:       data.Wincnt,
+												Winrate:      data.Winrate,
+												Allcnt:       data.Allcnt,
+												Showrate:     data.Showrate,
+												Title:        data.Title,
+												Author:       data.Author,
+												AuthorIcon:   data.AuthorIcon,
+												RecommendID:  data.RecommendId,
+												ThinkingInfo: data.Desc,
+											})
+										}
+									}
+								}
+								if len(skill2) > 0 {
+									skill = append(skill, skill2)
+								}
+							}
+							switch data.Type {
+							case mhs.TypeShoes():
+								ids := strings.Split(data.Itemids, ",")
+								shoe2 := make([]*dto.SuitData, 0)
+								for _, id := range ids {
+									if data.Platform == common.PlatformForLOL {
+										// 端游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+										if _, ok := mEquip4LOL[key]; !ok {
+											continue
+										}
+										shoe2 = append(shoe2, &dto.SuitData{
+											ID:        cast.ToInt(id),
+											Name:      mEquip4LOL[key].Name,
+											Icon:      mEquip4LOL[key].IconPath,
+											Maps:      mEquip4LOL[key].Maps,
+											Plaintext: mEquip4LOL[key].Plaintext,
+											Desc:      mEquip4LOL[key].Description,
+											Price:     cast.ToInt(mEquip4LOL[key].Total),
+											Sell:      cast.ToInt(mEquip4LOL[key].Sell),
+											Version:   mEquip4LOL[key].Version,
+
+											Igamecnt: data.Igamecnt,
+											Wincnt:   data.Wincnt,
+											Winrate:  data.Winrate,
+											Allcnt:   data.Allcnt,
+											Showrate: data.Showrate,
+										})
+									} else if data.Platform == common.PlatformForLOLM {
+										// 手游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+										if _, ok := mEquip4LOLM[key]; !ok {
+											continue
+										}
+										shoe2 = append(shoe2, &dto.SuitData{
+											ID:           cast.ToInt(id),
+											Name:         mEquip4LOLM[key].Name,
+											Icon:         mEquip4LOLM[key].IconPath,
+											Desc:         mEquip4LOLM[key].Description,
+											Price:        cast.ToInt(mEquip4LOLM[key].Price),
+											Version:      mEquip4LOLM[key].Version,
+											Igamecnt:     data.Igamecnt,
+											Wincnt:       data.Wincnt,
+											Winrate:      data.Winrate,
+											Allcnt:       data.Allcnt,
+											Showrate:     data.Showrate,
+											Title:        data.Title,
+											Author:       data.Author,
+											AuthorIcon:   data.AuthorIcon,
+											RecommendID:  data.RecommendId,
+											ThinkingInfo: data.Desc,
+										})
+									} else {
+										continue
+									}
+								}
+
+								if len(shoe2) > 0 {
+									shoe = append(shoe, shoe2)
+								}
+							case mhs.TypeOther():
+								ids := strings.Split(data.Itemids, ",")
+								other2 := make([]*dto.SuitData, 0)
+								for _, id := range ids {
+									if data.Platform == common.PlatformForLOL {
+										// 端游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+										if _, ok := mEquip4LOL[key]; !ok {
+											continue
+										}
+										other2 = append(other2, &dto.SuitData{
+											ID:        cast.ToInt(id),
+											Name:      mEquip4LOL[key].Name,
+											Icon:      mEquip4LOL[key].IconPath,
+											Maps:      mEquip4LOL[key].Maps,
+											Plaintext: mEquip4LOL[key].Plaintext,
+											Desc:      mEquip4LOL[key].Description,
+											Price:     cast.ToInt(mEquip4LOL[key].Total),
+											Sell:      cast.ToInt(mEquip4LOL[key].Sell),
+											Version:   mEquip4LOL[key].Version,
+
+											Igamecnt: data.Igamecnt,
+											Wincnt:   data.Wincnt,
+											Winrate:  data.Winrate,
+											Allcnt:   data.Allcnt,
+											Showrate: data.Showrate,
+										})
+									} else if data.Platform == common.PlatformForLOLM {
+										// 手游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+										if _, ok := mEquip4LOLM[key]; !ok {
+											continue
+										}
+										other2 = append(other2, &dto.SuitData{
+											ID:      cast.ToInt(id),
+											Name:    mEquip4LOLM[key].Name,
+											Icon:    mEquip4LOLM[key].IconPath,
+											Desc:    mEquip4LOLM[key].Description,
+											Price:   cast.ToInt(mEquip4LOLM[key].Price),
+											Version: mEquip4LOLM[key].Version,
+
+											Igamecnt: data.Igamecnt,
+											Wincnt:   data.Wincnt,
+											Winrate:  data.Winrate,
+											Allcnt:   data.Allcnt,
+											Showrate: data.Showrate,
+
+											Title:        data.Title,
+											Author:       data.Author,
+											AuthorIcon:   data.AuthorIcon,
+											RecommendID:  data.RecommendId,
+											ThinkingInfo: data.Desc,
+										})
+									} else {
+										continue
+									}
+								}
+
+								if len(other2) > 0 {
+									other = append(other, other2)
+								}
+
+							case mhs.TypeOut():
+								ids := strings.Split(data.Itemids, ",")
+								out2 := make([]*dto.SuitData, 0)
+								for _, id := range ids {
+									if data.Platform == common.PlatformForLOL {
+										// 端游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+										if _, ok := mEquip4LOL[key]; !ok {
+											continue
+										}
+										out2 = append(out2, &dto.SuitData{
+											ID:        cast.ToInt(id),
+											Name:      mEquip4LOL[key].Name,
+											Icon:      mEquip4LOL[key].IconPath,
+											Maps:      mEquip4LOL[key].Maps,
+											Plaintext: mEquip4LOL[key].Plaintext,
+											Desc:      mEquip4LOL[key].Description,
+											Price:     cast.ToInt(mEquip4LOL[key].Total),
+											Sell:      cast.ToInt(mEquip4LOL[key].Sell),
+											Version:   mEquip4LOL[key].Version,
+
+											Igamecnt: data.Igamecnt,
+											Wincnt:   data.Wincnt,
+											Winrate:  data.Winrate,
+											Allcnt:   data.Allcnt,
+											Showrate: data.Showrate,
+										})
+									} else if data.Platform == common.PlatformForLOLM {
+										// 手游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+										if _, ok := mEquip4LOLM[key]; !ok {
+											continue
+										}
+
+										out2 = append(out2, &dto.SuitData{
+											ID:      cast.ToInt(id),
+											Name:    mEquip4LOLM[key].Name,
+											Icon:    mEquip4LOLM[key].IconPath,
+											Desc:    mEquip4LOLM[key].Description,
+											Price:   cast.ToInt(mEquip4LOLM[key].Price),
+											Version: mEquip4LOLM[key].Version,
+
+											Igamecnt: data.Igamecnt,
+											Wincnt:   data.Wincnt,
+											Winrate:  data.Winrate,
+											Allcnt:   data.Allcnt,
+											Showrate: data.Showrate,
+
+											Title:        data.Title,
+											Author:       data.Author,
+											AuthorIcon:   data.AuthorIcon,
+											RecommendID:  data.RecommendId,
+											ThinkingInfo: data.Desc,
+										})
+									} else {
+										continue
+									}
+								}
+
+								if len(out2) > 0 {
+									out = append(out, out2)
+								}
+
+							case mhs.TypeCore():
+								ids := strings.Split(data.Itemids, ",")
+								core2 := make([]*dto.SuitData, 0)
+								for _, id := range ids {
+									if data.Platform == common.PlatformForLOL {
+										// 端游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+										if _, ok := mEquip4LOL[key]; !ok {
+											continue
+										}
+										core2 = append(core2, &dto.SuitData{
+											ID:        cast.ToInt(id),
+											Name:      mEquip4LOL[key].Name,
+											Icon:      mEquip4LOL[key].IconPath,
+											Maps:      mEquip4LOL[key].Maps,
+											Plaintext: mEquip4LOL[key].Plaintext,
+											Desc:      mEquip4LOL[key].Description,
+											Price:     cast.ToInt(mEquip4LOL[key].Total),
+											Sell:      cast.ToInt(mEquip4LOL[key].Sell),
+											Version:   mEquip4LOL[key].Version,
+
+											Igamecnt: data.Igamecnt,
+											Wincnt:   data.Wincnt,
+											Winrate:  data.Winrate,
+											Allcnt:   data.Allcnt,
+											Showrate: data.Showrate,
+										})
+									} else if data.Platform == common.PlatformForLOLM {
+										// 手游
+										key := fmt.Sprintf(redis.KeyCacheEquip, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+										if _, ok := mEquip4LOLM[key]; !ok {
+											continue
+										}
+										core2 = append(core2, &dto.SuitData{
+											ID:      cast.ToInt(id),
+											Name:    mEquip4LOLM[key].Name,
+											Icon:    mEquip4LOLM[key].IconPath,
+											Desc:    mEquip4LOLM[key].Description,
+											Price:   cast.ToInt(mEquip4LOLM[key].Price),
+											Version: mEquip4LOLM[key].Version,
+
+											Igamecnt: data.Igamecnt,
+											Wincnt:   data.Wincnt,
+											Winrate:  data.Winrate,
+											Allcnt:   data.Allcnt,
+											Showrate: data.Showrate,
+
+											Title:        data.Title,
+											Author:       data.Author,
+											AuthorIcon:   data.AuthorIcon,
+											RecommendID:  data.RecommendId,
+											ThinkingInfo: data.Desc,
+										})
+									} else {
+										continue
+									}
+								}
+
+								if len(core2) > 0 {
+									core = append(core, core2)
+								}
+
+							}
+						}
+
+						eqs[pos] = dto.RecommendSuitEquip{
+							Out:   out,
+							Shoe:  shoe,
+							Core:  core,
+							Other: other,
+							Rune:  rrune,
+							Skill: skill,
+						}
+					}
+
+					jsonData, _ := json.Marshal(eqs)
+					redis.RDB.HSet(ctx, redis.KeyCacheHeroEquip, hero.HeroId, jsonData)
+					atomic.AddInt32(&t.success, 1)
+				}
+			}(hero)
+		}
+	}
+
+	t.wg.Wait()
+
+	log.Logger.Info(ctx, fmt.Sprintf("处理了: %d 个任务", t.done))
+	log.Logger.Info(ctx, fmt.Sprintf("提前结束,执行出错: %d 个任务", t.fail))
+	log.Logger.Info(ctx, fmt.Sprintf("成功执行了: %d 个任务", t.success))
+	log.Logger.Info(ctx, fmt.Sprintf("剩余: %d 个任务待处理", t.total-t.done))
+
+	return nil
 }

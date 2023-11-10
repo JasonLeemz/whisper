@@ -58,7 +58,7 @@ func EquipExtract(ctx *context.Context) {
 		return
 	}
 
-	words := equipment.NewInnerEquip(ctx, req.Platform).ExtractKeyWords()
+	words := equipment.NewInnerIns(ctx).WithPlatform(common.PlatformForLOL).ExtractKeyWords()
 
 	ctx.Reply(words, nil)
 }
@@ -129,7 +129,7 @@ func EquipFilter(ctx *context.Context) {
 
 func QueryEquipTypes(ctx *context.Context) {
 
-	types, _ := equipment.NewInnerEquip(ctx, common.PlatformForLOL).GetEquipTypes()
+	types, _ := equipment.NewInnerIns(ctx).WithPlatform(common.PlatformForLOL).GetEquipTypes()
 
 	ctx.Reply(map[string]interface{}{
 		"types": types,

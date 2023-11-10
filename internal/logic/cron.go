@@ -157,7 +157,7 @@ func Cron(ctx *context.Context) {
 		suit.NewSuit()(ctx, common.PlatformForLOLM).BatchUpdateSuitEquip()
 
 		log.Logger.Info(ctx, "start SuitData2Redis...")
-		err := SuitData2Redis(ctx)
+		err := suit.SuitData2Redis(ctx)
 		if err != nil {
 			log.Logger.Error(ctx, err)
 		}
@@ -174,8 +174,8 @@ func Cron(ctx *context.Context) {
 		log.Logger.Info(ctx, "mongo ExtractKeyWords START...")
 		// mongo
 		invoker := new(command.Invoker)
-		equipForLOLCmd := equipment.NewInnerEquip(ctx, common.PlatformForLOL).NewExtractKeyWordsCmd()
-		equipForLOLMCmd := equipment.NewInnerEquip(ctx, common.PlatformForLOLM).NewExtractKeyWordsCmd()
+		equipForLOLCmd := equipment.NewInnerIns(ctx).WithPlatform(common.PlatformForLOL).NewExtractKeyWordsCmd()
+		equipForLOLMCmd := equipment.NewInnerIns(ctx).WithPlatform(common.PlatformForLOLM).NewExtractKeyWordsCmd()
 		invoker.AddCommand(equipForLOLCmd, equipForLOLMCmd)
 		invoker.NonBlockRun()
 
