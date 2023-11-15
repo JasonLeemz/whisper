@@ -466,6 +466,9 @@ func inArray(id string, ids []string) bool {
 var (
 	mRune4LOL  map[string]*model.LOLRune
 	mRune4LOLM map[string]*model.LOLMRune
+
+	mSkill4LOL  map[string]*model.LOLSkill
+	mSkill4LOLM map[string]*model.LOLMSkill
 )
 
 func SuitData2Redis(ctx *context.Context) error {
@@ -474,8 +477,8 @@ func SuitData2Redis(ctx *context.Context) error {
 	mEquip4LOLM := equipment.NewInnerIns(ctx).GetAll(common.PlatformForLOLM).(map[string]*model.LOLMEquipment)
 	mRune4LOL = rune2.NewInnerIns(ctx).GetAll(common.PlatformForLOL).(map[string]*model.LOLRune)
 	mRune4LOLM = rune2.NewInnerIns(ctx).GetAll(common.PlatformForLOLM).(map[string]*model.LOLMRune)
-	mSkill4LOL := skill.NewInnerIns(ctx).GetAll(common.PlatformForLOL).(map[string]*model.LOLSkill)
-	mSkill4LOLM := skill.NewInnerIns(ctx).GetAll(common.PlatformForLOLM).(map[string]*model.LOLMSkill)
+	mSkill4LOL = skill.NewInnerIns(ctx).GetAll(common.PlatformForLOL).(map[string]*model.LOLSkill)
+	mSkill4LOLM = skill.NewInnerIns(ctx).GetAll(common.PlatformForLOLM).(map[string]*model.LOLMSkill)
 
 	log.Logger.Info(ctx,
 		"attrs", len(attrs),
@@ -548,66 +551,28 @@ func SuitData2Redis(ctx *context.Context) error {
 
 								if len(suitData) > 0 {
 									if suitData[0].Platform == common.PlatformForLOLM && len(suitData) == 5 {
-										suitDataForRune = append(suitDataForRune, []*dto.SuitData{suitData[0]})
-										suitDataForRune = append(suitDataForRune, []*dto.SuitData{suitData[1], suitData[2], suitData[3]})
-										suitDataForRune = append(suitDataForRune, []*dto.SuitData{suitData[4]})
+										suitDataForRune = [][]*dto.SuitData{
+											[]*dto.SuitData{suitData[0]},
+											[]*dto.SuitData{suitData[1], suitData[2], suitData[3]},
+											[]*dto.SuitData{suitData[4]},
+										}
 									} else {
-										suitDataForRune = append(suitDataForRune, suitData)
+										suitDataForRune = [][]*dto.SuitData{
+											suitData,
+										}
 									}
 								}
 							}
 							if suitDataForSkill == nil {
 								ids := strings.Split(data.Skillids, ",")
-								skill2 := make([]*dto.SuitData, 0)
+								suitData := make([]*dto.SuitData, 0)
 								for _, id := range ids {
-									if data.Platform == common.PlatformForLOL {
-										// 端游
-										key := fmt.Sprintf(redis.KeyCacheSkill, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
-										if _, ok := mSkill4LOL[key]; ok {
-											skill2 = append(skill2, &dto.SuitData{
-												ID:        cast.ToInt(id),
-												Name:      mSkill4LOL[key].Name,
-												Icon:      mSkill4LOL[key].Icon,
-												Maps:      "召唤师峡谷",
-												CD:        cast.ToInt(mSkill4LOL[key].Cooldown),
-												Plaintext: mSkill4LOL[key].Description,
-												Desc:      mSkill4LOL[key].Description,
-												Version:   mSkill4LOL[key].Version,
-
-												Igamecnt: data.Igamecnt,
-												Wincnt:   data.Wincnt,
-												Winrate:  data.Winrate,
-												Allcnt:   data.Allcnt,
-												Showrate: data.Showrate,
-											})
-										}
-									} else {
-										// 手游
-										key := fmt.Sprintf(redis.KeyCacheSkill, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
-										if _, ok := mSkill4LOLM[key]; ok {
-											skill2 = append(skill2, &dto.SuitData{
-												ID:           cast.ToInt(id),
-												Name:         mSkill4LOLM[key].Name,
-												Icon:         mSkill4LOLM[key].IconPath,
-												Desc:         mSkill4LOLM[key].FuncDesc,
-												CD:           cast.ToInt(mSkill4LOLM[key].Cd),
-												Version:      mSkill4LOLM[key].Version,
-												Igamecnt:     data.Igamecnt,
-												Wincnt:       data.Wincnt,
-												Winrate:      data.Winrate,
-												Allcnt:       data.Allcnt,
-												Showrate:     data.Showrate,
-												Title:        data.Title,
-												Author:       data.Author,
-												AuthorIcon:   data.AuthorIcon,
-												RecommendID:  data.RecommendId,
-												ThinkingInfo: data.Desc,
-											})
-										}
-									}
+									suitData = append(suitData, genSkillData(data, id))
 								}
-								if len(skill2) > 0 {
-									suitDataForSkill = append(suitDataForSkill, skill2)
+								if len(suitData) > 0 {
+									suitDataForSkill = [][]*dto.SuitData{
+										suitData,
+									}
 								}
 							}
 							switch data.Type {
@@ -940,5 +905,55 @@ func genRuneData(data *model.HeroesSuit, id string) *dto.SuitData {
 			}
 		}
 	}
+	return suitData
+}
+func genSkillData(data *model.HeroesSuit, id string) *dto.SuitData {
+	var suitData *dto.SuitData
+	if data.Platform == common.PlatformForLOL {
+		// 端游
+		key := fmt.Sprintf(redis.KeyCacheSkill, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+		if _, ok := mSkill4LOL[key]; ok {
+			suitData = &dto.SuitData{
+				ID:        cast.ToInt(id),
+				Name:      mSkill4LOL[key].Name,
+				Icon:      mSkill4LOL[key].Icon,
+				Maps:      "召唤师峡谷",
+				CD:        cast.ToInt(mSkill4LOL[key].Cooldown),
+				Plaintext: mSkill4LOL[key].Description,
+				Desc:      mSkill4LOL[key].Description,
+				Version:   mSkill4LOL[key].Version,
+
+				Igamecnt: data.Igamecnt,
+				Wincnt:   data.Wincnt,
+				Winrate:  data.Winrate,
+				Allcnt:   data.Allcnt,
+				Showrate: data.Showrate,
+			}
+		}
+	} else {
+		// 手游
+		key := fmt.Sprintf(redis.KeyCacheSkill, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+		if _, ok := mSkill4LOLM[key]; ok {
+			suitData = &dto.SuitData{
+				ID:           cast.ToInt(id),
+				Name:         mSkill4LOLM[key].Name,
+				Icon:         mSkill4LOLM[key].IconPath,
+				Desc:         mSkill4LOLM[key].FuncDesc,
+				CD:           cast.ToInt(mSkill4LOLM[key].Cd),
+				Version:      mSkill4LOLM[key].Version,
+				Igamecnt:     data.Igamecnt,
+				Wincnt:       data.Wincnt,
+				Winrate:      data.Winrate,
+				Allcnt:       data.Allcnt,
+				Showrate:     data.Showrate,
+				Title:        data.Title,
+				Author:       data.Author,
+				AuthorIcon:   data.AuthorIcon,
+				RecommendID:  data.RecommendId,
+				ThinkingInfo: data.Desc,
+			}
+		}
+	}
+
 	return suitData
 }
