@@ -60,9 +60,7 @@ func (suit *suit) BatchUpdateSuitEquip() {
 
 	// 获取所有英雄ID
 	ha := dao.NewHeroAttributeDAO()
-	heroes, err := ha.Find([]string{
-		"DISTINCT(heroId)", "name", "title", "platform",
-	}, nil)
+	heroes, err := ha.QueryAllHeroes(nil)
 	if err != nil {
 		log.Logger.Error(suit.ctx, err)
 		return
@@ -465,12 +463,17 @@ func inArray(id string, ids []string) bool {
 }
 
 // SuitData2Redis 批量更新英雄适配的装备、天赋、技能到redis
+var (
+	mRune4LOL  map[string]*model.LOLRune
+	mRune4LOLM map[string]*model.LOLMRune
+)
+
 func SuitData2Redis(ctx *context.Context) error {
 	attrs := attribute.NewInnerIns(ctx).GetAll()
 	mEquip4LOL := equipment.NewInnerIns(ctx).GetAll(common.PlatformForLOL).(map[string]*model.LOLEquipment)
 	mEquip4LOLM := equipment.NewInnerIns(ctx).GetAll(common.PlatformForLOLM).(map[string]*model.LOLMEquipment)
-	mRune4LOL := rune2.NewInnerIns(ctx).GetAll(common.PlatformForLOL).(map[string]*model.LOLRune)
-	mRune4LOLM := rune2.NewInnerIns(ctx).GetAll(common.PlatformForLOLM).(map[string]*model.LOLMRune)
+	mRune4LOL = rune2.NewInnerIns(ctx).GetAll(common.PlatformForLOL).(map[string]*model.LOLRune)
+	mRune4LOLM = rune2.NewInnerIns(ctx).GetAll(common.PlatformForLOLM).(map[string]*model.LOLMRune)
 	mSkill4LOL := skill.NewInnerIns(ctx).GetAll(common.PlatformForLOL).(map[string]*model.LOLSkill)
 	mSkill4LOLM := skill.NewInnerIns(ctx).GetAll(common.PlatformForLOLM).(map[string]*model.LOLMSkill)
 
@@ -512,7 +515,7 @@ func SuitData2Redis(ctx *context.Context) error {
 				if err2 != nil {
 					atomic.AddInt32(&t.fail, 1)
 					cancelFunc()
-					log.Logger.Error(ctx, err2)
+					log.Logger.Error(ctx, "GetSuitForHero", err2)
 					return
 				} else {
 
@@ -530,79 +533,30 @@ func SuitData2Redis(ctx *context.Context) error {
 						other := make([][]*dto.SuitData, 0) // 其他适配
 
 						var (
-							rrune [][]*dto.SuitData // 符文
-							skill [][]*dto.SuitData // 召唤师技能
+							suitDataForRune  [][]*dto.SuitData // 符文
+							suitDataForSkill [][]*dto.SuitData // 召唤师技能
 						)
 
 						for _, data := range posdata {
 							// 符文 和 召唤师技能 在同一个posdata下是一样的，这里随机取一个有值的
-							if rrune == nil {
+							if suitDataForRune == nil {
 								ids := strings.Split(data.Runeids, ",")
-								rune2 := make([]*dto.SuitData, 0)
+								suitData := make([]*dto.SuitData, 0)
 								for _, id := range ids {
-									if data.Platform == common.PlatformForLOL {
-										// 端游
-										key := fmt.Sprintf(redis.KeyCacheRune, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
-										if _, ok := mRune4LOL[key]; ok {
-											rune2 = append(rune2, &dto.SuitData{
-												ID:        cast.ToInt(id),
-												Name:      mRune4LOL[key].Name,
-												Icon:      mRune4LOL[key].Icon,
-												Maps:      "召唤师峡谷",
-												Plaintext: mRune4LOL[key].Tooltip,
-												Desc:      fmt.Sprintf("<short>%s</short><long>%s</long>", mRune4LOL[key].Shortdesc, mRune4LOL[key].Longdesc),
-												Version:   mRune4LOL[key].Version,
-												RuneType:  mRune4LOL[key].StyleName,
-
-												Igamecnt: data.Igamecnt,
-												Wincnt:   data.Wincnt,
-												Winrate:  data.Winrate,
-												Allcnt:   data.Allcnt,
-												Showrate: data.Showrate,
-
-												Platform: data.Platform,
-											})
-										}
-									} else {
-										// 手游
-										key := fmt.Sprintf(redis.KeyCacheRune, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
-										if _, ok := mRune4LOLM[key]; ok {
-											rune2 = append(rune2, &dto.SuitData{
-												ID:           cast.ToInt(id),
-												Name:         mRune4LOLM[key].Name,
-												Icon:         mRune4LOLM[key].IconPath,
-												Plaintext:    fmt.Sprintf("<short>%s</short><long>%s</long>", mRune4LOLM[key].AttrName, mRune4LOLM[key].Description),
-												Desc:         mRune4LOLM[key].DetailInfo,
-												Version:      mRune4LOLM[key].Version,
-												Igamecnt:     data.Igamecnt,
-												Wincnt:       data.Wincnt,
-												Winrate:      data.Winrate,
-												Allcnt:       data.Allcnt,
-												Showrate:     data.Showrate,
-												Title:        data.Title,
-												Author:       data.Author,
-												AuthorIcon:   data.AuthorIcon,
-												RecommendID:  data.RecommendId,
-												ThinkingInfo: data.Desc,
-												RuneType:     mRune4LOLM[key].StyleName,
-
-												Platform: data.Platform,
-											})
-										}
-									}
+									suitData = append(suitData, genRuneData(data, id))
 								}
 
-								if len(rune2) > 0 {
-									if rune2[0].Platform == common.PlatformForLOLM && len(rune2) == 5 {
-										rrune = append(rrune, []*dto.SuitData{rune2[0]})
-										rrune = append(rrune, []*dto.SuitData{rune2[1], rune2[2], rune2[3]})
-										rrune = append(rrune, []*dto.SuitData{rune2[4]})
+								if len(suitData) > 0 {
+									if suitData[0].Platform == common.PlatformForLOLM && len(suitData) == 5 {
+										suitDataForRune = append(suitDataForRune, []*dto.SuitData{suitData[0]})
+										suitDataForRune = append(suitDataForRune, []*dto.SuitData{suitData[1], suitData[2], suitData[3]})
+										suitDataForRune = append(suitDataForRune, []*dto.SuitData{suitData[4]})
 									} else {
-										rrune = append(rrune, rune2)
+										suitDataForRune = append(suitDataForRune, suitData)
 									}
 								}
 							}
-							if skill == nil {
+							if suitDataForSkill == nil {
 								ids := strings.Split(data.Skillids, ",")
 								skill2 := make([]*dto.SuitData, 0)
 								for _, id := range ids {
@@ -653,7 +607,7 @@ func SuitData2Redis(ctx *context.Context) error {
 									}
 								}
 								if len(skill2) > 0 {
-									skill = append(skill, skill2)
+									suitDataForSkill = append(suitDataForSkill, skill2)
 								}
 							}
 							switch data.Type {
@@ -911,8 +865,8 @@ func SuitData2Redis(ctx *context.Context) error {
 							Shoe:  shoe,
 							Core:  core,
 							Other: other,
-							Rune:  rrune,
-							Skill: skill,
+							Rune:  suitDataForRune,
+							Skill: suitDataForSkill,
 						}
 					}
 
@@ -932,4 +886,59 @@ func SuitData2Redis(ctx *context.Context) error {
 	log.Logger.Info(ctx, fmt.Sprintf("剩余: %d 个任务待处理", t.total-t.done))
 
 	return nil
+}
+
+func genRuneData(data *model.HeroesSuit, id string) *dto.SuitData {
+	var suitData *dto.SuitData
+	if data.Platform == common.PlatformForLOL {
+		// 端游
+		key := fmt.Sprintf(redis.KeyCacheRune, "召唤师峡谷", strconv.Itoa(common.PlatformForLOL), id)
+		if _, ok := mRune4LOL[key]; ok {
+			suitData = &dto.SuitData{
+				ID:        cast.ToInt(id),
+				Name:      mRune4LOL[key].Name,
+				Icon:      mRune4LOL[key].Icon,
+				Maps:      "召唤师峡谷",
+				Plaintext: mRune4LOL[key].Tooltip,
+				Desc:      fmt.Sprintf("<short>%s</short><long>%s</long>", mRune4LOL[key].Shortdesc, mRune4LOL[key].Longdesc),
+				Version:   mRune4LOL[key].Version,
+				RuneType:  mRune4LOL[key].StyleName,
+
+				Igamecnt: data.Igamecnt,
+				Wincnt:   data.Wincnt,
+				Winrate:  data.Winrate,
+				Allcnt:   data.Allcnt,
+				Showrate: data.Showrate,
+
+				Platform: data.Platform,
+			}
+		}
+	} else {
+		// 手游
+		key := fmt.Sprintf(redis.KeyCacheRune, "召唤师峡谷", strconv.Itoa(common.PlatformForLOLM), id)
+		if _, ok := mRune4LOLM[key]; ok {
+			suitData = &dto.SuitData{
+				ID:           cast.ToInt(id),
+				Name:         mRune4LOLM[key].Name,
+				Icon:         mRune4LOLM[key].IconPath,
+				Plaintext:    fmt.Sprintf("<short>%s</short><long>%s</long>", mRune4LOLM[key].AttrName, mRune4LOLM[key].Description),
+				Desc:         mRune4LOLM[key].DetailInfo,
+				Version:      mRune4LOLM[key].Version,
+				Igamecnt:     data.Igamecnt,
+				Wincnt:       data.Wincnt,
+				Winrate:      data.Winrate,
+				Allcnt:       data.Allcnt,
+				Showrate:     data.Showrate,
+				Title:        data.Title,
+				Author:       data.Author,
+				AuthorIcon:   data.AuthorIcon,
+				RecommendID:  data.RecommendId,
+				ThinkingInfo: data.Desc,
+				RuneType:     mRune4LOLM[key].StyleName,
+
+				Platform: data.Platform,
+			}
+		}
+	}
+	return suitData
 }

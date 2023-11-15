@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"sync"
 	"whisper/internal/model"
+	"whisper/internal/model/common"
 	"whisper/pkg/mysql"
 )
 
@@ -67,7 +68,7 @@ ORDER BY
 `
 
 	rightJoin := "RIGHT JOIN heroes_position pos ON suit.pos = pos.pos AND suit.heroId = pos.heroId"
-	if platform == 0 {
+	if platform == common.PlatformForLOL {
 		rate := "and suit.winrate >= 4000 and suit.showrate >= 1000"
 		sql = fmt.Sprintf(sql, rightJoin, heroID, rate)
 	} else {

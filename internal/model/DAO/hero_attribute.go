@@ -116,6 +116,16 @@ func (dao *HeroAttributeDAO) DeleteAndInsert(delCond map[string]interface{}, add
 	return nil
 }
 
+func (dao *HeroAttributeDAO) QueryAllHeroes(cond map[string]interface{}) ([]*model.HeroAttribute, error) {
+	tx := dao.db.Model(&model.HeroAttribute{})
+	// "DISTINCT(heroId)", "name", "title", "platform",
+	var data []*model.HeroAttribute
+	tx = tx.Select("heroId", "name", "title", "platform").
+		Where(cond).
+		Find(&data)
+	return data, tx.Error
+}
+
 var (
 	attrDao  *HeroAttributeDAO
 	attrOnce sync.Once
@@ -137,4 +147,5 @@ type HeroAttribute interface {
 	Delete(cond map[string]interface{}) (int64, error)
 	DeleteAndInsert(delCond map[string]interface{}, addData []*model.HeroAttribute) error
 	GetMaxVersion() ([]*model.HeroAttribute, error)
+	QueryAllHeroes(cond map[string]interface{}) ([]*model.HeroAttribute, error)
 }
