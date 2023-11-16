@@ -160,6 +160,12 @@ export default {
       </div>
       <!-- 合成路线路 END-->
 
+      <!-- 技能介绍 START-->
+      <div class="ant-divider"></div>
+      <div class="mainText" v-html="equipResult.data['current'].desc"></div>
+      <div class="blank"></div>
+      <!-- 技能介绍 END-->
+
       <!-- summary START-->
       <table class="roadmap-detail">
         <tr v-for="(equip ,index) in equipResult.data['from']" :key="index">
