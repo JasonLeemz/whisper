@@ -547,7 +547,7 @@ func SuitData2Redis(ctx *context.Context) error {
 
 						for _, data := range posdata {
 							// 符文 和 召唤师技能 在同一个posdata下是一样的，这里随机取一个有值的
-							if suitForRune == nil {
+							if suitForRune == nil && data.Runeids != "" {
 								ids := strings.Split(data.Runeids, ",")
 								suitData := make([]*dto.SuitData, 0)
 								for _, id := range ids {
@@ -568,7 +568,7 @@ func SuitData2Redis(ctx *context.Context) error {
 									}
 								}
 							}
-							if suitForSkill == nil {
+							if suitForSkill == nil && data.Skillids != "" {
 								ids := strings.Split(data.Skillids, ",")
 								suitData := make([]*dto.SuitData, 0)
 								for _, id := range ids {
