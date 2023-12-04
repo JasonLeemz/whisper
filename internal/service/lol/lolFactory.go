@@ -2,8 +2,7 @@ package service
 
 import (
 	"time"
-	"whisper/internal/logic/common"
-	header "whisper/internal/service/common"
+	"whisper/internal/service/common"
 	"whisper/pkg/context"
 )
 
@@ -43,9 +42,9 @@ func CreateLOLProduct(platform int) LOLProductFunc {
 				platform:      common.PlatformForLOL,
 				ts:            time.Now().Unix() / 600,
 				yesterday:     time.Now().AddDate(0, 0, -1).Format("20060102"),
-				referer:       header.Referer,
-				cookie:        header.Cookie,
-				commonHeaders: header.CommonHeaders(),
+				referer:       common.Referer,
+				cookie:        common.Cookie,
+				commonHeaders: common.CommonHeaders(),
 			}
 		}
 	} else {
@@ -53,9 +52,9 @@ func CreateLOLProduct(platform int) LOLProductFunc {
 			return &LOLM{
 				platform:      common.PlatformForLOLM,
 				ts:            time.Now().Unix() / 600,
-				referer:       header.Referer,
-				cookie:        header.Cookie,
-				commonHeaders: header.CommonHeaders(),
+				referer:       common.Referer,
+				cookie:        common.Cookie,
+				commonHeaders: common.CommonHeaders(),
 			}
 		}
 	}
