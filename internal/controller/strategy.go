@@ -7,6 +7,6 @@ import (
 
 func GrabStrategy(ctx *context.Context) {
 	sp := spider.NewSpider(ctx)
-	sp.BilibiliGrab()
+	go sp.BilibiliGrab()
 	ctx.Reply("ok", nil)
 }

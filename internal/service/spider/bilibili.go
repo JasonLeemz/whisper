@@ -22,7 +22,7 @@ func (b *Bilibili) SearchKeywords(ctx *context.Context, url string) (interface{}
 	// 发送 GetForm 请求
 	sk := dto.SearchKeywords{}
 
-	body, err := http.GetForm(ctx, url)
+	body, err := http.GetForm(ctx, url, b.commonHeaders...)
 	if err != nil {
 		return nil, err
 	}

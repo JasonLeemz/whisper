@@ -48,7 +48,7 @@ func (e *Spider) BilibiliGrab() error {
 }
 
 func fetchData(ctx *context.Context, authors []*model.AuthorSpace, heroes []*model.HeroAttribute) {
-	t := newTask(int32(len(authors)*len(heroes)), &sync.WaitGroup{}, make(chan struct{}, 1), make(chan struct{}, 1))
+	t := newTask(int32(len(authors)*len(heroes)), &sync.WaitGroup{}, make(chan struct{}, 5), make(chan struct{}, 10))
 	for i, author := range authors {
 		log.Logger.Info(ctx, ">>>>>>>>>>开始处理 hero:<<<<<<<<<<<", i, "/", author.Name, "/", author.Space)
 		t.wg.Add(1)
@@ -61,16 +61,19 @@ func fetchData(ctx *context.Context, authors []*model.AuthorSpace, heroes []*mod
 			}()
 			for _, hero := range heroes {
 				if hero.Platform != author.Platform {
+					atomic.AddInt32(&t.done, 1) // 提前结束要把完成数+1
 					// 视频博主的游戏平台要和该英雄的所属平台一致
 					continue
 				}
 
 				url := author.Space // url不打日志了，在service层打过了
+				name := ""
 				if hero.Platform == 0 {
-					url = fmt.Sprintf(url, hero.Title)
+					name = hero.Title
 				} else {
-					url = fmt.Sprintf(url, hero.Name)
+					name = hero.Name
 				}
+				url = fmt.Sprintf(url, name)
 
 				t.wg.Add(1)
 				t.ch2 <- struct{}{}
@@ -102,7 +105,12 @@ func fetchData(ctx *context.Context, authors []*model.AuthorSpace, heroes []*mod
 					}
 
 					// 写入数据
-					recodeBilibiliData(ctx, bdata, author.Platform)
+					err = recodeBilibiliData(ctx, bdata, author.Platform, name)
+					if err != nil {
+						atomic.AddInt32(&t.fail, 1)
+					} else {
+						atomic.AddInt32(&t.success, 1)
+					}
 
 					// 生成一个1到3秒之间的随机时间间隔
 					rand.Seed(time.Now().UnixNano())
@@ -115,19 +123,20 @@ func fetchData(ctx *context.Context, authors []*model.AuthorSpace, heroes []*mod
 	}
 	t.wg.Wait()
 
+	log.Logger.Info(ctx, fmt.Sprintf("共有: %d 个任务", t.total))
 	log.Logger.Info(ctx, fmt.Sprintf("处理了: %d 个任务", t.done))
 	log.Logger.Info(ctx, fmt.Sprintf("提前结束,执行出错: %d 个任务", t.fail))
 	log.Logger.Info(ctx, fmt.Sprintf("成功执行了: %d 个任务", t.success))
 	log.Logger.Info(ctx, fmt.Sprintf("剩余: %d 个任务待处理", t.total-t.done))
 }
 
-func recodeBilibiliData(ctx *context.Context, data *dto.SearchKeywords, platform int) {
+func recodeBilibiliData(ctx *context.Context, data *dto.SearchKeywords, platform int, hero string) error {
 	// https://m.bilibili.com/video/%s => https://m.bilibili.com/video/BV1Zh411C7XS
 	baseUrl := "https://m.bilibili.com/video/%s"
 	dao := dao2.NewGameStrategyDAO()
 	for _, d := range data.Data.List.Vlist {
 		strategy := &model.GameStrategy{
-			Plateform:  platform,
+			Platform:   platform,
 			Source:     common.SourceBilibili,
 			Author:     d.Author,
 			LinkUrl:    fmt.Sprintf(baseUrl, d.Bvid),
@@ -138,10 +147,19 @@ func recodeBilibiliData(ctx *context.Context, data *dto.SearchKeywords, platform
 			Status:     0,
 			Bvid:       d.Bvid,
 			Played:     d.Play,
+			Hero:       hero,
 		}
-		_, err := dao.InsertORIgnore(strategy)
+		rows, err := dao.InsertORIgnore(strategy)
 		if err != nil {
 			log.Logger.Error(ctx, err)
+			return err
+		}
+		if rows == 0 {
+			log.Logger.Info(ctx, hero, "未更新")
+			return err
+		} else {
+			log.Logger.Info(ctx, d.Author, hero, "ok")
 		}
 	}
+	return nil
 }

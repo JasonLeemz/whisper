@@ -4,7 +4,7 @@ import "time"
 
 type GameStrategy struct {
 	Id          int64     `gorm:"column:id;primary_key;AUTO_INCREMENT;NOT NULL"`
-	Plateform   int       `gorm:"column:plateform;default:0;NOT NULL;comment:'手游or端游'"`
+	Platform    int       `gorm:"column:platform;default:0;NOT NULL;comment:'手游or端游'"`
 	Source      int32     `gorm:"column:source;default:0;NOT NULL;comment:'视频来源'"`
 	Author      string    `gorm:"column:author;default:;NOT NULL;comment:'作者'"`
 	LinkUrl     string    `gorm:"column:link_url;default:;NOT NULL;comment:'视频链接'"`
@@ -18,6 +18,7 @@ type GameStrategy struct {
 	Status      int8      `gorm:"column:status;default:0;NOT NULL"`
 	Bvid        string    `gorm:"column:bvid;default:0;NOT NULL"`
 	Played      int64     `gorm:"column:played;default:0;NOT NULL"`
+	Hero        string    `gorm:"column:hero;default:0;NOT NULL"`
 }
 
 func (g *GameStrategy) TableName() string {
