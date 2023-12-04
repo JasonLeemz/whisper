@@ -1,4 +1,4 @@
-package service
+package lol
 
 import (
 	"time"
@@ -42,9 +42,9 @@ func CreateLOLProduct(platform int) LOLProductFunc {
 				platform:      common.PlatformForLOL,
 				ts:            time.Now().Unix() / 600,
 				yesterday:     time.Now().AddDate(0, 0, -1).Format("20060102"),
-				referer:       common.Referer,
-				cookie:        common.Cookie,
-				commonHeaders: common.CommonHeaders(),
+				referer:       Referer,
+				cookie:        Cookie,
+				commonHeaders: CommonHeaders(),
 			}
 		}
 	} else {
@@ -52,9 +52,9 @@ func CreateLOLProduct(platform int) LOLProductFunc {
 			return &LOLM{
 				platform:      common.PlatformForLOLM,
 				ts:            time.Now().Unix() / 600,
-				referer:       common.Referer,
-				cookie:        common.Cookie,
-				commonHeaders: common.CommonHeaders(),
+				referer:       Referer,
+				cookie:        Cookie,
+				commonHeaders: CommonHeaders(),
 			}
 		}
 	}

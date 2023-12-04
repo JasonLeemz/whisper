@@ -1,4 +1,4 @@
-package service
+package lol
 
 import (
 	"fmt"

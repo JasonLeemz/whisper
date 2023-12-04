@@ -1,4 +1,4 @@
-package common
+package lol
 
 import "whisper/pkg/http"
 

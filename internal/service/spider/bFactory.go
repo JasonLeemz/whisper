@@ -1,4 +1,4 @@
-package service
+package spider
 
 import (
 	"time"
@@ -18,9 +18,9 @@ func CreateSpiderProduct(source int) SpiderProductFunc {
 		return func() ISpider {
 			return &Bilibili{
 				ts:            time.Now().Unix(),
-				referer:       common.Referer,
-				cookie:        common.Cookie,
-				commonHeaders: common.CommonHeaders(),
+				referer:       Referer,
+				cookie:        Cookie,
+				commonHeaders: CommonHeaders(),
 			}
 		}
 	} else {

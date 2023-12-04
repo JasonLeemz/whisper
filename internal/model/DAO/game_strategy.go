@@ -11,9 +11,28 @@ type GameStrategyDAO struct {
 	db *gorm.DB
 }
 
-func (dao *GameStrategyDAO) Add(hr []*model.GameStrategy) (int64, error) {
-	result := dao.db.Create(hr)
-	return result.RowsAffected, result.Error
+func (dao *GameStrategyDAO) InsertORIgnore(strategy *model.GameStrategy) (int64, error) {
+	tx := dao.db.Begin()
+	var exists bool
+	err := tx.Select("count(*) > 0").
+		Where(map[string]interface{}{
+			"bvid": strategy.Bvid,
+		}).
+		Find(&exists).Error
+	if exists {
+		tx.Rollback()
+		return 0, err
+	}
+
+	// 插入
+	tx.Create(strategy)
+	if tx.Error != nil {
+		tx.Rollback()
+		return 0, tx.Error
+	}
+	tx.Commit()
+
+	return tx.RowsAffected, nil
 }
 
 func (dao *GameStrategyDAO) Exists(cond map[string]interface{}) (bool, error) {
@@ -52,7 +71,7 @@ var (
 	gameStrategyOnce sync.Once
 )
 
-func GameNewStrategyDAO() *GameStrategyDAO {
+func NewGameStrategyDAO() *GameStrategyDAO {
 	gameStrategyOnce.Do(func() {
 		gameStrategyDao = &GameStrategyDAO{
 			db: mysql.DB,
@@ -62,7 +81,7 @@ func GameNewStrategyDAO() *GameStrategyDAO {
 }
 
 type GameStrategy interface {
-	Add([]*model.GameStrategy) (int64, error)
+	InsertORIgnore(*model.GameStrategy) (int64, error)
 	Delete(map[string]interface{}) (int64, error)
 	Update(hr *model.GameStrategy, cond map[string]interface{}) (int64, error)
 	Exists(cond map[string]interface{}) (bool, error)

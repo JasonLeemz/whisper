@@ -26,7 +26,7 @@ type Data struct {
 type Vlist struct {
 	Comment          int    `json:"comment,omitempty"`
 	Typeid           int    `json:"typeid,omitempty"`
-	Play             int    `json:"play,omitempty"`
+	Play             int64  `json:"play,omitempty"`
 	Pic              string `json:"pic,omitempty"`
 	Subtitle         string `json:"subtitle,omitempty"`
 	Description      string `json:"description,omitempty"`
@@ -35,7 +35,7 @@ type Vlist struct {
 	Review           int    `json:"review,omitempty"`
 	Author           string `json:"author,omitempty"`
 	Mid              int    `json:"mid,omitempty"`
-	Created          int    `json:"created,omitempty"`
+	Created          int64  `json:"created,omitempty"`
 	Length           string `json:"length,omitempty"`
 	VideoReview      int    `json:"video_review,omitempty"`
 	Aid              int    `json:"aid,omitempty"`

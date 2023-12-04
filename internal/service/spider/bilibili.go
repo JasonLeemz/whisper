@@ -1,4 +1,4 @@
-package service
+package spider
 
 import (
 	"encoding/json"
