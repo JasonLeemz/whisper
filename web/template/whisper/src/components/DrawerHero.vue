@@ -14,6 +14,7 @@ export default {
   },
   data() {
     return {
+      loadingImgs: new Map(),
       sideDrawer: {
         show: false,
         isLoading: false,
@@ -25,6 +26,7 @@ export default {
             top: ref(50)
           },
           panelKeys: [],
+          panelKeysStrategyList: ["strategy-list"],
           mapEquipType: {
             'out': '出门装',
             'shoe': '鞋子',
@@ -53,7 +55,7 @@ export default {
     'heroResult.isLoading'(isLoading) {
       this.sideDrawer.isLoading = isLoading
     },
-    'heroResult.data'(data) {
+    'heroResult.data.result'(data) {
       for (let postypes in data.equips) {
         for (let type in data.equips[postypes]) {
           if (type === 'rune' || type === 'core') {
@@ -64,6 +66,9 @@ export default {
     }
   },
   methods: {
+    stopLoading(idx) {
+      this.loadingImgs.set("load_" + idx, false);
+    },
     panelSwitcher() {
       if (this.sideDrawer.panel.foldAll) {
         this.sideDrawer.panel.foldAll = false
@@ -97,7 +102,7 @@ export default {
 
     <template v-if="!sideDrawer.isLoading">
       <!-- 展开所有/收起全部 START-->
-            <a-button v-if="Object.keys(heroResult.data.equips).length !== 0"
+            <a-button v-if="Object.keys(heroResult.data.result.equips).length !== 0"
                       type="primary" size="small"
                       @click="panelSwitcher"
                       class="foldall-btn">
@@ -106,26 +111,26 @@ export default {
       <!-- 展开所有/收起全部 END-->
 
       <a-empty
-          v-if="Object.keys(heroResult.data.equips).length === 0"
+          v-if="Object.keys(heroResult.data.result.equips).length === 0"
           description="当前版本该英雄缺乏足够的样本数据"/>
 
-      <template v-for="(equips,pos) in heroResult.data.equips" :key="pos">
+      <template v-for="(equips,pos) in heroResult.data.result.equips" :key="pos">
 
         <!-- 端游:上单/打野... 手游:主播推荐 START-->
         <!-- 端游-->
-        <h4 v-if="heroResult.data.platform===0">{{ sideDrawer.mapPos[pos] ? sideDrawer.mapPos[pos] : pos }}</h4>
+        <h4 v-if="heroResult.data.result.platform===0">{{ sideDrawer.mapPos[pos] ? sideDrawer.mapPos[pos] : pos }}</h4>
 
         <!-- 手游-->
-        <template v-if="heroResult.data.platform===1">
+        <template v-if="heroResult.data.result.platform===1">
           <a-popover placement="topLeft">
             <template #content>
               <h4 class="hero-suit popover-title">{{ pos }}</h4>
-              <span class="hero-suit popover-content" v-html="heroResult.data.ext_info.recommend_reason[pos]"></span>
+              <span class="hero-suit popover-content" v-html="heroResult.data.result.ext_info.recommend_reason[pos]"></span>
             </template>
             <h4 class="pos-title">
               {{ pos }}
               <h6>
-                ({{ heroResult.data.ext_info.author_info[pos].name }})
+                ({{ heroResult.data.result.ext_info.author_info[pos].name }})
               </h6>
             </h4>
           </a-popover>
@@ -146,7 +151,7 @@ export default {
                             class="hero-drawer-panel">
 
             <!-- 胜率和登场率的标题... START-->
-            <sub v-if="heroResult.data.platform===0">
+            <sub v-if="heroResult.data.result.platform===0">
               <em>登场率</em>
               <em>胜率</em>
             </sub>
@@ -154,7 +159,7 @@ export default {
 
             <div v-for="(equips,equipsidx) in row" :key="equipsidx" class="equip-row">
               <!-- 每一项内容的行:出门装/鞋子... START-->
-              <div class="equip-item-wrap" :class="heroResult.data.platform===0?'':'equip-item-wrap-lolm'">
+              <div class="equip-item-wrap" :class="heroResult.data.result.platform===0?'':'equip-item-wrap-lolm'">
                 <span v-for="(equip,equipidx) in equips" :key="equipidx" class="equip-item">
                   <!-- 具体的每一项 START-->
                   <a-popover placement="bottom" arrow-point-at-center>
@@ -191,7 +196,7 @@ export default {
               </div>
 
               <!-- 出场率/胜率 START-->
-              <span v-if="heroResult.data.platform===0" class="data-statistics">
+              <span v-if="heroResult.data.result.platform===0" class="data-statistics">
                 <em>{{ equips[0].showrate / 100 }}%</em>
                 <em>{{ equips[0].winrate / 100 }}%</em>
               </span>
@@ -204,6 +209,32 @@ export default {
         <!-- Panel Wrap END-->
         <!-- //////////  //////////  //////////  //////////  ////////// -->
       </template>
+    </template>
+
+    <a-divider orientation="left">大神攻略</a-divider>
+    <a-empty
+        v-if="Object.keys(heroResult.data.feed).length === 0"
+        description="大神难产中..."/>
+    <template v-if="!sideDrawer.isLoading && Object.keys(heroResult.data.feed).length > 0">
+      <!-- 推荐列表 START-->
+      <a-collapse  v-model:activeKey="sideDrawer.panel.panelKeysStrategyList">
+        <a-collapse-panel key="strategy-list" header="点击链接跳转观看">
+          <div v-for="(item,i) in heroResult.data.feed" :key="i" class="strategy-wrap">
+            <a :href="item.jump_url" target="_blank">
+              <div class="strategy-main-img-wrap">
+                <img :src="item.main_img" :alt="item.title" class="strategy-main-img" />
+                <div class="card-statee">
+                  <p class="strategy-title">{{ item.title }}</p>
+                </div>
+              </div>
+              <p class="strategy-subtitle">{{ item.subtitle }}</p>
+              <p class="strategy-author">{{ item.author }}</p>
+              <p class="strategy-public-date">{{ item.public_date }}</p>
+            </a>
+          </div>
+        </a-collapse-panel>
+      </a-collapse>
+      <!-- 推荐列表 END-->
     </template>
 
   </a-drawer>

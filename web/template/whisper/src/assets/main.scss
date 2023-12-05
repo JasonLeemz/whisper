@@ -1,13 +1,14 @@
 @import './base.scss';
 
-.version-platform-switch{
+.version-platform-switch {
   width: 100%;
   //background: #0C0C0C;
-  padding: 15px 15px 10px 15px ;
+  padding: 15px 15px 10px 15px;
 
-  .ant-radio-group{
+  .ant-radio-group {
     width: 100%;
-    .ant-radio-button-wrapper{
+
+    .ant-radio-button-wrapper {
       width: 50%;
       text-align: center;
     }
@@ -286,17 +287,17 @@
   .result-card {
     padding: 0 15px;
 
-    .version-title{
+    .version-title {
       position: absolute;
       width: 100%;
       height: 35px;
       line-height: 25px;
       border: 0;
       left: 0;
-      top:-35px;
+      top: -35px;
       padding: 5px 10px;
       color: #fff;
-      background: rgba(0,0,0,.5);
+      background: rgba(0, 0, 0, .5);
     }
 
     .ant-tag {
@@ -407,7 +408,7 @@
   margin: 10px 0;
 }
 
-.version-public-date{
+.version-public-date {
   font-size: 12px;
   color: #5d5d5d;
 }
@@ -554,42 +555,51 @@
 }
 
 .ant-drawer {
-  .version-panel-row{
+  .version-panel-row {
     //margin-bottom: 10px;
   }
-  .version-panel{
+
+  .version-panel {
     font-size: 12px;
-    .version-avatar{
+
+    .version-avatar {
       width: 30px;
       height: 30px;
       border-radius: 50%;
     }
-    .version-skin{
+
+    .version-skin {
       width: 100%;
     }
-    .version-title{
+
+    .version-title {
       font-weight: 600;
       margin-left: 5px;
-      em{
+
+      em {
         font-style: normal;
         color: #ff5722;
       }
     }
-    .version-attach-content{
+
+    .version-attach-content {
       line-height: 15px;
       color: #5d5d5d;
     }
-    .version-spell-list{
+
+    .version-spell-list {
       position: relative;
-      .version-spell{
+
+      .version-spell {
         position: absolute;
         top: 0;
         left: 0;
         width: 25px;
         height: 25px;
       }
-      .version-spell-desc{
-        padding-left:30px;
+
+      .version-spell-desc {
+        padding-left: 30px;
         font-weight: 500;
       }
     }
@@ -605,7 +615,7 @@
 .ant-drawer-body {
   position: relative;
 
-  .version-subtitle{
+  .version-subtitle {
     font-size: 12px;
   }
 
@@ -801,6 +811,69 @@
           color: #1dbaa9;
         }
       }
+    }
+  }
+
+  .strategy-wrap {
+    display: inline-block;
+    width: 310px;
+    height: 160px;
+    overflow: hidden;
+    margin-right: 10px;
+    border: 2px solid transparent;
+    box-sizing: border-box;
+
+    p {
+      margin: 0;
+      padding: 0;
+      font-size: 12px;
+      line-height: 12px;
+      color: #0C0C0C;
+    }
+
+    .strategy-author, .strategy-public-date {
+      color: #9499a0;
+      margin: 5px;
+    }
+
+    a {
+      transition: color .2s linear;
+      cursor: pointer;
+      .strategy-main-img-wrap{
+        width: 100%;
+        height: 120px;
+        position: relative;
+        .strategy-main-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: 8px;
+        }
+        .card-statee{
+          display: inline-block;
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          z-index: 2;
+          box-sizing: border-box;
+          width: 100%;
+          height: 38px;
+          border-bottom-right-radius: 6px;
+          border-bottom-left-radius: 6px;
+          background-image: linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.8) 100%);
+          color: #fff;
+
+          .strategy-title {
+            font-size: 12px;
+            line-height: 12px;
+            color: #fff;
+            padding: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+      }
+
     }
   }
 }

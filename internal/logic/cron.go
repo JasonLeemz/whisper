@@ -7,6 +7,7 @@ import (
 	"whisper/internal/logic/command"
 	"whisper/internal/logic/common"
 	"whisper/internal/logic/equipment"
+	"whisper/internal/logic/spider"
 	"whisper/internal/logic/suit"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
@@ -69,6 +70,10 @@ func Cron(ctx *context.Context) {
 		if err != nil {
 			log.Logger.Error(ctx, err)
 		}
+
+		// 爬虫抓取任务
+		log.Logger.Info(ctx, "start BilibiliGrab...")
+		go spider.NewSpider(ctx).BilibiliGrab()
 	}()
 
 	go func() {

@@ -31,7 +31,7 @@ func (s *Strategy) Hero(name string, platform int) ([]*dto.StrategyHero, error) 
 			Desc:       d.Hero,
 			Title:      d.Title,
 			Subtitle:   d.Subtitle,
-			PublicDate: d.PublicDate.String(),
+			PublicDate: d.PublicDate.Format("06/01/02 15:04"),
 			Author:     d.Author,
 			MainImg:    d.MainImage,
 			JumpURL:    d.LinkUrl,
