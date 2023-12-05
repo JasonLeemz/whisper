@@ -53,13 +53,16 @@ func (dao *GameStrategyDAO) Delete(cond map[string]interface{}) (int64, error) {
 }
 
 func (dao *GameStrategyDAO) Find(query []string, cond map[string]interface{}) ([]*model.GameStrategy, error) {
+	//select * from `game_strategy`
+	//where `hero`='安妮' and `platform` = 1 and status = 0
+	//order by `public_date` desc,`played` desc;
 	tx := dao.db.Model(&model.GameStrategy{})
 	if query != nil {
 		query = append(query, "id")
 		tx = tx.Select(query)
 	}
 	var result []*model.GameStrategy
-	tx = tx.Where(cond).Find(&result)
+	tx = tx.Where(cond).Order("public_date desc, played desc").Find(&result)
 	if tx.RowsAffected > 0 && result[0].Id == 0 {
 		return nil, nil
 	}

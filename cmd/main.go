@@ -144,8 +144,13 @@ func main() {
 		// 缓存heroes的attribute
 		//inner.POST("/attr/hero/cache", context.Handle(controller.AttrData2Redis))
 
-		// 抓取外站攻略
-		inner.POST("/strategy/grab", context.Handle(controller.GrabStrategy))
+		{
+			// 抓取外站攻略
+			inner.POST("/strategy/grab", context.Handle(controller.GrabStrategy))
+
+			// 查询英雄攻略
+			inner.POST("/strategy/hero", context.Handle(controller.StrategyHero))
+		}
 	}
 	run.Init()
 
