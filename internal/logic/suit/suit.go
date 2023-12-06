@@ -664,6 +664,7 @@ func SuitData2Redis(ctx *context.Context) error {
 
 	t.wg.Wait()
 
+	log.Logger.Info(ctx, fmt.Sprintf("SuitData2Redis Done"))
 	log.Logger.Info(ctx, fmt.Sprintf("处理了: %d 个任务", t.done))
 	log.Logger.Info(ctx, fmt.Sprintf("提前结束,执行出错: %d 个任务", t.fail))
 	log.Logger.Info(ctx, fmt.Sprintf("成功执行了: %d 个任务", t.success))

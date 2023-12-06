@@ -11,28 +11,28 @@ type GameStrategyDAO struct {
 	db *gorm.DB
 }
 
-func (dao *GameStrategyDAO) InsertORIgnore(strategy *model.GameStrategy) (int64, error) {
+func (dao *GameStrategyDAO) InsertORIgnore(strategy *model.GameStrategy) error {
 	tx := dao.db.Begin()
 	var exists bool
-	err := tx.Select("count(*) > 0").
+	err := tx.Model(&model.GameStrategy{}).Select("count(*) > 0").
 		Where(map[string]interface{}{
 			"bvid": strategy.Bvid,
 		}).
 		Find(&exists).Error
 	if exists {
 		tx.Rollback()
-		return 0, err
+		return err
 	}
 
 	// 插入
 	tx.Create(strategy)
 	if tx.Error != nil {
 		tx.Rollback()
-		return 0, tx.Error
+		return tx.Error
 	}
 	tx.Commit()
 
-	return tx.RowsAffected, nil
+	return nil
 }
 
 func (dao *GameStrategyDAO) Exists(cond map[string]interface{}) (bool, error) {
@@ -84,7 +84,7 @@ func NewGameStrategyDAO() *GameStrategyDAO {
 }
 
 type GameStrategy interface {
-	InsertORIgnore(*model.GameStrategy) (int64, error)
+	InsertORIgnore(*model.GameStrategy) error
 	Delete(map[string]interface{}) (int64, error)
 	Update(hr *model.GameStrategy, cond map[string]interface{}) (int64, error)
 	Exists(cond map[string]interface{}) (bool, error)

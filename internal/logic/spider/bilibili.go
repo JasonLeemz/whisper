@@ -2,7 +2,6 @@ package spider
 
 import (
 	"fmt"
-	"math/rand"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -48,9 +47,8 @@ func (e *Spider) BilibiliGrab() error {
 }
 
 func fetchData(ctx *context.Context, authors []*model.AuthorSpace, heroes []*model.HeroAttribute) {
-	t := newTask(int32(len(authors)*len(heroes)), &sync.WaitGroup{}, make(chan struct{}, 5), make(chan struct{}, 10))
-	for i, author := range authors {
-		log.Logger.Info(ctx, ">>>>>>>>>>开始处理 hero:<<<<<<<<<<<", i, "/", author.Name, "/", author.Space)
+	t := newTask(int32(len(authors)*len(heroes))*2, &sync.WaitGroup{}, make(chan struct{}, 5), make(chan struct{}, 50))
+	for _, author := range authors {
 		t.wg.Add(1)
 		t.ch1 <- struct{}{}
 
@@ -61,19 +59,23 @@ func fetchData(ctx *context.Context, authors []*model.AuthorSpace, heroes []*mod
 			}()
 			for _, hero := range heroes {
 				if hero.Platform != author.Platform {
-					atomic.AddInt32(&t.done, 1) // 提前结束要把完成数+1
+					atomic.AddInt32(&t.success, 1)
 					// 视频博主的游戏平台要和该英雄的所属平台一致
 					continue
 				}
 
 				url := author.Space // url不打日志了，在service层打过了
 				name := ""
+				title := ""
 				if hero.Platform == 0 {
 					name = hero.Title
+					title = hero.Name
 				} else {
 					name = hero.Name
+					title = hero.Title
 				}
-				url = fmt.Sprintf(url, name)
+				url1 := fmt.Sprintf(url, name)
+				url2 := fmt.Sprintf(url, title)
 
 				t.wg.Add(1)
 				t.ch2 <- struct{}{}
@@ -82,40 +84,56 @@ func fetchData(ctx *context.Context, authors []*model.AuthorSpace, heroes []*mod
 					defer func() {
 						t.wg.Done()
 						<-t.ch2
-						atomic.AddInt32(&t.done, 1)
 					}()
 
-					data, err := service.CreateSpiderProduct(author.Source)().SearchKeywords(ctx, url)
+					var datas []interface{}
+					data1, err := service.CreateSpiderProduct(author.Source)().SearchKeywords(ctx, url1)
 					if err != nil {
 						atomic.AddInt32(&t.fail, 1)
-						log.Logger.Error(ctx, "SearchKeywords", err)
-						return
-					}
-
-					bdata, ok := data.(*dto.SearchKeywords)
-					if !ok {
-						atomic.AddInt32(&t.fail, 1)
-						log.Logger.Error(ctx, "data.(*dto.SearchKeywords) assert fail")
-						return
-					}
-
-					if bdata.Code != 0 {
-						log.Logger.Error(ctx, bdata.Message)
-						return
-					}
-
-					// 写入数据
-					err = recodeBilibiliData(ctx, bdata, author.Platform, name)
-					if err != nil {
-						atomic.AddInt32(&t.fail, 1)
+						log.Logger.Error(ctx, "SearchKeywords", name, err)
 					} else {
+						datas = append(datas, data1)
+					}
+					data2, err := service.CreateSpiderProduct(author.Source)().SearchKeywords(ctx, url2)
+					if err != nil {
+						atomic.AddInt32(&t.fail, 1)
+						log.Logger.Error(ctx, "SearchKeywords", title, err)
+					} else {
+						datas = append(datas, data2)
+					}
+
+					for _, data := range datas {
+						bdata, ok := data.(*dto.SearchKeywords)
+						if !ok {
+							atomic.AddInt32(&t.fail, 1)
+							log.Logger.Error(ctx, "data.(*dto.SearchKeywords) assert fail")
+							continue
+						}
+
+						if bdata.Code != 0 {
+							atomic.AddInt32(&t.fail, 1)
+							log.Logger.Error(ctx, bdata.Message)
+							continue
+						}
+
+						// 写入数据
+						err = recodeBilibiliData(ctx, bdata, author.Platform, name)
+						if err != nil {
+							atomic.AddInt32(&t.fail, 1)
+						} else {
+							atomic.AddInt32(&t.success, 1)
+						}
+					}
+
+					if len(datas) == 0 {
+						// 没有查询到数据
+						// 认为成功执行了
 						atomic.AddInt32(&t.success, 1)
 					}
-
 					// 生成一个1到3秒之间的随机时间间隔
-					rand.Seed(time.Now().UnixNano())
-					duration := time.Duration(rand.Intn(3)+1) * time.Second
-					time.Sleep(duration)
+					//rand.Seed(time.Now().UnixNano())
+					//duration := time.Duration(rand.Intn(3)+1) * time.Second
+					//time.Sleep(duration)
 				}()
 
 			}
@@ -123,11 +141,11 @@ func fetchData(ctx *context.Context, authors []*model.AuthorSpace, heroes []*mod
 	}
 	t.wg.Wait()
 
+	log.Logger.Info(ctx, fmt.Sprintf("BilibiliGrab Done"))
 	log.Logger.Info(ctx, fmt.Sprintf("共有: %d 个任务", t.total))
-	log.Logger.Info(ctx, fmt.Sprintf("处理了: %d 个任务", t.done))
 	log.Logger.Info(ctx, fmt.Sprintf("提前结束,执行出错: %d 个任务", t.fail))
 	log.Logger.Info(ctx, fmt.Sprintf("成功执行了: %d 个任务", t.success))
-	log.Logger.Info(ctx, fmt.Sprintf("剩余: %d 个任务待处理", t.total-t.done))
+	log.Logger.Info(ctx, fmt.Sprintf("剩余: %d 个任务待处理", t.total-t.success-t.fail))
 }
 
 func recodeBilibiliData(ctx *context.Context, data *dto.SearchKeywords, platform int, hero string) error {
@@ -148,18 +166,14 @@ func recodeBilibiliData(ctx *context.Context, data *dto.SearchKeywords, platform
 			Bvid:       d.Bvid,
 			Played:     d.Play,
 			Hero:       hero,
+			Length:     d.Length,
 		}
-		rows, err := dao.InsertORIgnore(strategy)
+		err := dao.InsertORIgnore(strategy)
 		if err != nil {
 			log.Logger.Error(ctx, err)
 			return err
 		}
-		if rows == 0 {
-			log.Logger.Info(ctx, hero, "未更新")
-			return err
-		} else {
-			log.Logger.Info(ctx, d.Author, hero, "ok")
-		}
+		log.Logger.Info(ctx, d.Author, hero, d.Bvid, "ok")
 	}
 	return nil
 }

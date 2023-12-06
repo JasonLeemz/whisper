@@ -17,6 +17,7 @@ type GameStrategy struct {
 	Subtitle    string    `gorm:"column:subtitle;default:;NOT NULL;comment:'视频副标题'"`
 	Status      int8      `gorm:"column:status;default:0;NOT NULL"`
 	Bvid        string    `gorm:"column:bvid;default:0;NOT NULL"`
+	Length      string    `gorm:"column:length;default:0;NOT NULL"`
 	Played      int64     `gorm:"column:played;default:0;NOT NULL"`
 	Hero        string    `gorm:"column:hero;default:0;NOT NULL"`
 }

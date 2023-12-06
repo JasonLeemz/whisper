@@ -17,8 +17,6 @@ type Bilibili struct {
 
 func (b *Bilibili) SearchKeywords(ctx *context.Context, url string) (interface{}, error) {
 
-	log.Logger.Info(ctx, "url="+url)
-
 	// 发送 GetForm 请求
 	sk := dto.SearchKeywords{}
 
@@ -28,5 +26,8 @@ func (b *Bilibili) SearchKeywords(ctx *context.Context, url string) (interface{}
 	}
 
 	err = json.Unmarshal(body, &sk)
+	if err != nil {
+		log.Logger.Error(ctx, string(body), err)
+	}
 	return &sk, err
 }
