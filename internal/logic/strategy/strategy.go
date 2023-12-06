@@ -35,6 +35,8 @@ func (s *Strategy) Hero(name string, platform int) ([]*dto.StrategyHero, error) 
 			Author:     d.Author,
 			MainImg:    d.MainImage,
 			JumpURL:    d.LinkUrl,
+			VideoID:    d.Bvid,
+			Length:     d.Length,
 			Source:     d.Source,
 			Played:     d.Played,
 			Platform:   d.Platform,

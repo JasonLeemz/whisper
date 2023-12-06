@@ -78,6 +78,31 @@ export default {
         this.sideDrawer.activeKey = ref([])
       }
     },
+    jumpApp(source,jump_url,video_id){
+      let ua = navigator.userAgent.toLowerCase();
+      let isAndroid = ua.indexOf('android') > -1 || ua.indexOf('linux') > -1;
+      if (source === 0){
+        let h5Link = jump_url
+        let schemeLink = "bilibili://video/"+video_id
+
+        if(isAndroid){
+          //android
+          // $('body').append("<iframe src="+schemeLink+" style='display:none' target='' ></iframe>");//target为空防止在当前页面刷新
+          window.location = schemeLink;
+          setTimeout(function(){
+            // window.location = h5Link
+            window.open(h5Link, "_blank");
+          },600);
+        }else{
+          //ios
+          window.location = schemeLink;
+          setTimeout(function(){
+            window.location = h5Link
+            // window.open(h5Link, "_blank");
+          },25);
+        }
+      }
+    }
   },
   created() {
   },
@@ -220,7 +245,7 @@ export default {
       <a-collapse  v-model:activeKey="sideDrawer.panel.panelKeysStrategyList">
         <a-collapse-panel key="strategy-list" header="点击链接跳转观看">
           <div v-for="(item,i) in heroResult.data.feed" :key="i" class="strategy-wrap">
-            <a :href="item.jump_url" target="_blank">
+            <span class="jump-wrap" @click="jumpApp(item.source,item.jump_url,item.video_id)">
               <div class="strategy-main-img-wrap">
                 <img :src="item.main_img" :alt="item.title" class="strategy-main-img" />
                 <div class="card-statee">
@@ -230,7 +255,7 @@ export default {
               <p class="strategy-subtitle">{{ item.subtitle }}</p>
               <p class="strategy-author">{{ item.author }}</p>
               <p class="strategy-public-date">{{ item.public_date }}</p>
-            </a>
+            </span>
           </div>
         </a-collapse-panel>
       </a-collapse>
