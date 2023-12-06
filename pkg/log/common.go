@@ -12,7 +12,7 @@ const (
 	loggerTypeGorm  = "gorm"
 	loggerTypeES    = "es"
 	loggerTypeMongo = "mongo"
-	//loggerTypeXXX   = "xxx"
+	loggerTypeRPC   = "rpc"
 )
 
 var (

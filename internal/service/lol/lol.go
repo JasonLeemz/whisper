@@ -24,7 +24,6 @@ type LOL struct {
 
 func (lol *LOL) QueryEquipments(ctx *context.Context) (interface{}, error) {
 	url := fmt.Sprintf("%s?ts=%d", config.LOLConfig.Lol.Equipment, lol.ts)
-	log.Logger.Info(ctx, "url="+url)
 
 	// 发送 GetForm 请求
 	equip := dto.LOLEquipment{}
@@ -40,7 +39,6 @@ func (lol *LOL) QueryEquipments(ctx *context.Context) (interface{}, error) {
 
 func (lol *LOL) QueryHeroes(ctx *context.Context) (interface{}, error) {
 	url := fmt.Sprintf("%s?ts=%d", config.LOLConfig.Lol.Heroes, lol.ts)
-	log.Logger.Info(ctx, "url="+url)
 
 	// 发送 GetForm 请求
 	heroes := dto.LOLHeroes{}
@@ -56,7 +54,6 @@ func (lol *LOL) QueryHeroes(ctx *context.Context) (interface{}, error) {
 
 func (lol *LOL) QueryRune(ctx *context.Context) (interface{}, error) {
 	url := fmt.Sprintf("%s?ts=%d", config.LOLConfig.Lol.Rune, lol.ts)
-	log.Logger.Info(ctx, "url="+url)
 
 	// 发送 GetForm 请求
 	r := dto.LOLRune{}
@@ -72,7 +69,6 @@ func (lol *LOL) QueryRune(ctx *context.Context) (interface{}, error) {
 
 func (lol *LOL) QuerySkill(ctx *context.Context) (interface{}, error) {
 	url := fmt.Sprintf("%s?ts=%d", config.LOLConfig.Lol.Skill, lol.ts)
-	log.Logger.Info(ctx, "url="+url)
 
 	// 发送 GetForm 请求
 	s := dto.LOLSkill{}
@@ -89,7 +85,6 @@ func (lol *LOL) QuerySkill(ctx *context.Context) (interface{}, error) {
 func (lol *LOL) GetHeroAttribute(ctx *context.Context, heroID string) (interface{}, error) {
 	heroAttrUrl := fmt.Sprintf(config.LOLConfig.Lol.Hero, heroID)
 	url := fmt.Sprintf("%s?ts=%d", heroAttrUrl, lol.ts)
-	log.Logger.Debug(ctx, "url="+url)
 
 	// 发送 GetForm 请求
 	r := dto.HeroAttribute{}
@@ -109,7 +104,6 @@ func (lol *LOL) QueryRuneType(ctx *context.Context) (interface{}, error) {
 
 func (lol *LOL) QuerySuitEquip(ctx *context.Context, heroID string) (interface{}, error) {
 	url := fmt.Sprintf(config.LOLConfig.Lol.SuitEquip, lol.yesterday, heroID)
-	log.Logger.Info(ctx, "url="+url)
 
 	// 发送 GetForm 请求
 	suitEquip := dto.HeroSuitEquip{}
@@ -137,7 +131,6 @@ func (lol *LOL) HeroRankData(ctx *context.Context, heroID string) (interface{}, 
 	//jsonpResponse := `var CHAMPION_DETAIL_17={"gameVer":"13.16","date":"2023-08-30 16:15:26"};/*  |xGv00|b214aa8b2b62d14489dce9170b96cdee */`
 	champDetailUrl := fmt.Sprintf(config.LOLConfig.Lol.ChampDetail, heroID)
 	url := fmt.Sprintf("%s?ts=%d", champDetailUrl, lol.ts)
-	log.Logger.Info(ctx, "url="+url)
 
 	// 发送 GetForm 请求
 	championFightData := dto.ChampionFightData{}
@@ -149,10 +142,12 @@ func (lol *LOL) HeroRankData(ctx *context.Context, heroID string) (interface{}, 
 
 	// 使用正则表达式提取 JSON 数据部分
 	re := regexp.MustCompile(`{.*}`)
-	match := re.FindString(string(body))
+	o := string(body)
+	match := re.FindString(o)
 
 	err = json.Unmarshal([]byte(match), &championFightData)
 	if err != nil {
+		log.Logger.Error(ctx, o, match)
 		return nil, err
 	}
 
@@ -165,8 +160,6 @@ func (lol *LOL) HeroRankList(ctx *context.Context) (interface{}, error) {
 
 func (lol *LOL) VersionList(ctx *context.Context) (interface{}, error) {
 	versionListUrl := config.LOLConfig.Lol.VersionList
-
-	log.Logger.Info(ctx, "versionListUrl="+versionListUrl)
 
 	// 发送 GetForm 请求
 	versionList := dto.VersionList{}
@@ -199,7 +192,6 @@ func (lol *LOL) VersionDetail(ctx *context.Context, keys []string) (interface{},
 			defer wg.Done()
 
 			detailUrl := fmt.Sprintf(versionDetailUrl, k)
-			log.Logger.Info(ctx, "detailUrl="+detailUrl)
 			body, err := http.GetForm(ctx, detailUrl, lol.commonHeaders...)
 			if err != nil {
 				log.Logger.Error(ctx, err)
@@ -230,7 +222,6 @@ func (lol *LOL) VersionDetail(ctx *context.Context, keys []string) (interface{},
 func (lol *LOL) VersionInfo(ctx *context.Context, vKey, id string) (interface{}, error) {
 	// https://mlol.qt.qq.com/go/database/versioninfo?key=%s # lol_20170111_10
 	versionInfoUrl := fmt.Sprintf(config.LOLConfig.Lol.VersionInfo, "lol_"+vKey+"_"+id)
-	log.Logger.Info(ctx, "versionInfoUrl="+versionInfoUrl)
 
 	// 发送 GetForm 请求
 	versionInfo := dto.VersionInfo{}

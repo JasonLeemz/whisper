@@ -178,35 +178,44 @@ func (suit *suit) getFightData(heroId string) (*dto.ChampionFightData, error) {
 		tmp := dto.ChampionLaneItem{}
 
 		var err error
-		err = json.Unmarshal([]byte(posData.Itemoutjson), &equipData)
-		if err != nil {
-			log.Logger.Warn(suit.ctx, err, "heroid:", heroId)
-		} else {
-			tmp.Itemout = equipData
+
+		if posData.Itemoutjson != "" {
+			err = json.Unmarshal([]byte(posData.Itemoutjson), &equipData)
+			if err != nil {
+				log.Logger.Warn(suit.ctx, err, "heroid:", heroId)
+			} else {
+				tmp.Itemout = equipData
+			}
 		}
 
-		equipData = *new(map[string]dto.Itemjson)
-		err = json.Unmarshal([]byte(posData.Core3itemjson), &equipData)
-		if err != nil {
-			log.Logger.Warn(suit.ctx, err, "heroid:", heroId)
-		} else {
-			tmp.Core3item = equipData
+		if posData.Core3itemjson != "" {
+			equipData = *new(map[string]dto.Itemjson)
+			err = json.Unmarshal([]byte(posData.Core3itemjson), &equipData)
+			if err != nil {
+				log.Logger.Warn(suit.ctx, err, "heroid:", heroId)
+			} else {
+				tmp.Core3item = equipData
+			}
 		}
 
-		equipData = *new(map[string]dto.Itemjson)
-		err = json.Unmarshal([]byte(posData.Shoesjson), &equipData)
-		if err != nil {
-			log.Logger.Warn(suit.ctx, err, "heroid:", heroId)
-		} else {
-			tmp.Shoes = equipData
+		if posData.Shoesjson != "" {
+			equipData = *new(map[string]dto.Itemjson)
+			err = json.Unmarshal([]byte(posData.Shoesjson), &equipData)
+			if err != nil {
+				log.Logger.Warn(suit.ctx, err, "heroid:", heroId)
+			} else {
+				tmp.Shoes = equipData
+			}
 		}
 
-		var suits []dto.Itemjson
-		err = json.Unmarshal([]byte(posData.Hold3), &suits)
-		if err != nil {
-			log.Logger.Warn(suit.ctx, err, "heroid:", heroId)
-		} else {
-			tmp.Suits = suits
+		if posData.Hold3 != "" {
+			var suits []dto.Itemjson
+			err = json.Unmarshal([]byte(posData.Hold3), &suits)
+			if err != nil {
+				log.Logger.Warn(suit.ctx, err, "heroid:", heroId)
+			} else {
+				tmp.Suits = suits
+			}
 		}
 
 		fightData.List.ChampionLane[pos] = tmp

@@ -106,6 +106,7 @@ type ESCfg struct {
 type LogCfg struct {
 	LogLevel int    `yaml:"logLevel"`
 	Path     string `yaml:"path"`
+	RpcLog   string `yaml:"rpcLog"`
 	SqlLog   string `yaml:"sqlLog"`
 	EsLog    string `yaml:"esLog"`
 	MongoLog string `yaml:"mongoLog"`

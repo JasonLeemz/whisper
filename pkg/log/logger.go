@@ -10,10 +10,11 @@ import (
 
 // Logger 声明日志类全局变量
 var (
-	Logger  *WhisperLogger
-	GLogger *GormLogger
-	ELogger *ESLogger
-	MLogger *MongoLogger
+	Logger    *WhisperLogger
+	RpcLogger *RPCLogger
+	GLogger   *GormLogger
+	ELogger   *ESLogger
+	MLogger   *MongoLogger
 	//Xlogger *XXXLogger
 )
 
@@ -62,6 +63,8 @@ func CreateLogger(loggerType loggerType) CreateLoggerFunc {
 		return newESLogger()
 	case loggerTypeMongo:
 		return newMongoLogger()
+	case loggerTypeRPC:
+		return newRPCLogger()
 	//case loggerTypeXXX:
 	//	return newXXXLogger()
 	default:
@@ -78,6 +81,14 @@ func Init() {
 			zapcore.Level(config.GlobalConfig.Log.LogLevel),
 		),
 	).(*WhisperLogger)
+
+	RpcLogger = CreateLogger(loggerTypeRPC)(
+		createSugarLogger(
+			getEncoder(),
+			getLogWriter(config.GlobalConfig.Log.RpcLog),
+			zapcore.Level(config.GlobalConfig.Log.LogLevel),
+		),
+	).(*RPCLogger)
 
 	// gorm logger
 	GLogger = CreateLogger(loggerTypeGorm)(

@@ -1,7 +1,6 @@
 package http
 
 import (
-	"errors"
 	"github.com/go-resty/resty/v2"
 	"whisper/pkg/context"
 	"whisper/pkg/log"
@@ -23,11 +22,11 @@ func GetForm(ctx *context.Context, url string, header ...Header) ([]byte, error)
 		cli.SetHeader("Accept", "application/x-www-form-urlencoded")
 	}
 	resp, err := cli.Get(url)
-	if resp == nil {
-		return nil, errors.New("resp is nil")
+	log.RpcLogger.Info(ctx, url, err)
+	if err != nil {
+		return nil, err
 	}
-	log.Logger.Debug(ctx, "url="+url, "body="+string(resp.Body()))
-	return resp.Body(), err
+	return resp.Body(), nil
 }
 
 func PostForm(ctx *context.Context, url string, data any, header ...Header) ([]byte, error) {
@@ -44,10 +43,10 @@ func PostForm(ctx *context.Context, url string, data any, header ...Header) ([]b
 
 	resp, err := cli.
 		SetBody(data).
-		Get(url)
-	if resp == nil {
-		return nil, errors.New("resp is nil")
+		Post(url)
+	log.RpcLogger.Info(ctx, url, err)
+	if err != nil {
+		return nil, err
 	}
-	log.Logger.Debug(ctx, "url="+url, "body="+string(resp.Body()))
-	return resp.Body(), err
+	return resp.Body(), nil
 }
