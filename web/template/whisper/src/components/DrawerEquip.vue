@@ -1,9 +1,11 @@
 <script>
 import LoadingPart from "@/components/LoadingPart.vue";
 import axios from "axios";
+import FeedList from "@/components/FeedList.vue";
 
 export default {
   components: {
+    FeedList,
     LoadingPart
   },
   emits: ['skipSearch'],
@@ -17,11 +19,16 @@ export default {
   data() {
     return {
       sideDrawer: {
-        isLoading:false,
+        isLoading: false,
         show: false,
         title: '合成路线',
-        heroes:[],
-        loadingHeroes:false,
+        heroes: [],
+        loadingHeroes: false,
+      },
+      feed: {
+        show: 0,
+        isLoading: false,
+        data: [],
       },
     }
   },
@@ -32,20 +39,25 @@ export default {
     'equipResult.isLoading'(isLoading) {
       this.sideDrawer.isLoading = isLoading
     },
-    'equipResult.data'(data){
-      this.querySuitHeroes(data.current.platform,data.current.version,data.current.ID)
+    'equipResult.data'(data) {
+      this.querySuitHeroes(data.current.platform, data.current.version, data.current.ID)
+      this.queryFeedList(data.current.platform, data.current.ID)
     }
   },
   methods: {
-    querySuitHeroes(platform,version,id) {
-      this.sideDrawer.loadingHeroes  = true
+    querySuitHeroes(platform, version, id) {
+      this.sideDrawer.loadingHeroes = true
       axios.post('/equip/hero/suit', {
             'platform': platform,
             'version': version,
             'id': id,
           }
       ).then(response => {
-            this.sideDrawer.heroes = response.data.data
+            let heroes = response.data.data.data
+            if (heroes == null) {
+              heroes = []
+            }
+            this.sideDrawer.heroes = heroes
           }
       ).catch(error => {
             console.error('Error fetching server data:', error);
@@ -54,6 +66,23 @@ export default {
             this.sideDrawer.loadingHeroes = false
           }
       );
+    },
+    queryFeedList(platform, id) {
+      // 获取推荐视频列表
+      axios.post('/strategy/equip', {
+        'platform': platform,
+        'id': id,
+      }).then(response => {
+        // 将服务器返回的数据更新到组件的 serverData 字段
+        // console.log(response)
+        this.feed.show++
+        this.feed.isLoading = true
+        this.feed.data = response.data.data
+      }).catch(error => {
+        console.error('Error fetching server data:', error);
+      }).finally(() => {
+        this.feed.isLoading = false
+      });
     }
   },
   mounted() {
@@ -186,9 +215,9 @@ export default {
       <!-- summary END-->
 
       <!-- 适配英雄 START-->
-      <h4 class="equip-suit-hero" v-if="sideDrawer.loadingHeroes" >适配英雄</h4>
-      <LoadingPart v-if="sideDrawer.loadingHeroes" />
-      <template v-if="!sideDrawer.loadingHeroes && sideDrawer.heroes.length > 0" >
+      <h4 class="equip-suit-hero" v-if="sideDrawer.loadingHeroes">适配英雄</h4>
+      <LoadingPart v-if="sideDrawer.loadingHeroes"/>
+      <template v-if="!sideDrawer.loadingHeroes && sideDrawer.heroes.length > 0">
         <h4 class="equip-suit-hero">适配英雄</h4>
         <template v-for="(hero,i) in sideDrawer.heroes" :key="i">
           <a-tooltip :title="hero.name">
@@ -203,5 +232,7 @@ export default {
 
       <!-- 适配英雄 END-->
     </template>
+
+    <FeedList :feed-list="feed"/>
   </a-drawer>
 </template>

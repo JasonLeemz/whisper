@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"whisper/internal/dto"
 	"whisper/internal/logic"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
@@ -19,5 +20,13 @@ func GetRuneHeroSuit(ctx *context.Context) {
 	}
 
 	suit, err := logic.GetRuneHeroSuit(ctx, req.Platform, req.RuneId)
-	ctx.Reply(suit, errors.New(err))
+
+	resp := dto.SthHeroSuit{
+		ID:       req.RuneId,
+		Platform: req.Platform,
+	}
+	for _, s := range suit {
+		resp.Data = append(resp.Data, s)
+	}
+	ctx.Reply(resp, errors.New(err))
 }

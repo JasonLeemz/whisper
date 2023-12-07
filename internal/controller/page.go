@@ -2,6 +2,7 @@ package controller
 
 import (
 	"whisper/internal/logic"
+	"whisper/internal/logic/equipment"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
 )
@@ -22,7 +23,7 @@ func GetRoadmap(ctx *context.Context) {
 	if err := ctx.Bind(req); err != nil {
 		return
 	}
-	roadmap, err := logic.GetRoadmap(ctx, req.Version, req.Platform, req.ID, req.Maps)
+	roadmap, err := equipment.GetRoadmap(ctx, req.Version, req.Platform, req.ID, req.Maps)
 
 	ctx.Reply(roadmap, errors.New(err))
 }

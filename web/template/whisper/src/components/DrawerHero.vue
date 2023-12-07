@@ -1,11 +1,11 @@
 <script>
 import {CaretRightOutlined} from "@ant-design/icons-vue";
 import {ref} from "vue";
-import StrategyVideo from "@/components/StrategyVideo.vue";
+import FeedList from "@/components/FeedList.vue";
 import axios from "axios";
 
 export default {
-  components: {StrategyVideo, CaretRightOutlined},
+  components: {FeedList, CaretRightOutlined},
   props: {
     heroResult: {
       show: 0,
@@ -73,8 +73,8 @@ export default {
 
       // 获取推荐视频列表
       axios.post('/strategy/hero', {
-        'platform': this.heroResult.data.platform,
-        'hero_id': this.heroResult.data.hero_id,
+        'platform': data.platform,
+        'id': data.hero_id,
       }).then(response => {
         // 将服务器返回的数据更新到组件的 serverData 字段
         // console.log(response)
@@ -236,7 +236,7 @@ export default {
       </template>
     </template>
 
-    <StrategyVideo :feed-list="feed"/>
+    <FeedList :feed-list="feed"/>
   </a-drawer>
 </template>
 

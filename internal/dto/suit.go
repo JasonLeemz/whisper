@@ -1,5 +1,13 @@
 package dto
 
+// SthHeroSuit 装备、符文的适配
+type SthHeroSuit struct {
+	ID       string        `json:"id"`
+	Platform int           `json:"platform"`
+	Data     []interface{} `json:"data"`
+}
+
+// HeroSuit 英雄的所有适配
 type HeroSuit struct {
 	HeroID   string                        `json:"hero_id"`
 	Platform int                           `json:"platform"`

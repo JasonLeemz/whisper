@@ -44,7 +44,15 @@ func GetEquipHeroSuit(ctx *context.Context) {
 	}
 
 	suit, err := logic.GetEquipHeroSuit(ctx, req.Platform, cast.ToString(req.EquipId))
-	ctx.Reply(suit, errors.New(err))
+
+	resp := dto.SthHeroSuit{
+		ID:       strconv.Itoa(req.EquipId),
+		Platform: req.Platform,
+	}
+	for _, s := range suit {
+		resp.Data = append(resp.Data, s)
+	}
+	ctx.Reply(resp, errors.New(err))
 }
 
 type ReqEquipExtract struct {

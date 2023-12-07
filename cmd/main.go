@@ -150,6 +150,10 @@ func main() {
 
 			// 查询英雄攻略
 			inner.POST("/strategy/hero", context.Handle(controller.StrategyHero))
+			// 查询装备攻略
+			inner.POST("/strategy/equip", context.Handle(controller.StrategyEquip))
+			// 查询符文攻略
+			inner.POST("/strategy/rune", context.Handle(controller.StrategyRune))
 		}
 	}
 	run.Init()

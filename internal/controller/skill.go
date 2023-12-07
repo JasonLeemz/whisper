@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"whisper/internal/dto"
 	"whisper/internal/logic"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
@@ -8,7 +9,7 @@ import (
 
 type ReqGetSkillHeroSuit struct {
 	Platform int    `form:"platform" json:"platform" binding:"-"`
-	RuneId   string `json:"id"`
+	SkillID  string `json:"id"`
 	Version  string `json:"version"`
 }
 
@@ -18,6 +19,13 @@ func GetSkillHeroSuit(ctx *context.Context) {
 		return
 	}
 
-	suit, err := logic.GetSkillHeroSuit(ctx, req.Platform, req.RuneId)
-	ctx.Reply(suit, errors.New(err))
+	suit, err := logic.GetSkillHeroSuit(ctx, req.Platform, req.SkillID)
+	resp := dto.SthHeroSuit{
+		ID:       req.SkillID,
+		Platform: req.Platform,
+	}
+	for _, s := range suit {
+		resp.Data = append(resp.Data, s)
+	}
+	ctx.Reply(resp, errors.New(err))
 }
