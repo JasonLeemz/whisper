@@ -1,9 +1,9 @@
 <script>
-import {CaretRightOutlined} from "@ant-design/icons-vue";
+import {YoutubeOutlined,CaretRightOutlined} from "@ant-design/icons-vue";
 import {ref} from "vue";
 
 export default {
-  components: {CaretRightOutlined},
+  components: {YoutubeOutlined,CaretRightOutlined},
   props: {
     heroResult: {
       show: 0,
@@ -44,7 +44,8 @@ export default {
           'bottom': 'AD',
           'support': '辅助',
           'jungle': '打野',
-        }
+        },
+        htmlContent:"",
       },
     }
   },
@@ -81,18 +82,29 @@ export default {
     jumpApp(source,jump_url,video_id){
       let ua = navigator.userAgent.toLowerCase();
       let isAndroid = ua.indexOf('android') > -1 || ua.indexOf('linux') > -1;
+      let mobileAgent = ["iphone", "ipod", "ipad", "android", "mobile", "blackberry", "webos", "incognito", "webmate", "bada", "nokia", "lg", "ucweb", "skyfire"];
+      let isMobile = false;
+      for (let i = 0; i < mobileAgent.length; i++) {
+        if (ua.indexOf(mobileAgent[i]) !== -1)
+        {
+          isMobile = true;
+          break;
+        }
+      }
+
       if (source === 0){
         let h5Link = jump_url
         let schemeLink = "bilibili://video/"+video_id
 
         if(isAndroid){
           //android
-          // $('body').append("<iframe src="+schemeLink+" style='display:none' target='' ></iframe>");//target为空防止在当前页面刷新
-          window.location = schemeLink;
+          this.sideDrawer.htmlContent = "<iframe src="+schemeLink+" style='display:none' target='' ></iframe>"
           setTimeout(function(){
             // window.location = h5Link
             window.open(h5Link, "_blank");
           },600);
+        }else if (!isMobile){
+          window.open(h5Link, "_blank");
         }else{
           //ios
           window.location = schemeLink;
@@ -248,20 +260,27 @@ export default {
             <span class="jump-wrap" @click="jumpApp(item.source,item.jump_url,item.video_id)">
               <div class="strategy-main-img-wrap">
                 <img :src="item.main_img" :alt="item.title" class="strategy-main-img" />
-                <div class="card-statee">
-                  <p class="strategy-title">{{ item.title }}</p>
+                <div class="card-state">
+                  <i class="play-times"><YoutubeOutlined /> {{ item.played }}</i>
+                  <i class="play-length">{{ item.length }}</i>
                 </div>
               </div>
+              <p class="strategy-title">{{ item.title }}</p>
               <p class="strategy-subtitle">{{ item.subtitle }}</p>
-              <p class="strategy-author">{{ item.author }}</p>
-              <p class="strategy-public-date">{{ item.public_date }}</p>
+              <p class="strategy-author">
+                {{ item.author }}
+                <i class="strategy-public-date">{{ item.public_date }}</i>
+              </p>
+
             </span>
           </div>
         </a-collapse-panel>
       </a-collapse>
       <!-- 推荐列表 END-->
     </template>
-
+    <template>
+      <div v-html="this.sideDrawer.htmlContent"></div>
+    </template>
   </a-drawer>
 </template>
 

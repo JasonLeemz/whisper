@@ -831,6 +831,15 @@
       color: #0C0C0C;
     }
 
+    .strategy-title {
+      font-size: 13px;
+      line-height: 13px;
+      color: #0C0C0C;
+      margin: 5px 0 0 5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .strategy-author, .strategy-public-date {
       color: #9499a0;
       margin: 5px;
@@ -849,7 +858,7 @@
           object-fit: cover;
           border-radius: 8px;
         }
-        .card-statee{
+        .card-state{
           display: inline-block;
           position: absolute;
           bottom: 0;
@@ -861,15 +870,17 @@
           border-bottom-right-radius: 6px;
           border-bottom-left-radius: 6px;
           background-image: linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.8) 100%);
+          vertical-align: bottom;
           color: #fff;
+          padding: 16px 8px 6px;
+          font-size: 13px;
 
-          .strategy-title {
-            font-size: 12px;
-            line-height: 12px;
-            color: #fff;
-            padding: 6px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+          .play-times{
+            font-style: normal;
+          }
+          .play-length{
+            font-style: normal;
+            float: right;
           }
         }
       }
