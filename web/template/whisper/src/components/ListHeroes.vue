@@ -16,10 +16,7 @@ export default {
         show: 0,
         background: '',
         isLoading: false,
-        data: {
-          result:{},
-          feed:[],
-        },
+        data: {},
       }
     }
   },
@@ -53,28 +50,13 @@ export default {
             'hero_id': id,
           }
       ).then(response => {
-            this.drawer.data.result = response.data.data
+            this.drawer.data = response.data.data
           }
       ).catch(error => {
             console.error('Error fetching server data:', error);
           }
       ).finally(() => {
             this.drawer.isLoading = false
-          }
-      );
-
-      axios.post('/strategy/hero', {
-        'platform': platform,
-        'hero_id': id,
-      })
-          .then(response => {
-            // 将服务器返回的数据更新到组件的 serverData 字段
-            console.log(response)
-            this.drawer.data.feed = response.data.data
-          })
-          .catch(error => {
-            console.error('Error fetching server data:', error);
-          }).finally(() => {
           }
       );
     },
