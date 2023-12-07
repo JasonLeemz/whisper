@@ -193,5 +193,31 @@ func (e *Inner) GetAll(platform int) interface{} {
 		}
 		return mequip
 	}
+}
+
+// GetOne 获取符文
+func (e *Inner) GetOne(platform int, id interface{}) interface{} {
+	// 获取全部装备
+	if platform == common.PlatformForLOL {
+		d := dao.NewLOLEquipmentDAO()
+		data, _ := d.Find([]string{"*"}, map[string]interface{}{
+			"itemId": id,
+		})
+		if len(data) == 0 {
+			return nil
+		} else {
+			return data[0]
+		}
+	} else {
+		d := dao.NewLOLMEquipmentDAO()
+		data, _ := d.Find([]string{"*"}, map[string]interface{}{
+			"equipId": id,
+		})
+		if len(data) == 0 {
+			return nil
+		} else {
+			return data[0]
+		}
+	}
 
 }

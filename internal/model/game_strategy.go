@@ -19,7 +19,7 @@ type GameStrategy struct {
 	Bvid        string    `gorm:"column:bvid;default:0;NOT NULL"`
 	Length      string    `gorm:"column:length;default:0;NOT NULL"`
 	Played      int64     `gorm:"column:played;default:0;NOT NULL"`
-	Hero        string    `gorm:"column:hero;default:0;NOT NULL"`
+	Keywords    string    `gorm:"column:keywords;default:0;NOT NULL"`
 }
 
 func (g *GameStrategy) TableName() string {

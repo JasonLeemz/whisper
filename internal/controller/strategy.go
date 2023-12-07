@@ -4,8 +4,11 @@ import (
 	"github.com/spf13/cast"
 	"whisper/internal/logic"
 	"whisper/internal/logic/common"
+	"whisper/internal/logic/equipment"
+	rune2 "whisper/internal/logic/rune"
 	"whisper/internal/logic/spider"
 	"whisper/internal/logic/strategy"
+	"whisper/internal/model"
 	"whisper/pkg/context"
 	"whisper/pkg/errors"
 )
@@ -43,7 +46,7 @@ func StrategyHero(ctx *context.Context) {
 		}
 	}
 
-	list, err := strategy.NewStrategy(ctx).Hero(req.Keywords, req.Platform)
+	list, err := strategy.NewStrategy(ctx).List(req.Keywords, req.Platform)
 	ctx.Reply(list, errors.New(err))
 }
 
@@ -55,20 +58,16 @@ func StrategyEquip(ctx *context.Context) {
 
 	if req.Keywords == "" && req.ID != "" {
 		// 查询装备名字
-		attr, err := logic.QueryHeroAttribute(ctx, cast.ToString(req.ID), req.Platform)
-		if err != nil {
-			ctx.Reply(nil, errors.New(err))
-			return
-		}
-
 		if req.Platform == common.PlatformForLOL {
-			req.Keywords = attr.Hero.Title
+			r := equipment.NewInnerIns(ctx).GetOne(req.Platform, req.ID).(*model.LOLEquipment)
+			req.Keywords = r.Name
 		} else {
-			req.Keywords = attr.Hero.Name
+			r := equipment.NewInnerIns(ctx).GetOne(req.Platform, req.ID).(*model.LOLMEquipment)
+			req.Keywords = r.Name
 		}
 	}
 
-	list, err := strategy.NewStrategy(ctx).Hero(req.Keywords, req.Platform)
+	list, err := strategy.NewStrategy(ctx).List(req.Keywords, req.Platform)
 	ctx.Reply(list, errors.New(err))
 }
 
@@ -79,20 +78,16 @@ func StrategyRune(ctx *context.Context) {
 	}
 
 	if req.Keywords == "" && req.ID != "" {
-		// 查询英雄名字
-		attr, err := logic.QueryHeroAttribute(ctx, cast.ToString(req.ID), req.Platform)
-		if err != nil {
-			ctx.Reply(nil, errors.New(err))
-			return
-		}
-
+		// 查询符文名字
 		if req.Platform == common.PlatformForLOL {
-			req.Keywords = attr.Hero.Title
+			r := rune2.NewInnerIns(ctx).GetOne(req.Platform, req.ID).(*model.LOLRune)
+			req.Keywords = r.Name
 		} else {
-			req.Keywords = attr.Hero.Name
+			r := rune2.NewInnerIns(ctx).GetOne(req.Platform, req.ID).(*model.LOLMRune)
+			req.Keywords = r.Name
 		}
 	}
 
-	list, err := strategy.NewStrategy(ctx).Hero(req.Keywords, req.Platform)
+	list, err := strategy.NewStrategy(ctx).List(req.Keywords, req.Platform)
 	ctx.Reply(list, errors.New(err))
 }

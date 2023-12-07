@@ -1,7 +1,7 @@
 package dto
 
 type StrategyHero struct {
-	Desc       string `json:"desc"`
+	Keywords   string `json:"keywords"`
 	Title      string `json:"title"`
 	Subtitle   string `json:"subtitle"`
 	PublicDate string `json:"public_date"`

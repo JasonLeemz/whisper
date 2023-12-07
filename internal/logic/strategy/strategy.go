@@ -14,10 +14,10 @@ func NewStrategy(ctx *context.Context) *Strategy {
 	return &Strategy{ctx: ctx}
 }
 
-func (s *Strategy) Hero(name string, platform int) ([]*dto.StrategyHero, error) {
+func (s *Strategy) List(name string, platform int) ([]*dto.StrategyHero, error) {
 	dao := dao2.NewGameStrategyDAO()
 	result, err := dao.Find([]string{"*"}, map[string]interface{}{
-		"hero":     name,
+		"keywords": name,
 		"platform": platform,
 		"status":   0,
 	})
@@ -28,7 +28,7 @@ func (s *Strategy) Hero(name string, platform int) ([]*dto.StrategyHero, error) 
 	data := make([]*dto.StrategyHero, 0, len(result))
 	for _, d := range result {
 		data = append(data, &dto.StrategyHero{
-			Desc:       d.Hero,
+			Keywords:   d.Keywords,
 			Title:      d.Title,
 			Subtitle:   d.Subtitle,
 			PublicDate: d.PublicDate.Format("06/01/02 15:04"),

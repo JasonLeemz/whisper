@@ -11,7 +11,6 @@ import (
 type Bilibili struct {
 	ts            int64
 	referer       []http.Header
-	cookie        []http.Header
 	commonHeaders []http.Header
 }
 

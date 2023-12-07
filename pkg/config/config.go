@@ -12,7 +12,16 @@ var (
 	GlobalConfig *Config
 	LOLConfig    *LolConfig
 	EquipDict    *EquipConfig
+	SpiderCfg    *SpiderConfig
 )
+
+type SpiderConfig struct {
+	Bilibili Bilibili `yaml:"bilibili"`
+}
+
+type Bilibili struct {
+	Cookie string `yaml:"cookie"`
+}
 
 type EquipConfig struct {
 	Exclude []string    `yaml:"exclude"`
@@ -175,6 +184,32 @@ func Init() {
 		OnChange: func(namespace, group, dataId, data string) {
 			err = yaml.Unmarshal([]byte(data), &EquipDict)
 			fmt.Println(fmt.Sprintf("EquipDict: %#v \n", EquipDict))
+			if err != nil {
+				fmt.Println(fmt.Sprintf("Failed to unmarshal nacos config: %s \n", err))
+			}
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	// spider_cfg
+	content, err = nacos.ConfigClient.GetConfig(vo.ConfigParam{
+		DataId: nacos.NacosConfig.Spider.DataID,
+		Group:  nacos.NacosConfig.Spider.Group,
+	})
+
+	err = yaml.Unmarshal([]byte(content), &SpiderCfg)
+	if err != nil {
+		panic(fmt.Errorf("Failed to unmarshal SpiderCfg: %s \n", err))
+	}
+
+	err = nacos.ConfigClient.ListenConfig(vo.ConfigParam{
+		DataId: nacos.NacosConfig.Spider.DataID,
+		Group:  nacos.NacosConfig.Spider.Group,
+		OnChange: func(namespace, group, dataId, data string) {
+			err = yaml.Unmarshal([]byte(data), &SpiderCfg)
+			fmt.Println(fmt.Sprintf("SpiderCfg: %#v \n", SpiderCfg))
 			if err != nil {
 				fmt.Println(fmt.Sprintf("Failed to unmarshal nacos config: %s \n", err))
 			}

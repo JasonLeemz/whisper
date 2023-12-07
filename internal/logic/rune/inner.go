@@ -21,7 +21,7 @@ func NewInnerIns(ctx *context.Context) *Inner {
 
 // GetAll return map[string]*model.LOLRune|map[string]*model.LOLMRune
 func (e *Inner) GetAll(platform int) interface{} {
-	// 获取全部装备
+	// 获取全部符文
 	if platform == common.PlatformForLOL {
 		d := dao.NewLOLRuneDAO()
 		eVersion, _ := d.GetLOLRuneMaxVersion()
@@ -44,6 +44,33 @@ func (e *Inner) GetAll(platform int) interface{} {
 			mrune[key] = r
 		}
 		return mrune
+	}
+
+}
+
+// GetOne 获取符文
+func (e *Inner) GetOne(platform int, id interface{}) interface{} {
+	// 获取全部装备
+	if platform == common.PlatformForLOL {
+		d := dao.NewLOLRuneDAO()
+		data, _ := d.Find([]string{"*"}, map[string]interface{}{
+			"rune_id": id,
+		})
+		if len(data) == 0 {
+			return nil
+		} else {
+			return data[0]
+		}
+	} else {
+		d := dao.NewLOLMRuneDAO()
+		data, _ := d.Find([]string{"*"}, map[string]interface{}{
+			"rune_id": id,
+		})
+		if len(data) == 0 {
+			return nil
+		} else {
+			return data[0]
+		}
 	}
 
 }

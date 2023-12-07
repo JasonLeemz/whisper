@@ -72,13 +72,13 @@ export default {
 <template>
   <a-divider orientation="left">{{strategyList.title}}</a-divider>
   <a-empty
-      v-if="feedList.data == null"
+      v-if="feedList.data.length === 0"
       description="大神难产中..."/>
   <template v-if="feedList.isLoading">
     <a-skeleton active/>
   </template>
 
-  <template v-if="!feedList.isLoading && feedList.data != null">
+  <template v-if="!feedList.isLoading && feedList.data.length !== 0">
     <!-- 推荐列表 START-->
     <a-collapse activeKey="strategy-list">
       <a-collapse-panel key="strategy-list" header="点击链接跳转观看">

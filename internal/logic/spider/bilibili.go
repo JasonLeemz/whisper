@@ -33,21 +33,19 @@ func (e *Spider) BilibiliGrab() error {
 	}
 
 	// 根据关键字从用户空间URl检索视频列表
-	// 获取所有英雄
-	adao := dao2.NewHeroAttributeDAO()
-	heroes, err := adao.QueryAllHeroes(nil)
-	if err != nil {
-		log.Logger.Error(e.ctx, err)
-		return err
-	}
+	// 获取所有需要抓取的数据
+	//sp := make([]*searchParams, 0)
+	sp := getAllHeroes(e.ctx)
+	sp = append(sp, getAllRunes(e.ctx)...)
+	sp = append(sp, getAllEquips(e.ctx)...)
 
 	// 缓存视频列表
-	fetchData(e.ctx, authors, heroes)
+	fetchData(e.ctx, authors, sp)
 	return nil
 }
 
-func fetchData(ctx *context.Context, authors []*model.AuthorSpace, heroes []*model.HeroAttribute) {
-	t := newTask(int32(len(authors)*len(heroes))*2, &sync.WaitGroup{}, make(chan struct{}, 5), make(chan struct{}, 50))
+func fetchData(ctx *context.Context, authors []*model.AuthorSpace, sp []*searchParams) {
+	t := newTask(int32(len(authors)*len(sp)), &sync.WaitGroup{}, make(chan struct{}, 5), make(chan struct{}, 50))
 	for _, author := range authors {
 		t.wg.Add(1)
 		t.ch1 <- struct{}{}
@@ -57,84 +55,56 @@ func fetchData(ctx *context.Context, authors []*model.AuthorSpace, heroes []*mod
 				t.wg.Done()
 				<-t.ch1
 			}()
-			for _, hero := range heroes {
-				if hero.Platform != author.Platform {
+			for _, params := range sp {
+				if params.platform != author.Platform {
 					atomic.AddInt32(&t.success, 1)
 					// 视频博主的游戏平台要和该英雄的所属平台一致
 					continue
 				}
 
-				url := author.Space // url不打日志了，在service层打过了
-				name := ""
-				title := ""
-				if hero.Platform == 0 {
-					name = hero.Title
-					title = hero.Name
-				} else {
-					name = hero.Name
-					title = hero.Title
-				}
-				url1 := fmt.Sprintf(url, name)
-				url2 := fmt.Sprintf(url, title)
+				url := fmt.Sprintf(author.Space, params.keywords)
 
 				t.wg.Add(1)
 				t.ch2 <- struct{}{}
 
-				go func() {
+				go func(params *searchParams) {
 					defer func() {
 						t.wg.Done()
 						<-t.ch2
 					}()
 
-					var datas []interface{}
-					data1, err := service.CreateSpiderProduct(author.Source)().SearchKeywords(ctx, url1)
+					data, err := service.CreateSpiderProduct(author.Source)().SearchKeywords(ctx, url)
 					if err != nil {
 						atomic.AddInt32(&t.fail, 1)
-						log.Logger.Error(ctx, "SearchKeywords", name, err)
-					} else {
-						datas = append(datas, data1)
+						log.Logger.Error(ctx, "SearchKeywords", params.keywords, err)
+						return
 					}
-					data2, err := service.CreateSpiderProduct(author.Source)().SearchKeywords(ctx, url2)
+
+					bdata, ok := data.(*dto.SearchKeywords)
+					if !ok {
+						atomic.AddInt32(&t.fail, 1)
+						log.Logger.Error(ctx, "data.(*dto.SearchKeywords) assert fail")
+						return
+					}
+
+					if bdata.Code != 0 {
+						atomic.AddInt32(&t.fail, 1)
+						log.Logger.Error(ctx, bdata.Message)
+						return
+					}
+
+					// 写入数据
+					err = recodeBilibiliData(ctx, bdata, author.Platform, params.desc)
 					if err != nil {
 						atomic.AddInt32(&t.fail, 1)
-						log.Logger.Error(ctx, "SearchKeywords", title, err)
 					} else {
-						datas = append(datas, data2)
-					}
-
-					for _, data := range datas {
-						bdata, ok := data.(*dto.SearchKeywords)
-						if !ok {
-							atomic.AddInt32(&t.fail, 1)
-							log.Logger.Error(ctx, "data.(*dto.SearchKeywords) assert fail")
-							continue
-						}
-
-						if bdata.Code != 0 {
-							atomic.AddInt32(&t.fail, 1)
-							log.Logger.Error(ctx, bdata.Message)
-							continue
-						}
-
-						// 写入数据
-						err = recodeBilibiliData(ctx, bdata, author.Platform, name)
-						if err != nil {
-							atomic.AddInt32(&t.fail, 1)
-						} else {
-							atomic.AddInt32(&t.success, 1)
-						}
-					}
-
-					if len(datas) == 0 {
-						// 没有查询到数据
-						// 认为成功执行了
 						atomic.AddInt32(&t.success, 1)
 					}
 					// 生成一个1到3秒之间的随机时间间隔
 					//rand.Seed(time.Now().UnixNano())
 					//duration := time.Duration(rand.Intn(3)+1) * time.Second
 					//time.Sleep(duration)
-				}()
+				}(params)
 
 			}
 		}(author)
@@ -165,7 +135,7 @@ func recodeBilibiliData(ctx *context.Context, data *dto.SearchKeywords, platform
 			Status:     0,
 			Bvid:       d.Bvid,
 			Played:     d.Play,
-			Hero:       hero,
+			Keywords:   hero,
 			Length:     d.Length,
 		}
 		err := dao.InsertORIgnore(strategy)
@@ -176,4 +146,110 @@ func recodeBilibiliData(ctx *context.Context, data *dto.SearchKeywords, platform
 		log.Logger.Info(ctx, d.Author, hero, d.Bvid, "ok")
 	}
 	return nil
+}
+
+type searchParams struct {
+	desc     string
+	keywords string
+	platform int
+}
+
+func getAllHeroes(ctx *context.Context) []*searchParams {
+	// 获取所有英雄
+	adao := dao2.NewHeroAttributeDAO()
+	heroes, err := adao.QueryAllHeroes(nil)
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return nil
+	}
+	sp := make([]*searchParams, 0, len(heroes)*2)
+
+	for _, hero := range heroes {
+		p := &searchParams{}
+		if hero.Platform == 0 {
+			p.keywords = hero.Title
+			p.desc = hero.Title
+
+			sp = append(sp, p)
+			p.keywords = hero.Name
+			sp = append(sp, p)
+		} else {
+			p.keywords = hero.Name
+			p.desc = hero.Name
+			sp = append(sp, p)
+			p.keywords = hero.Title
+			sp = append(sp, p)
+		}
+	}
+
+	return sp
+}
+
+func getAllRunes(ctx *context.Context) []*searchParams {
+	sp := make([]*searchParams, 0, 0)
+	data1, err := dao2.NewLOLRuneDAO().Find([]string{"*"}, map[string]interface{}{
+		"status": 0,
+	})
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return sp
+	}
+	for _, data := range data1 {
+		sp = append(sp, &searchParams{
+			desc:     data.Name,
+			keywords: data.Name,
+			platform: common.PlatformForLOL,
+		})
+	}
+	data2, err := dao2.NewLOLMRuneDAO().Find([]string{"*"}, map[string]interface{}{
+		"status": 0,
+	})
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return sp
+	}
+	for _, data := range data2 {
+		sp = append(sp, &searchParams{
+			desc:     data.Name,
+			keywords: data.Name,
+			platform: common.PlatformForLOLM,
+		})
+	}
+
+	return sp
+}
+
+func getAllEquips(ctx *context.Context) []*searchParams {
+	sp := make([]*searchParams, 0, 0)
+	ed := dao2.NewLOLEquipmentDAO()
+	version, _ := ed.GetLOLEquipmentMaxVersion()
+	data1, err := ed.GetLOLEquipment(version.Version)
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return sp
+	}
+	for _, data := range data1 {
+		sp = append(sp, &searchParams{
+			desc:     data.Name,
+			keywords: data.Name,
+			platform: common.PlatformForLOL,
+		})
+	}
+
+	ed2 := dao2.NewLOLMEquipmentDAO()
+	version2, _ := ed2.GetLOLMEquipmentMaxVersion()
+	data2, err := ed2.GetLOLMEquipment(version2.Version)
+	if err != nil {
+		log.Logger.Error(ctx, err)
+		return sp
+	}
+	for _, data := range data2 {
+		sp = append(sp, &searchParams{
+			desc:     data.Name,
+			keywords: data.Name,
+			platform: common.PlatformForLOLM,
+		})
+	}
+
+	return sp
 }

@@ -19,7 +19,6 @@ func CreateSpiderProduct(source int) SpiderProductFunc {
 			return &Bilibili{
 				ts:            time.Now().Unix(),
 				referer:       referer,
-				cookie:        cookie,
 				commonHeaders: commonHeaders(),
 			}
 		}

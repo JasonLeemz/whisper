@@ -15,9 +15,16 @@ var (
 )
 
 type Config struct {
-	Nacos NacosCfg `yaml:"nacos"`
-	LOL   LOLCfg   `yaml:"lol"`
-	Equip EquipCfg `yaml:"equip"`
+	Nacos  NacosCfg  `yaml:"nacos"`
+	LOL    LOLCfg    `yaml:"lol"`
+	Equip  EquipCfg  `yaml:"equip"`
+	Spider SpiderCfg `yaml:"spider"`
+}
+
+type SpiderCfg struct {
+	NameSpace string `yaml:"nameSpace"`
+	DataID    string `yaml:"dataID"`
+	Group     string `yaml:"group"`
 }
 
 type EquipCfg struct {
