@@ -7,8 +7,8 @@ import './assets/main.scss'
 
 import axios from 'axios';
 // 设置 Axios 全局配置
-// axios.defaults.baseURL = '';
-axios.defaults.baseURL = 'http://192.168.31.30:8123';
+axios.defaults.baseURL = '';
+// axios.defaults.baseURL = 'http://192.168.31.30:8123';
 // axios.defaults.baseURL = 'http://whisper.ybdx.xyz:66';
 
 
