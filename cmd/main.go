@@ -200,9 +200,9 @@ func main() {
 	defer func() {
 		log.Logger.Sync()
 		log.RpcLogger.Sync()
-		//log.GLogger.Sync()
-		//log.ELogger.Sync()
-		//log.MLogger.Sync()
+		log.GLogger.Sync()
+		log.ELogger.Sync()
+		log.MLogger.Sync()
 		cancel()
 	}()
 	if err := srv.Shutdown(ctx); err != nil {
