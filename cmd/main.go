@@ -197,7 +197,14 @@ func main() {
 	<-quit
 	log.Logger.Warnln("Shutdown Server ...")
 	ctx, cancel := context2.WithTimeout(context2.Background(), 5*time.Second)
-	defer cancel()
+	defer func() {
+		log.Logger.Sync()
+		log.RpcLogger.Sync()
+		//log.GLogger.Sync()
+		//log.ELogger.Sync()
+		//log.MLogger.Sync()
+		cancel()
+	}()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Logger.Panic(err)
 	}

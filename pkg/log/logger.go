@@ -38,9 +38,9 @@ func getEncoder() zapcore.Encoder {
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
-	// TODO 生产环境 和 开发环境
-	//return zapcore.NewJSONEncoder(encoderConfig)
-	return zapcore.NewConsoleEncoder(encoderConfig)
+	// 生产环境(JSON) 和 开发环境(Console)
+	return zapcore.NewJSONEncoder(encoderConfig)
+	//return zapcore.NewConsoleEncoder(encoderConfig)
 }
 
 func createSugarLogger(encoder zapcore.Encoder, writeSyncer zapcore.WriteSyncer, level zapcore.Level) *zap.SugaredLogger {
