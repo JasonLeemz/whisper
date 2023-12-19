@@ -1,8 +1,7 @@
 package controller
 
 import (
-	"github.com/spf13/cast"
-	"whisper/internal/logic"
+	"whisper/internal/logic/attribute"
 	"whisper/internal/logic/common"
 	"whisper/internal/logic/equipment"
 	rune2 "whisper/internal/logic/rune"
@@ -33,16 +32,16 @@ func StrategyHero(ctx *context.Context) {
 
 	if req.Keywords == "" && req.ID != "" {
 		// 查询英雄名字
-		attr, err := logic.QueryHeroAttribute(ctx, cast.ToString(req.ID), req.Platform)
+		attr, err := attribute.NewInnerIns(ctx).GetOne(req.ID)
 		if err != nil {
 			ctx.Reply(nil, errors.New(err))
 			return
 		}
 
 		if req.Platform == common.PlatformForLOL {
-			req.Keywords = attr.Hero.Title
+			req.Keywords = attr.Title
 		} else {
-			req.Keywords = attr.Hero.Name
+			req.Keywords = attr.Name
 		}
 	}
 
