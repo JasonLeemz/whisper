@@ -3,6 +3,7 @@ package logic
 import (
 	context2 "context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/spf13/cast"
 	"html"
@@ -235,7 +236,8 @@ func BuildIndex(ctx *context.Context, index string, rebuild bool) error {
 
 	select {
 	case <-cancelCtx.Done():
-		break
+		log.Logger.Error(ctx, "BuildIndex fail times too much")
+		return errors.New("BuildIndex fail times too much")
 	default:
 		// 表数据直接建索引
 		for _, tbl := range queue {
@@ -341,7 +343,8 @@ func buildHeroesIndex(ctx *context.Context) error {
 
 	select {
 	case <-cancelCtx.Done():
-		break
+		log.Logger.Error(ctx, "buildHeroesIndex fail times too much")
+		return errors.New("buildHeroesIndex fail times too much")
 	default:
 		spellDao := dao.NewHeroSpellDAO()
 		hd := dao.CreateEsDao(dao.ESIndexHeroes)().(*dao.ESHeroesDAO)
@@ -438,7 +441,8 @@ func buildMHeroesIndex(ctx *context.Context) error {
 
 	select {
 	case <-cancelCtx.Done():
-		break
+		log.Logger.Error(ctx, "buildMHeroesIndex fail times too much")
+		return errors.New("buildMHeroesIndex fail times too much")
 	default:
 		spellDao := dao.NewHeroSpellDAO()
 		hd := dao.CreateEsDao(dao.ESIndexHeroes)().(*dao.ESHeroesDAO)
@@ -539,7 +543,8 @@ func buildEquipIndex(ctx *context.Context) error {
 
 	select {
 	case <-cancelCtx.Done():
-		break
+		log.Logger.Error(ctx, "buildEquipIndex fail times too much")
+		return errors.New("buildEquipIndex fail times too much")
 	default:
 		ed := dao.CreateEsDao(dao.ESIndexEquipment)().(*dao.ESEquipmentDAO)
 
@@ -621,7 +626,8 @@ func buildMEquipIndex(ctx *context.Context) error {
 
 	select {
 	case <-cancelCtx.Done():
-		break
+		log.Logger.Error(ctx, "buildMEquipIndex fail times too much")
+		return errors.New("buildMEquipIndex fail times too much")
 	default:
 		ed := dao.CreateEsDao(dao.ESIndexEquipment)().(*dao.ESEquipmentDAO)
 
@@ -706,7 +712,8 @@ func buildRuneIndex(ctx *context.Context) error {
 
 	select {
 	case <-cancelCtx.Done():
-		break
+		log.Logger.Error(ctx, "buildRuneIndex fail times too much")
+		return errors.New("buildRuneIndex fail times too much")
 	default:
 		rd := dao.CreateEsDao(dao.ESIndexRune)().(*dao.ESRuneDAO)
 		for _, row := range data {
@@ -777,7 +784,8 @@ func buildMRuneIndex(ctx *context.Context) error {
 
 	select {
 	case <-cancelCtx.Done():
-		break
+		log.Logger.Error(ctx, "buildMRuneIndex fail times too much")
+		return errors.New("buildMRuneIndex fail times too much")
 	default:
 		rd := dao.CreateEsDao(dao.ESIndexRune)().(*dao.ESRuneDAO)
 		for _, row := range data {
@@ -855,7 +863,8 @@ func buildSkillIndex(ctx *context.Context) error {
 
 	select {
 	case <-cancelCtx.Done():
-		break
+		log.Logger.Error(ctx, "buildSkillIndex fail times too much")
+		return errors.New("buildSkillIndex fail times too much")
 	default:
 		sd := dao.CreateEsDao(dao.ESIndexSkill)().(*dao.ESSkillDAO)
 		for _, row := range data {
@@ -926,7 +935,8 @@ func buildMSkillIndex(ctx *context.Context) error {
 
 	select {
 	case <-cancelCtx.Done():
-		break
+		log.Logger.Error(ctx, "buildMSkillIndex fail times too much")
+		return errors.New("buildMSkillIndex fail times too much")
 	default:
 		sd := dao.CreateEsDao(dao.ESIndexSkill)().(*dao.ESSkillDAO)
 

@@ -1,6 +1,7 @@
 package spider
 
 import (
+	context2 "context"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -45,70 +46,85 @@ func (e *Spider) BilibiliGrab() error {
 }
 
 func fetchData(ctx *context.Context, authors []*model.AuthorSpace, sp []*searchParams) {
+	cancelCtx, cancelFunc := context2.WithCancel(ctx)
+	defer cancelFunc()
+
 	t := newTask(int32(len(authors)*len(sp)), &sync.WaitGroup{}, make(chan struct{}, 5), make(chan struct{}, 50))
-	for _, author := range authors {
-		t.wg.Add(1)
-		t.ch1 <- struct{}{}
 
-		go func(author *model.AuthorSpace) {
-			defer func() {
-				t.wg.Done()
-				<-t.ch1
-			}()
-			for _, params := range sp {
-				if params.platform != author.Platform {
-					atomic.AddInt32(&t.success, 1)
-					// 视频博主的游戏平台要和该英雄的所属平台一致
-					continue
-				}
+	select {
+	case <-cancelCtx.Done():
+		return
+	default:
+		for _, author := range authors {
+			t.wg.Add(1)
+			t.ch1 <- struct{}{}
 
-				url := fmt.Sprintf(author.Space, params.keywords)
-
-				t.wg.Add(1)
-				t.ch2 <- struct{}{}
-
-				go func(params *searchParams) {
-					defer func() {
-						t.wg.Done()
-						<-t.ch2
-					}()
-
-					data, err := service.CreateSpiderProduct(author.Source)().SearchKeywords(ctx, url)
-					if err != nil {
-						atomic.AddInt32(&t.fail, 1)
-						log.Logger.Error(ctx, "SearchKeywords", params.keywords, err)
-						return
-					}
-
-					bdata, ok := data.(*dto.SearchKeywords)
-					if !ok {
-						atomic.AddInt32(&t.fail, 1)
-						log.Logger.Error(ctx, "data.(*dto.SearchKeywords) assert fail")
-						return
-					}
-
-					if bdata.Code != 0 {
-						atomic.AddInt32(&t.fail, 1)
-						log.Logger.Error(ctx, bdata.Message)
-						return
-					}
-
-					// 写入数据
-					err = recodeBilibiliData(ctx, bdata, author.Platform, params.desc)
-					if err != nil {
-						atomic.AddInt32(&t.fail, 1)
-					} else {
+			go func(author *model.AuthorSpace) {
+				defer func() {
+					t.wg.Done()
+					<-t.ch1
+				}()
+				for _, params := range sp {
+					if params.platform != author.Platform {
 						atomic.AddInt32(&t.success, 1)
+						// 视频博主的游戏平台要和该英雄的所属平台一致
+						continue
 					}
-					// 生成一个1到3秒之间的随机时间间隔
-					//rand.Seed(time.Now().UnixNano())
-					//duration := time.Duration(rand.Intn(3)+1) * time.Second
-					//time.Sleep(duration)
-				}(params)
 
-			}
-		}(author)
+					url := fmt.Sprintf(author.Space, params.keywords)
+
+					t.wg.Add(1)
+					t.ch2 <- struct{}{}
+
+					go func(params *searchParams) {
+						defer func() {
+							t.wg.Done()
+							<-t.ch2
+						}()
+
+						if t.fail > 25 {
+							log.Logger.Error(ctx, "fail times too much")
+							cancelFunc()
+						}
+
+						data, err := service.CreateSpiderProduct(author.Source)().SearchKeywords(ctx, url)
+						if err != nil {
+							atomic.AddInt32(&t.fail, 1)
+							log.Logger.Error(ctx, "SearchKeywords", params.keywords, err)
+							return
+						}
+
+						bdata, ok := data.(*dto.SearchKeywords)
+						if !ok {
+							atomic.AddInt32(&t.fail, 1)
+							log.Logger.Error(ctx, "data.(*dto.SearchKeywords) assert fail")
+							return
+						}
+
+						if bdata.Code != 0 {
+							atomic.AddInt32(&t.fail, 1)
+							log.Logger.Error(ctx, bdata.Message)
+							return
+						}
+
+						// 写入数据
+						err = recodeBilibiliData(ctx, bdata, author.Platform, params.desc)
+						if err != nil {
+							atomic.AddInt32(&t.fail, 1)
+						} else {
+							atomic.AddInt32(&t.success, 1)
+						}
+						// 生成一个1到3秒之间的随机时间间隔
+						//rand.Seed(time.Now().UnixNano())
+						//duration := time.Duration(rand.Intn(3)+1) * time.Second
+						//time.Sleep(duration)
+					}(params)
+
+				}
+			}(author)
+		}
 	}
+
 	t.wg.Wait()
 
 	log.Logger.Info(ctx, fmt.Sprintf("BilibiliGrab Done"))
