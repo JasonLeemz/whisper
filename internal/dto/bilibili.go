@@ -88,3 +88,125 @@ type Stat struct {
 	Vt       int `json:"vt,omitempty"`
 	Vv       int `json:"vv,omitempty"`
 }
+
+// UserDynamic https://api.bilibili.com/x/space/dynamic/search?keyword=%E7%90%B4%E5%A5%B3&pn=1&ps=30&mid=424730226
+type UserDynamic struct {
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Ttl     int         `json:"ttl"`
+	Data    DynamicData `json:"data"`
+}
+
+type DynamicData struct {
+	Cards []Cards `json:"cards"`
+	Total int     `json:"total"`
+}
+
+type Cards struct {
+	Desc Desc   `json:"desc"`
+	Card string `json:"card"` // DynamicCardsCard
+	//ExtendJson string `json:"extend_json"`
+	//Display    Display `json:"display"`
+}
+
+type DynamicCardsCard struct {
+	Aid         int    `json:"aid"`
+	Attribute   int    `json:"attribute"`
+	AttributeV2 int    `json:"attribute_v2"`
+	Cid         int    `json:"cid"`
+	Copyright   int    `json:"copyright"`
+	Ctime       int    `json:"ctime"`
+	Desc        string `json:"desc"`
+	//Dimension   Dimension `json:"dimension"`
+	Duration   int    `json:"duration"`
+	Dynamic    string `json:"dynamic"`
+	FirstFrame string `json:"first_frame"`
+	JumpUrl    string `json:"jump_url"`
+	Owner      struct {
+		Face string `json:"face"`
+		Mid  int    `json:"mid"`
+		Name string `json:"name"`
+	} `json:"owner"`
+	Pic         string `json:"pic"`
+	PubLocation string `json:"pub_location"`
+	Pubdate     int    `json:"pubdate"`
+	//Rights      Rights `json:"rights"`
+	SeasonId    int    `json:"season_id"`
+	ShortLinkV2 string `json:"short_link_v2"`
+	Stat        struct {
+		Aid      int   `json:"aid"`
+		Coin     int   `json:"coin"`
+		Danmaku  int   `json:"danmaku"`
+		Dislike  int   `json:"dislike"`
+		Favorite int   `json:"favorite"`
+		HisRank  int   `json:"his_rank"`
+		Like     int   `json:"like"`
+		NowRank  int   `json:"now_rank"`
+		Reply    int   `json:"reply"`
+		Share    int   `json:"share"`
+		View     int64 `json:"view"`
+		Vt       int   `json:"vt"`
+		Vv       int   `json:"vv"`
+	} `json:"stat"`
+	State     int    `json:"state"`
+	Tid       int    `json:"tid"`
+	Title     string `json:"title"`
+	Tname     string `json:"tname"`
+	Videos    int    `json:"videos"`
+	VtDisplay string `json:"vt_display"`
+}
+
+type Desc struct {
+	Uid          int         `json:"uid"`
+	Type         int         `json:"type"`
+	Rid          int         `json:"rid"`
+	Acl          int         `json:"acl"`
+	View         int         `json:"view"`
+	Repost       int         `json:"repost"`
+	Like         int         `json:"like"`
+	IsLiked      int         `json:"is_liked"`
+	DynamicId    int         `json:"dynamic_id"`
+	Timestamp    int64       `json:"timestamp"`
+	PreDyId      int         `json:"pre_dy_id"`
+	OrigDyId     int         `json:"orig_dy_id"`
+	OrigType     int         `json:"orig_type"`
+	UserProfile  UserProfile `json:"user_profile"`
+	UidType      int         `json:"uid_type"`
+	Stype        int         `json:"stype"`
+	RType        int         `json:"r_type"`
+	InnerId      int         `json:"inner_id"`
+	Status       int         `json:"status"`
+	DynamicIdStr string      `json:"dynamic_id_str"`
+	PreDyIdStr   string      `json:"pre_dy_id_str"`
+	OrigDyIdStr  string      `json:"orig_dy_id_str"`
+	RidStr       string      `json:"rid_str"`
+	Bvid         string      `json:"bvid"`
+}
+
+type UserProfile struct {
+	Info Info `json:"info"`
+	//Card    Card    `json:"card"`
+	//Vip     Vip     `json:"vip"`
+	//Pendant Pendant `json:"pendant"`
+	//Rank    string  `json:"rank"`
+	//Sign    string  `json:"sign"`
+	//LevelInfo LevelInfo `json:"level_info"`
+}
+
+type Info struct {
+	Uid     int    `json:"uid"`
+	Uname   string `json:"uname"`
+	Face    string `json:"face"`
+	FaceNft int    `json:"face_nft"`
+}
+
+type Relation struct {
+	Status     int `json:"status"`
+	IsFollow   int `json:"is_follow"`
+	IsFollowed int `json:"is_followed"`
+}
+
+type LiveInfo struct {
+	LiveStatus int    `json:"live_status"`
+	LiveUrl    string `json:"live_url"`
+}

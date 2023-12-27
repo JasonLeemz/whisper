@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-ego/gse v0.80.2
 	github.com/go-resty/resty/v2 v2.7.0
+	github.com/grafana/pyroscope-go v1.0.2
 	github.com/mozillazg/go-pinyin v0.20.0
 	github.com/nacos-group/nacos-sdk-go/v2 v2.2.3
 	github.com/natefinch/lumberjack v2.0.0+incompatible
@@ -16,6 +17,7 @@ require (
 	github.com/spf13/cast v1.5.1
 	github.com/spf13/viper v1.16.0
 	github.com/streadway/amqp v1.1.0
+	github.com/tidwall/gjson v1.17.0
 	github.com/yanyiwu/gojieba v1.3.0
 	go.mongodb.org/mongo-driver v1.12.1
 	go.uber.org/zap v1.24.0
@@ -44,7 +46,6 @@ require (
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/grafana/pyroscope-go v1.0.2 // indirect
 	github.com/grafana/pyroscope-go/godeltaprof v0.1.3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
@@ -74,6 +75,8 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/vcaesar/cedar v0.20.1 // indirect

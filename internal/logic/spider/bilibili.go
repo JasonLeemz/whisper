@@ -2,7 +2,9 @@ package spider
 
 import (
 	context2 "context"
+	"encoding/json"
 	"fmt"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -53,6 +55,7 @@ func fetchData(ctx *context.Context, authors []*model.AuthorSpace, sp []*searchP
 
 	select {
 	case <-cancelCtx.Done():
+		log.Logger.Error(ctx, "fail times too much")
 		return
 	default:
 		for _, author := range authors {
@@ -64,14 +67,14 @@ func fetchData(ctx *context.Context, authors []*model.AuthorSpace, sp []*searchP
 					t.wg.Done()
 					<-t.ch1
 				}()
+				spider := service.CreateSpiderProduct(author)()
+
 				for _, params := range sp {
 					if params.platform != author.Platform {
 						atomic.AddInt32(&t.success, 1)
 						// 视频博主的游戏平台要和该英雄的所属平台一致
 						continue
 					}
-
-					url := fmt.Sprintf(author.Space, params.keywords)
 
 					t.wg.Add(1)
 					t.ch2 <- struct{}{}
@@ -83,18 +86,20 @@ func fetchData(ctx *context.Context, authors []*model.AuthorSpace, sp []*searchP
 						}()
 
 						if t.fail > 25 {
-							log.Logger.Error(ctx, "fail times too much")
+							log.Logger.Error(ctx, "fail times:", t.fail)
 							cancelFunc()
+							return
 						}
 
-						data, err := service.CreateSpiderProduct(author.Source)().SearchKeywords(ctx, url)
+						// url 需要验签参数
+						data, err := spider.DynamicDecorate(spider.SearchKeywords)(ctx, author.Space, params.keywords)
 						if err != nil {
 							atomic.AddInt32(&t.fail, 1)
 							log.Logger.Error(ctx, "SearchKeywords", params.keywords, err)
 							return
 						}
 
-						bdata, ok := data.(*dto.SearchKeywords)
+						bdata, ok := data.(*dto.UserDynamic)
 						if !ok {
 							atomic.AddInt32(&t.fail, 1)
 							log.Logger.Error(ctx, "data.(*dto.SearchKeywords) assert fail")
@@ -134,32 +139,46 @@ func fetchData(ctx *context.Context, authors []*model.AuthorSpace, sp []*searchP
 	log.Logger.Info(ctx, fmt.Sprintf("剩余: %d 个任务待处理", t.total-t.success-t.fail))
 }
 
-func recodeBilibiliData(ctx *context.Context, data *dto.SearchKeywords, platform int, hero string) error {
+func recodeBilibiliData(ctx *context.Context, data *dto.UserDynamic, platform int, hero string) error {
 	// https://m.bilibili.com/video/%s => https://m.bilibili.com/video/BV1Zh411C7XS
 	baseUrl := "https://m.bilibili.com/video/%s"
 	dao := dao2.NewGameStrategyDAO()
-	for _, d := range data.Data.List.Vlist {
+	for _, d := range data.Data.Cards {
+		card := dto.DynamicCardsCard{}
+		e := json.Unmarshal([]byte(d.Card), &card)
+		if e != nil {
+			log.Logger.Error(ctx, e, "Card:", d.Card)
+			continue
+		}
+
+		min := ""
+		if card.Duration/60 < 10 {
+			min = "0" + strconv.Itoa(card.Duration/60)
+		} else {
+			min = strconv.Itoa(card.Duration / 60)
+		}
+		length := fmt.Sprintf("%s:%d", min, card.Duration%60)
 		strategy := &model.GameStrategy{
 			Platform:   platform,
 			Source:     common.SourceBilibili,
-			Author:     d.Author,
-			LinkUrl:    fmt.Sprintf(baseUrl, d.Bvid),
-			MainImage:  d.Pic,
-			PublicDate: time.Unix(d.Created, 0), // 1613243324
-			Title:      d.Title,
-			Subtitle:   d.Subtitle,
+			Author:     d.Desc.UserProfile.Info.Uname,
+			LinkUrl:    fmt.Sprintf(baseUrl, d.Desc.Bvid),
+			MainImage:  card.Pic + "@406w_254h_1e_1c.jpg", // https://i2.hdslb.com/bfs/archive/f3122fd3afa2dc3becb4b045055150af410cbd20.jpg@406w_254h_1e_1c.jpg
+			PublicDate: time.Unix(d.Desc.Timestamp, 0),    // 1613243324
+			Title:      card.Title,
+			Subtitle:   "",
 			Status:     0,
-			Bvid:       d.Bvid,
-			Played:     d.Play,
+			Bvid:       d.Desc.Bvid,
+			Played:     card.Stat.View,
 			Keywords:   hero,
-			Length:     d.Length,
+			Length:     length,
 		}
 		err := dao.InsertORIgnore(strategy)
 		if err != nil {
 			log.Logger.Error(ctx, err)
 			return err
 		}
-		log.Logger.Info(ctx, d.Author, hero, d.Bvid, "ok")
+		log.Logger.Info(ctx, d.Desc.UserProfile.Info.Uname, hero, d.Desc.Bvid, "ok")
 	}
 	return nil
 }

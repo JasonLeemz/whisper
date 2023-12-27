@@ -54,6 +54,7 @@ type NacosCfg struct {
 
 func Init() {
 	path := "./configs/app.dev.yaml"
+	//path := "/Users/limingze/GolandProjects/whisper/configs/app.dev.yaml"
 	viper.SetConfigFile(path)   // 指定配置文件路径
 	err := viper.ReadInConfig() // 查找并读取配置文件
 	if err != nil {             // 处理读取配置文件的错误

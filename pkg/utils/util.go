@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"crypto/md5"
 	"fmt"
 	"github.com/spf13/cast"
+	"io"
 	"regexp"
 	"strconv"
 	"strings"
@@ -104,4 +106,10 @@ func Str2Int(text string) int {
 
 	ns := text[i:]
 	return cast.ToInt(ns)
+}
+
+func Md5(text string) string {
+	h := md5.New()
+	io.WriteString(h, text)
+	return fmt.Sprintf("%x", h.Sum(nil)) // Output: 6cd3556deb0da54bca060b4c39479839
 }
