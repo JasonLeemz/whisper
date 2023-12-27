@@ -92,7 +92,7 @@ func fetchData(ctx *context.Context, authors []*model.AuthorSpace, sp []*searchP
 						}
 
 						// url 需要验签参数
-						data, err := spider.DynamicDecorate(spider.SearchKeywords)(ctx, author.Space, params.keywords)
+						data, err := spider.DynamicDecorate(spider.Dynamic)(ctx, author.Space, params.keywords)
 						if err != nil {
 							atomic.AddInt32(&t.fail, 1)
 							log.Logger.Error(ctx, "SearchKeywords", params.keywords, err)
@@ -102,7 +102,7 @@ func fetchData(ctx *context.Context, authors []*model.AuthorSpace, sp []*searchP
 						bdata, ok := data.(*dto.UserDynamic)
 						if !ok {
 							atomic.AddInt32(&t.fail, 1)
-							log.Logger.Error(ctx, "data.(*dto.SearchKeywords) assert fail")
+							log.Logger.Error(ctx, "data.(*dto.UserDynamic) assert fail")
 							return
 						}
 
