@@ -207,7 +207,8 @@ func getAllHeroes(ctx *context.Context) []*searchParams {
 			p.platform = hero.Platform
 			sp = append(sp, p)
 
-			p2 := p // 防止引用赋值被覆盖
+			p2 := new(searchParams)
+			*p2 = *p // 防止引用赋值被覆盖
 			p2.keywords = hero.Name
 			sp = append(sp, p2)
 		} else {
@@ -216,7 +217,8 @@ func getAllHeroes(ctx *context.Context) []*searchParams {
 			p.platform = hero.Platform
 			sp = append(sp, p)
 
-			p2 := p // 防止引用赋值被覆盖
+			p2 := new(searchParams)
+			*p2 = *p // 防止引用赋值被覆盖
 			p2.keywords = hero.Title
 			sp = append(sp, p2)
 		}
