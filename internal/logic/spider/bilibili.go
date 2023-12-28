@@ -205,18 +205,20 @@ func getAllHeroes(ctx *context.Context) []*searchParams {
 			p.keywords = hero.Title
 			p.desc = hero.Title
 			p.platform = hero.Platform
+			sp = append(sp, p)
 
-			sp = append(sp, p)
-			p.keywords = hero.Name
-			sp = append(sp, p)
+			p2 := p // 防止引用赋值被覆盖
+			p2.keywords = hero.Name
+			sp = append(sp, p2)
 		} else {
 			p.keywords = hero.Name
 			p.desc = hero.Name
 			p.platform = hero.Platform
+			sp = append(sp, p)
 
-			sp = append(sp, p)
-			p.keywords = hero.Title
-			sp = append(sp, p)
+			p2 := p // 防止引用赋值被覆盖
+			p2.keywords = hero.Title
+			sp = append(sp, p2)
 		}
 	}
 
