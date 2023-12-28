@@ -204,6 +204,7 @@ func getAllHeroes(ctx *context.Context) []*searchParams {
 		if hero.Platform == 0 {
 			p.keywords = hero.Title
 			p.desc = hero.Title
+			p.platform = hero.Platform
 
 			sp = append(sp, p)
 			p.keywords = hero.Name
@@ -211,6 +212,8 @@ func getAllHeroes(ctx *context.Context) []*searchParams {
 		} else {
 			p.keywords = hero.Name
 			p.desc = hero.Name
+			p.platform = hero.Platform
+
 			sp = append(sp, p)
 			p.keywords = hero.Title
 			sp = append(sp, p)

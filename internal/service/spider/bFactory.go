@@ -8,7 +8,7 @@ import (
 )
 
 type SearchKeywordsFunc func(ctx *context.Context, url, keywords string) (interface{}, error)
-type DynamicFunc func(ctx *context.Context, url, keywords string) (interface{}, error)
+type DynamicFunc func(ctx *context.Context, space, keywords string) (interface{}, error)
 
 type ISpider interface {
 	SearchKeywordsDecorate(fn SearchKeywordsFunc) SearchKeywordsFunc
