@@ -31,4 +31,8 @@ const (
 	KeyCacheVersionList = "cache:version:%d"
 	// KeyCacheVersionDetail SET cache:version:detail:4.2_hero
 	KeyCacheVersionDetail = "cache:version:detail:%s"
+
+	// 布隆过滤器
+	KeyBitSetEquip = "bloom-filter-equip"
+	KeyBitSetHero  = "bloom-filter-hero"
 )

@@ -143,3 +143,21 @@ func QueryEquipTypes(ctx *context.Context) {
 		"types": types,
 	}, nil)
 }
+
+func SetBit(ctx *context.Context) {
+	equipment.NewInnerIns(ctx).SetBit()
+	ctx.Reply("ok", nil)
+}
+
+type ReqContain struct {
+	Keywords string `json:"keywords"`
+}
+
+func Contain(ctx *context.Context) {
+	req := &ReqContain{}
+	if err := ctx.Bind(req); err != nil {
+		return
+	}
+	contain := equipment.NewInnerIns(ctx).Contain(req.Keywords)
+	ctx.Reply(contain, nil)
+}

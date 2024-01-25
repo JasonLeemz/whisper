@@ -18,6 +18,8 @@ func ConsumeSearchKeyMsg() error {
 		log.Logger.Error(ctx, err)
 		return err
 	}
+
+	//ch.Confirm()
 	msgs, err = ch.Consume(
 		QueneNameSearchKey, // queue
 		"",                 // consumer

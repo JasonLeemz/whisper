@@ -10,6 +10,7 @@ import (
 	"whisper/internal/logic/common"
 	"whisper/internal/model"
 	dao "whisper/internal/model/DAO"
+	"whisper/internal/service/bloomfilter"
 	"whisper/pkg/config"
 	"whisper/pkg/context"
 	"whisper/pkg/log"
@@ -29,6 +30,29 @@ func NewInnerIns(ctx *context.Context) *Inner {
 func (e *Inner) WithPlatform(platform int) *Inner {
 	e.platform = platform
 	return e
+}
+
+func (e *Inner) SetBit() {
+	data := e.GetAll(common.PlatformForLOL).(map[string]*model.LOLEquipment)
+	datam := e.GetAll(common.PlatformForLOLM).(map[string]*model.LOLMEquipment)
+
+	bf := bloomfilter.NewEquipBloomFilter(redis.RDB, 3)
+
+	for _, equip := range data {
+		d := equip.ItemId
+		bf.Add(d, redis.KeyBitSetEquip)
+	}
+
+	for _, equip := range datam {
+		d := equip.EquipId
+		bf.Add(d, redis.KeyBitSetEquip)
+	}
+
+}
+
+func (e *Inner) Contain(data string) bool {
+	bf := bloomfilter.NewEquipBloomFilter(redis.RDB, 3)
+	return bf.Contains(data, redis.KeyBitSetEquip)
 }
 
 func (e *Inner) ExtractKeyWords() map[string]model.EquipIntro {

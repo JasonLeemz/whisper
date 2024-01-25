@@ -38,11 +38,11 @@ func (d *MQDao) ProduceMessage(exchange, routingKey string, message []byte) {
 		log.Logger.Error(ctx, err)
 		return
 	}
-
+	//ch.QueueDeclare(routingKey)
 	err = ch.Publish(
 		exchange,   // exchange
 		routingKey, // routing key
-		false,      // mandatory
+		false,      // 托管。如果收到消息但是路由失败，false会丢弃，true会处理
 		false,      // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",

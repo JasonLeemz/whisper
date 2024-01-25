@@ -155,6 +155,11 @@ func main() {
 			// 查询符文攻略
 			inner.POST("/strategy/rune", context.Handle(controller.StrategyRune))
 		}
+
+		{
+			inner.POST("/equipment/setbit", context.Handle(controller.SetBit))
+			inner.POST("/equipment/contain", context.Handle(controller.Contain))
+		}
 	}
 	run.Init()
 
